@@ -50,7 +50,7 @@ public class KsiazkiView extends VerticalLayout {
     }
 
     private void configureForm() {
-        form = new KsiazkiForm(service.findAllDziedziny());
+        form = new KsiazkiForm(service);
         form.setWidth("25em");
 
         // Obsługa zdarzeń z formularza

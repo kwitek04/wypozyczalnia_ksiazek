@@ -23,7 +23,7 @@ public class DaneKsiazki {
     @Size(max = 25)
     private String wydawnictwo;
 
-    private int rokWydania;
+    private Integer rokWydania;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -57,6 +57,6 @@ public class DaneKsiazki {
     public String getWydawnictwo() { return wydawnictwo; }
     public void setWydawnictwo(String wydawnictwo) { this.wydawnictwo = wydawnictwo; }
 
-    public int getRokWydania() { return rokWydania; }
-    public void setRokWydania(int rokWydania) { this.rokWydania = rokWydania; }
+    public Integer getRokWydania() { return rokWydania; }
+    public void setRokWydania(Integer rokWydania) { this.rokWydania = rokWydania; }
 }

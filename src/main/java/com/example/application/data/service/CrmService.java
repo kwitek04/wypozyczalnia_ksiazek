@@ -216,4 +216,10 @@ public class CrmService {
     public List<Uzytkownicy> findAllPendingUzytkownicy() {
         return uzytkownicyRepository.findByEnabled(false);
     }
+
+    public void saveAutor(Autor autor) {
+        if (autor != null) {
+            autorRepository.save(autor);
+        }
+    }
 }
