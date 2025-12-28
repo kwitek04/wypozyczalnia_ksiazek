@@ -17,7 +17,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
-@RolesAllowed("KIEROWNIK")
+@RolesAllowed({"KIEROWNIK", "BIBLIOTEKARZ"})
 @Route(value = "uzytkownicy", layout = MainLayout.class)
 @PageTitle("Lista użytkowników | Biblioteka")
 public class UzytkownicyView extends VerticalLayout {

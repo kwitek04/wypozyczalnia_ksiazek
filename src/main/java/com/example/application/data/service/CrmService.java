@@ -1,19 +1,9 @@
 package com.example.application.data.service;
 
-import com.example.application.data.entity.Company;
-import com.example.application.data.entity.Contact;
-import com.example.application.data.entity.Status;
-import com.example.application.data.entity.Rola;
-import com.example.application.data.entity.Pracownicy;
-import com.example.application.data.repository.CompanyRepository;
-import com.example.application.data.repository.ContactRepository;
-import com.example.application.data.repository.StatusRepository;
-import com.example.application.data.repository.PracownicyRepository;
-import com.example.application.data.repository.RolaRepository;
+import com.example.application.data.entity.*;
+import com.example.application.data.repository.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.example.application.data.entity.Uzytkownicy;
-import com.example.application.data.repository.UzytkownicyRepository;
 
 
 import java.util.List;
@@ -28,6 +18,11 @@ public class CrmService {
     private final PracownicyRepository pracownicyRepository;
     private final PasswordEncoder passwordEncoder;
     private final UzytkownicyRepository uzytkownicyRepository;
+    private final KsiazkaRepository ksiazkaRepository;
+    private final AutorRepository autorRepository;
+    private final DziedzinaRepository dziedzinaRepository;
+    private final PoddziedzinaRepository poddziedzinaRepository;
+    private final DaneKsiazkiRepository daneKsiazkiRepository;
 
     public CrmService(ContactRepository contactRepository,
                       CompanyRepository companyRepository,
@@ -35,7 +30,17 @@ public class CrmService {
                       RolaRepository rolaRepository,
                       PracownicyRepository pracownicyRepository,
                       PasswordEncoder passwordEncoder,
-                      UzytkownicyRepository uzytkownicyRepository) {
+                      UzytkownicyRepository uzytkownicyRepository,
+                      KsiazkaRepository ksiazkaRepository,
+                      AutorRepository autorRepository,
+                      DziedzinaRepository dziedzinaRepository,
+                      PoddziedzinaRepository poddziedzinaRepository,
+                      DaneKsiazkiRepository daneKsiazkiRepository) {
+        this.ksiazkaRepository = ksiazkaRepository;
+        this.autorRepository = autorRepository;
+        this.dziedzinaRepository = dziedzinaRepository;
+        this.poddziedzinaRepository = poddziedzinaRepository;
+        this.daneKsiazkiRepository = daneKsiazkiRepository;
         this.contactRepository = contactRepository;
         this.companyRepository = companyRepository;
         this.statusRepository = statusRepository;
@@ -44,6 +49,22 @@ public class CrmService {
         this.passwordEncoder = passwordEncoder;
         this.uzytkownicyRepository = uzytkownicyRepository;
     }
+
+    public List<Ksiazka> findAllKsiazki(String stringFilter) {
+        if (stringFilter == null || stringFilter.isEmpty()) {
+            return ksiazkaRepository.findAll();
+        } else {
+            // Tu później dodamy filtrowanie po tytule
+            return ksiazkaRepository.findAll();
+        }
+    }
+
+    public List<Autor> findAllAutorzy() { return autorRepository.findAll(); }
+    public List<Dziedzina> findAllDziedziny() { return dziedzinaRepository.findAll(); }
+    public List<Poddziedzina> findAllPoddziedziny() { return poddziedzinaRepository.findAll(); }
+    public List<DaneKsiazki> findAllDaneKsiazki() { return daneKsiazkiRepository.findAll(); }
+
+
 
     public List<Contact> findAllContacts(String stringFilter) {
         if (stringFilter == null || stringFilter.isEmpty()) {
@@ -118,6 +139,18 @@ public class CrmService {
         } else {
             return uzytkownicyRepository.search(filterText);
         }
+    }
+
+    public void saveKsiazka(Ksiazka ksiazka) {
+        if (ksiazka == null) return;
+
+        // 1. Najpierw zapisujemy opis (ISBN), jeśli to nowa pozycja w katalogu
+        if (ksiazka.getDaneKsiazki() != null) {
+            daneKsiazkiRepository.save(ksiazka.getDaneKsiazki());
+        }
+
+        // 2. Potem zapisujemy konkretny egzemplarz (Ksiazka)
+        ksiazkaRepository.save(ksiazka);
     }
 
     public void saveUzytkownik(Uzytkownicy uzytkownik) {

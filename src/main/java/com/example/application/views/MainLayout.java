@@ -1,6 +1,7 @@
 package com.example.application.views;
 
 import com.example.application.security.SecurityService;
+import com.example.application.views.ksiazki.KsiazkiView;
 import com.example.application.views.mojekonto.MojeKontoView;
 import com.example.application.views.pracownicy.PracownicyView;
 import com.example.application.views.uzytkownicy.UzytkownicyView;
@@ -87,8 +88,11 @@ public class MainLayout extends AppLayout {
         // więc wpisujemy samo "ADMIN"
         if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK")) {
             menu.add(new RouterLink("Lista pracowników", PracownicyView.class));
+        }
+        if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK") || authContext.hasRole("BIBLIOTEKARZ")) {
             menu.add(new RouterLink("Lista użytkowników", UzytkownicyView.class));
             menu.add(new RouterLink("Konta do aktywacji", OczekujaceKontaView.class));
+            menu.add(new RouterLink("Lista książek", KsiazkiView.class));
         }
 
         addToDrawer(menu);
