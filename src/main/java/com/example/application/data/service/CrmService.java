@@ -2,9 +2,10 @@ package com.example.application.data.service;
 
 import com.example.application.data.entity.*;
 import com.example.application.data.repository.*;
-import jakarta.transaction.Transactional;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
@@ -70,8 +71,28 @@ public class CrmService {
         poddziedzinaRepository.save(poddziedzina);
     }
 
+    @Transactional
     public void deletePoddziedzina(Poddziedzina poddziedzina) {
-        poddziedzinaRepository.delete(poddziedzina);
+        if (poddziedzina == null) return;
+
+        // 1. Pobieramy świeżą wersję rodzica (Dziedziny) z bazy danych
+        // Używamy findById, żeby mieć pewność, że operujemy na zarządzanej encji
+        Dziedzina parent = dziedzinaRepository.findById(poddziedzina.getDziedzina().getId()).orElse(null);
+
+        if (parent != null) {
+            // 2. Usuwamy poddziedzinę z listy rodzica, sprawdzając po ID
+            // (to najbezpieczniejszy sposób, który działa nawet bez metod equals/hashCode)
+            parent.getPoddziedziny().removeIf(p -> p.getId().equals(poddziedzina.getId()));
+
+            // 3. Zapisujemy rodzica.
+            // Mechanizm 'orphanRemoval=true' w encji Dziedzina automatycznie usunie
+            // odłączoną poddziedzinę z bazy danych (wykona SQL DELETE).
+            dziedzinaRepository.save(parent);
+        }
+    }
+
+    public void deleteDziedzina(Dziedzina dziedzina) {
+        dziedzinaRepository.delete(dziedzina);
     }
 
     public void saveDziedzina(Dziedzina dziedzina) {

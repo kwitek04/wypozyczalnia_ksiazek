@@ -64,6 +64,33 @@ public class DziedzinaView extends VerticalLayout {
                 grid.asSingleSelect().clear();
             }
         });
+
+        grid.addComponentColumn(dziedzina -> {
+            Button deleteBtn = new Button(com.vaadin.flow.component.icon.VaadinIcon.TRASH.create());
+            deleteBtn.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR,
+                    com.vaadin.flow.component.button.ButtonVariant.LUMO_TERTIARY);
+
+            deleteBtn.addClickListener(e -> {
+                com.vaadin.flow.component.confirmdialog.ConfirmDialog dialog = new com.vaadin.flow.component.confirmdialog.ConfirmDialog();
+                dialog.setHeader("Usunąć dziedzinę?");
+                dialog.setText("Czy na pewno chcesz usunąć dziedzinę '" + dziedzina.getNazwa() + "'? " +
+                        "Spowoduje to również usunięcie wszystkich jej poddziedzin.");
+
+                dialog.setCancelable(true);
+                dialog.setCancelText("Anuluj");
+
+                dialog.setConfirmText("Usuń");
+                dialog.setConfirmButtonTheme("error primary");
+
+                dialog.addConfirmListener(event -> {
+                    service.deleteDziedzina(dziedzina);
+                    updateList();
+                });
+
+                dialog.open();
+            });
+            return deleteBtn;
+        }).setHeader("").setFlexGrow(0).setWidth("80px");
     }
 
     private void openPoddziedzinaDialog(Dziedzina dziedzina) {
