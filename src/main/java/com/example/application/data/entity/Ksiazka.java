@@ -20,6 +20,10 @@ public class Ksiazka {
     @JoinColumn(name = "isbn_id") // Klucz obcy łączący fizyczny egzemplarz z opisem (ISBN)
     private DaneKsiazki daneKsiazki;
 
+    @ManyToOne
+    @JoinColumn(name = "poddziedzina_id")
+    private Poddziedzina poddziedzina;
+
     public Ksiazka() {}
 
     public Ksiazka(String stanFizyczny, StatusKsiazki status, DaneKsiazki daneKsiazki) {
@@ -28,7 +32,6 @@ public class Ksiazka {
         this.daneKsiazki = daneKsiazki;
     }
 
-    // Gettery i Settery
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -40,4 +43,7 @@ public class Ksiazka {
 
     public DaneKsiazki getDaneKsiazki() { return daneKsiazki; }
     public void setDaneKsiazki(DaneKsiazki daneKsiazki) { this.daneKsiazki = daneKsiazki; }
+
+    public Poddziedzina getPoddziedzina() { return poddziedzina; }
+    public void setPoddziedzina(Poddziedzina poddziedzina) { this.poddziedzina = poddziedzina; }
 }
