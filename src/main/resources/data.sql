@@ -4,6 +4,7 @@ INSERT INTO "STATUS" (ID, VERSION, NAME) VALUES
 (3, 1, 'Contacted'),
 (4, 1, 'Customer'),
 (5, 1, 'Closed (lost)');
+
 INSERT INTO "COMPANY" (ID, VERSION, NAME) VALUES
 (6, 1, 'Phillips Van Heusen Corp.'),
 (7, 1, 'Avaya Inc.'),
@@ -62,3 +63,15 @@ INSERT INTO "CONTACT" (ID, VERSION, EMAIL,FIRST_NAME,LAST_NAME,COMPANY_ID,STATUS
 (58, 1, 'bryan.shaw@ha.ee', 'Bryan', 'Shaw', 9, 1),
 (59, 1, 'essie.adams@iliat.cw', 'Essie', 'Adams', 8, 5),
 (60, 1, 'gary.osborne@do.ga', 'Gary', 'Osborne', 7, 5);
+
+INSERT INTO "ROLA" (ID, VERSION, NAME) VALUES
+(100, 1, 'Kierownik'),
+(101, 1, 'Bibliotekarz'),
+(102, 1, 'Magazynier');
+
+INSERT INTO "PRACOWNICY" (ID, VERSION, EMAIL, IMIE, NAZWISKO, NR_TELEFONU, ROLA_ID) VALUES
+(200, 1, 'm.kowalski@biblioteka.pl', 'Marek', 'Kowalski', '500-100-200', 100),
+(201, 1, 'a.nowak@biblioteka.pl', 'Anna', 'Nowak', '600-200-300', 101),
+(202, 1, 'p.wisniewski@magazyn.pl', 'Piotr', 'Wiśniewski', '700-300-400', 102),
+(203, 1, 'k.wojcik@biblioteka.pl', 'Katarzyna', 'Wójcik', '800-400-500', 101),
+(204, 1, 't.lewandowski@biuro.pl', 'Tomasz', 'Lewandowski', '501-502-503', 102);
