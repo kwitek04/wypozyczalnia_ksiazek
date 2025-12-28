@@ -1,7 +1,9 @@
 package com.example.application.views.ksiazki;
 
 import com.example.application.data.entity.Autor;
+import com.example.application.data.entity.DaneKsiazki;
 import com.example.application.data.entity.Ksiazka;
+import com.example.application.data.entity.StatusKsiazki;
 import com.example.application.data.service.CrmService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
@@ -24,15 +26,37 @@ public class KsiazkiView extends VerticalLayout {
     private final CrmService service;
     Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
     TextField filterText = new TextField();
+    KsiazkiForm form;
 
     public KsiazkiView(CrmService service) {
         this.service = service;
         addClassName("ksiazka-view");
         setSizeFull();
         configureGrid();
+        configureForm();
 
-        add(getToolbar(), grid);
+        add(getToolbar(), getContent());
         updateList();
+        closeEditor();
+    }
+
+    private Component getContent() {
+        HorizontalLayout content = new HorizontalLayout(grid, form);
+        content.setFlexGrow(2, grid); // Grid zajmuje więcej miejsca
+        content.setFlexGrow(1, form);
+        content.addClassName("content");
+        content.setSizeFull();
+        return content;
+    }
+
+    private void configureForm() {
+        form = new KsiazkiForm(service.findAllDziedziny());
+        form.setWidth("25em");
+
+        // Obsługa zdarzeń z formularza
+        form.addListener(KsiazkiForm.SaveEvent.class, this::saveKsiazka);
+        form.addListener(KsiazkiForm.DeleteEvent.class, this::deleteKsiazka);
+        form.addListener(KsiazkiForm.CloseEvent.class, e -> closeEditor());
     }
 
     private void configureGrid() {
@@ -61,8 +85,10 @@ public class KsiazkiView extends VerticalLayout {
         // Kolumny bezpośrednio z encji Ksiazka
         grid.addColumn(ksiazka -> ksiazka.getStatus().getName()).setHeader("Status").setSortable(true);
         grid.addColumn(Ksiazka::getStanFizyczny).setHeader("Stan fizyczny");
-        
+
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
+
+        grid.asSingleSelect().addValueChangeListener(event -> editKsiazka(event.getValue()));
     }
 
     private Component getToolbar() {
@@ -72,11 +98,47 @@ public class KsiazkiView extends VerticalLayout {
         filterText.addValueChangeListener(e -> updateList());
 
         Button addKsiazkaButton = new Button("Dodaj książkę");
-        // addKsiazkaButton.addClickListener(click -> addKsiazka()); // To zrobimy zaraz
+        addKsiazkaButton.addClickListener(click -> addKsiazka());
 
         var toolbar = new HorizontalLayout(filterText, addKsiazkaButton);
         toolbar.addClassName("toolbar");
         return toolbar;
+    }
+
+    private void saveKsiazka(KsiazkiForm.SaveEvent event) {
+        service.saveKsiazka(event.getKsiazka());
+        updateList();
+        closeEditor();
+    }
+
+    private void deleteKsiazka(KsiazkiForm.DeleteEvent event) {
+        service.deleteKsiazka(event.getKsiazka());
+        updateList();
+        closeEditor();
+    }
+
+    public void editKsiazka(Ksiazka ksiazka) {
+        if (ksiazka == null) {
+            closeEditor();
+        } else {
+            form.setKsiazka(ksiazka);
+            form.setVisible(true);
+            addClassName("editing");
+        }
+    }
+
+    private void addKsiazka() {
+        grid.asSingleSelect().clear();
+        Ksiazka nowaKsiazka = new Ksiazka();
+        nowaKsiazka.setDaneKsiazki(new DaneKsiazki()); // Ważne: tworzymy też obiekt opisu
+        nowaKsiazka.setStatus(StatusKsiazki.DOSTEPNA); // Domyślny status
+        editKsiazka(nowaKsiazka);
+    }
+
+    private void closeEditor() {
+        form.setKsiazka(null);
+        form.setVisible(false);
+        removeClassName("editing");
     }
 
     private void updateList() {

@@ -2,6 +2,7 @@ package com.example.application.data.service;
 
 import com.example.application.data.entity.*;
 import com.example.application.data.repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -9,10 +10,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@Transactional
 public class CrmService {
 
     private final ContactRepository contactRepository;
-    private final CompanyRepository companyRepository;
     private final StatusRepository statusRepository;
     private final RolaRepository rolaRepository;
     private final PracownicyRepository pracownicyRepository;
@@ -25,7 +26,6 @@ public class CrmService {
     private final DaneKsiazkiRepository daneKsiazkiRepository;
 
     public CrmService(ContactRepository contactRepository,
-                      CompanyRepository companyRepository,
                       StatusRepository statusRepository,
                       RolaRepository rolaRepository,
                       PracownicyRepository pracownicyRepository,
@@ -42,7 +42,6 @@ public class CrmService {
         this.poddziedzinaRepository = poddziedzinaRepository;
         this.daneKsiazkiRepository = daneKsiazkiRepository;
         this.contactRepository = contactRepository;
-        this.companyRepository = companyRepository;
         this.statusRepository = statusRepository;
         this.rolaRepository = rolaRepository;
         this.pracownicyRepository = pracownicyRepository;
@@ -63,7 +62,21 @@ public class CrmService {
     public List<Dziedzina> findAllDziedziny() { return dziedzinaRepository.findAll(); }
     public List<Poddziedzina> findAllPoddziedziny() { return poddziedzinaRepository.findAll(); }
     public List<DaneKsiazki> findAllDaneKsiazki() { return daneKsiazkiRepository.findAll(); }
+    public List<Poddziedzina> findPoddziedzinyByDziedzina(Dziedzina dziedzina) {
+        return poddziedzinaRepository.findAllByDziedzina(dziedzina);
+    }
 
+    public void savePoddziedzina(Poddziedzina poddziedzina) {
+        poddziedzinaRepository.save(poddziedzina);
+    }
+
+    public void deletePoddziedzina(Poddziedzina poddziedzina) {
+        poddziedzinaRepository.delete(poddziedzina);
+    }
+
+    public void saveDziedzina(Dziedzina dziedzina) {
+        dziedzinaRepository.save(dziedzina);
+    }
 
 
     public List<Contact> findAllContacts(String stringFilter) {
@@ -151,6 +164,12 @@ public class CrmService {
 
         // 2. Potem zapisujemy konkretny egzemplarz (Ksiazka)
         ksiazkaRepository.save(ksiazka);
+    }
+
+    public void deleteKsiazka(Ksiazka ksiazka) {
+        if (ksiazka != null && ksiazka.getId() != null) {
+            ksiazkaRepository.delete(ksiazka);
+        }
     }
 
     public void saveUzytkownik(Uzytkownicy uzytkownik) {

@@ -3,6 +3,8 @@ package com.example.application.data.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -17,8 +19,8 @@ public class Dziedzina {
     private String nazwa;
 
     // Mapowanie relacji - jedna dziedzina ma wiele poddziedzin
-    @OneToMany(mappedBy = "dziedzina", cascade = CascadeType.ALL)
-    private List<Poddziedzina> poddziedziny;
+    @OneToMany(mappedBy = "dziedzina", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Poddziedzina> poddziedziny = new ArrayList<>();
 
     public Dziedzina() {}
 
