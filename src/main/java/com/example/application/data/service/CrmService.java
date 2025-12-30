@@ -59,6 +59,14 @@ public class CrmService {
         }
     }
 
+    public List<Ksiazka> findKsiazkiBySearch(String searchTerm) {
+        if (searchTerm == null || searchTerm.isEmpty()) {
+            return ksiazkaRepository.findAll();
+        } else {
+            return ksiazkaRepository.search(searchTerm);
+        }
+    }
+
     public List<Autor> findAllAutorzy() { return autorRepository.findAll(); }
     public List<Dziedzina> findAllDziedziny() { return dziedzinaRepository.findAll(); }
     public List<Poddziedzina> findAllPoddziedziny() { return poddziedzinaRepository.findAll(); }
@@ -106,10 +114,6 @@ public class CrmService {
         } else {
             return contactRepository.search(stringFilter);
         }
-    }
-
-    public long countContacts() {
-        return contactRepository.count();
     }
 
     public void deleteContact(Contact contact) {

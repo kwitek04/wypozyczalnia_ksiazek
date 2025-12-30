@@ -3,6 +3,8 @@ package com.example.application.data.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Column;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,9 +33,11 @@ public class DaneKsiazki {
             joinColumns = @JoinColumn(name = "ksiazka_id"),      // klucz do DaneKsiazki (ISBN)
             inverseJoinColumns = @JoinColumn(name = "autor_id") // klucz do Autor (id)
     )
-    private Set<Autor> autorzy = new HashSet<>();
 
-    // I oczywiście getter/setter:
+
+
+
+    private Set<Autor> autorzy = new HashSet<>();
     public Set<Autor> getAutorzy() { return autorzy; }
     public void setAutorzy(Set<Autor> autorzy) { this.autorzy = autorzy; }
 
