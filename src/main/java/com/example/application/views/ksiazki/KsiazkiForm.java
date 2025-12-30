@@ -24,6 +24,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import java.io.ByteArrayInputStream;
+import com.vaadin.flow.component.textfield.TextArea;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -40,6 +41,7 @@ public class KsiazkiForm extends FormLayout {
     TextField tytul = new TextField("Tytuł");
     TextField wydawnictwo = new TextField("Wydawnictwo");
     IntegerField rokWydania = new IntegerField("Rok wydania");
+    TextArea opis = new TextArea("Opis książki");
     MultiSelectComboBox<Autor> autorzy = new MultiSelectComboBox<>("Autorzy");
     MultiSelectComboBox<Tlumacz> tlumacze = new MultiSelectComboBox<>("Tłumacze");
 
@@ -80,6 +82,11 @@ public class KsiazkiForm extends FormLayout {
         poddziedzina.setRequired(false);
         autorzy.setRequired(true);
 
+        opis.setPlaceholder("Podaj opis książki...");
+        opis.setClearButtonVisible(true);
+        opis.setHeight("150px");
+        setColspan(opis, 2);
+
         upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/gif");
         upload.setMaxFileSize(5 * 1024 * 1024); // Max 5MB
         upload.setDropLabel(new com.vaadin.flow.component.html.Span("Upuść okładkę tutaj (max 5MB)"));
@@ -107,6 +114,7 @@ public class KsiazkiForm extends FormLayout {
         VerticalLayout uploadLayout = new VerticalLayout(upload, previewImage);
         uploadLayout.setPadding(false);
         uploadLayout.setSpacing(true);
+        setColspan(uploadLayout, 2);
 
         autorzy.setItems(dostepniAutorzy);
         autorzy.setItemLabelGenerator(autor -> autor.getImie() + " " + autor.getNazwisko());
@@ -226,7 +234,7 @@ public class KsiazkiForm extends FormLayout {
         binder.bindInstanceFields(this);
         daneBinder.bindInstanceFields(this);
 
-        add(uploadLayout, isbn, tytul, autorzy, tlumacze, wydawnictwo, rokWydania,
+        add(uploadLayout, isbn, tytul, autorzy, tlumacze, wydawnictwo, rokWydania, opis,
                 dziedzina, poddziedzina, stanFizyczny, status,
                 createButtonsLayout());
     }

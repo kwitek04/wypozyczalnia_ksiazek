@@ -3,6 +3,7 @@ package com.example.application.views;
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Tlumacz;
 import com.example.application.data.service.CrmService;
+import com.example.application.views.katalog.KsiazkaDetailsDialog;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -79,6 +80,11 @@ public class HomeView extends VerticalLayout {
 
         // Usuwamy nagłówek tabeli
         grid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS, GridVariant.LUMO_NO_BORDER);
+        grid.addItemClickListener(event -> {
+            Ksiazka clickedBook = event.getItem();
+            // Otwieramy dialog ze szczegółami
+            new KsiazkaDetailsDialog(clickedBook).open();
+        });
     }
 
     private HorizontalLayout createBookCard(Ksiazka ksiazka) {
