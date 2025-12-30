@@ -1,6 +1,7 @@
 package com.example.application.views;
 
 import com.example.application.data.entity.Ksiazka;
+import com.example.application.data.entity.Tlumacz;
 import com.example.application.data.service.CrmService;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
@@ -17,8 +18,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @AnonymousAllowed
@@ -87,11 +90,24 @@ public class HomeView extends VerticalLayout {
         card.setAlignItems(Alignment.START);
 
         // 1. ZDJĘCIE
-        Image coverImage = new Image("https://placehold.co/100x150?text=Okladka", "Okładka");
+        Image coverImage;
+        byte[] okladka = ksiazka.getDaneKsiazki().getOkladka();
+
+        if (okladka != null && okladka.length > 0) {
+            // Tworzymy zasób z bajtów pobranych z bazy
+            StreamResource resource = new StreamResource("cover_" + ksiazka.getId(), () -> new java.io.ByteArrayInputStream(okladka));
+            coverImage = new Image(resource, "Okładka książki");
+        } else {
+            // Placeholder, jeśli brak okładki
+            coverImage = new Image("https://placehold.co/100x150?text=Brak+okładki", "Brak okładki");
+        }
+
+        // Style dla zdjęcia (bez zmian)
         coverImage.setWidth("100px");
         coverImage.setHeight("150px");
         coverImage.getStyle().set("border-radius", "5px");
         coverImage.getStyle().set("box-shadow", "0 4px 6px rgba(0,0,0,0.1)");
+        coverImage.getStyle().set("object-fit", "cover"); // Ważne: przycina zdjęcie, żeby nie było rozciągnięte
 
         // 2. DANE KSIĄŻKI (Środek)
         VerticalLayout details = new VerticalLayout();
@@ -130,6 +146,19 @@ public class HomeView extends VerticalLayout {
         isbn.getStyle().set("color", "#95a5a6");
         // ---------------------
 
+        Span tlumaczSpan = new Span();
+        Set<Tlumacz> tlumaczeList = ksiazka.getDaneKsiazki().getTlumacze();
+
+        if (tlumaczeList != null && !tlumaczeList.isEmpty()) {
+            String tlumaczeStr = tlumaczeList.stream()
+                    .map(t -> t.getImie() + " " + t.getNazwisko())
+                    .collect(Collectors.joining(", "));
+
+            tlumaczSpan.setText("Tłumacz: " + tlumaczeStr);
+            tlumaczSpan.getStyle().set("font-size", "0.9em");
+            tlumaczSpan.getStyle().set("color", "#95a5a6"); // Nieco ciemniejszy szary
+        }
+
         // Kategoria
         String kategoriaStr = "-";
         if (ksiazka.getPoddziedzina() != null) {
@@ -141,7 +170,7 @@ public class HomeView extends VerticalLayout {
         kategoria.getStyle().set("margin-top", "10px");
 
         // Dodajemy wszystko do układu (kolejność ma znaczenie)
-        details.add(tytul, autor, wydawnictwoRok, isbn, kategoria);
+        details.add(tytul, autor, wydawnictwoRok, isbn, tlumaczSpan, kategoria);
 
         // 3. STATUS (Prawy dolny róg)
         Div spacer = new Div();

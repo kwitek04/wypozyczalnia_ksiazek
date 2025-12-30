@@ -25,6 +25,7 @@ public class CrmService {
     private final DziedzinaRepository dziedzinaRepository;
     private final PoddziedzinaRepository poddziedzinaRepository;
     private final DaneKsiazkiRepository daneKsiazkiRepository;
+    private final TlumaczRepository tlumaczRepository;
 
     public CrmService(ContactRepository contactRepository,
                       StatusRepository statusRepository,
@@ -36,7 +37,8 @@ public class CrmService {
                       AutorRepository autorRepository,
                       DziedzinaRepository dziedzinaRepository,
                       PoddziedzinaRepository poddziedzinaRepository,
-                      DaneKsiazkiRepository daneKsiazkiRepository) {
+                      DaneKsiazkiRepository daneKsiazkiRepository,
+                      TlumaczRepository tlumaczRepository) {
         this.ksiazkaRepository = ksiazkaRepository;
         this.autorRepository = autorRepository;
         this.dziedzinaRepository = dziedzinaRepository;
@@ -48,6 +50,7 @@ public class CrmService {
         this.pracownicyRepository = pracownicyRepository;
         this.passwordEncoder = passwordEncoder;
         this.uzytkownicyRepository = uzytkownicyRepository;
+        this.tlumaczRepository = tlumaczRepository;
     }
 
     public List<Ksiazka> findAllKsiazki(String stringFilter) {
@@ -224,6 +227,16 @@ public class CrmService {
     public void saveAutor(Autor autor) {
         if (autor != null) {
             autorRepository.save(autor);
+        }
+    }
+
+    public java.util.List<com.example.application.data.entity.Tlumacz> findAllTlumacze() {
+        return tlumaczRepository.findAll();
+    }
+
+    public void saveTlumacz(com.example.application.data.entity.Tlumacz tlumacz) {
+        if (tlumacz != null) {
+            tlumaczRepository.save(tlumacz);
         }
     }
 }

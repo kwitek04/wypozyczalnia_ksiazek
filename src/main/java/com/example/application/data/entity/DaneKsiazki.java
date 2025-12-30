@@ -3,8 +3,6 @@ package com.example.application.data.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Column;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,19 +25,35 @@ public class DaneKsiazki {
 
     private Integer rokWydania;
 
+    // --- LOB (ZDJĘCIE) ---
+    @Lob
+    @Column(length = 10000000)
+    private byte[] okladka;
+
+    // --- RELACJA AUTORZY ---
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "autor_ksiazka",
-            joinColumns = @JoinColumn(name = "ksiazka_id"),      // klucz do DaneKsiazki (ISBN)
-            inverseJoinColumns = @JoinColumn(name = "autor_id") // klucz do Autor (id)
+            // ZMIANA TUTAJ: Wracamy do "ksiazka_id", bo taką kolumnę masz w bazie danych
+            joinColumns = @JoinColumn(name = "ksiazka_id"),
+            inverseJoinColumns = @JoinColumn(name = "autor_id")
     )
-
-
-
-
     private Set<Autor> autorzy = new HashSet<>();
-    public Set<Autor> getAutorzy() { return autorzy; }
-    public void setAutorzy(Set<Autor> autorzy) { this.autorzy = autorzy; }
+
+// W DaneKsiazki.java
+
+    // ... inne pola ...
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "tlumacz_ksiazka",
+            joinColumns = @JoinColumn(name = "ksiazka_isbn"),
+            inverseJoinColumns = @JoinColumn(name = "tlumacz_id")
+    )
+    private Set<Tlumacz> tlumacze = new HashSet<>();
+
+    public Set<Tlumacz> getTlumacze() { return tlumacze; }
+    public void setTlumacze(Set<Tlumacz> tlumacze) { this.tlumacze = tlumacze; }
 
     // Konstruktory
     public DaneKsiazki() {}
@@ -63,4 +77,10 @@ public class DaneKsiazki {
 
     public Integer getRokWydania() { return rokWydania; }
     public void setRokWydania(Integer rokWydania) { this.rokWydania = rokWydania; }
+
+    public byte[] getOkladka() { return okladka; }
+    public void setOkladka(byte[] okladka) { this.okladka = okladka; }
+
+    public Set<Autor> getAutorzy() { return autorzy; }
+    public void setAutorzy(Set<Autor> autorzy) { this.autorzy = autorzy; }
 }
