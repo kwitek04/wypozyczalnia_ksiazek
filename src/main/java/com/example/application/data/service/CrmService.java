@@ -239,4 +239,16 @@ public class CrmService {
             tlumaczRepository.save(tlumacz);
         }
     }
+
+    public List<Ksiazka> findKsiazkiByPoddziedzina(Poddziedzina p) {
+        return ksiazkaRepository.findByPoddziedzina(p);
+    }
+
+    public List<Ksiazka> findKsiazkiByDziedzina(Dziedzina d) {
+        return ksiazkaRepository.findByDziedzina(d);
+    }
+
+    public List<Ksiazka> findKsiazkiByAutor(com.example.application.data.entity.Autor autor) {
+        return ksiazkaRepository.findByAutor(autor);
+    }
 }

@@ -97,6 +97,9 @@ public class MainLayout extends AppLayout {
             menu.add(new RouterLink("Lista książek", KsiazkiView.class));
         }
 
+        // W metodzie createDrawer:
+        menu.add(new RouterLink("Katalog", com.example.application.views.katalog.KatalogView.class));
+
         addToDrawer(menu);
     }
 }

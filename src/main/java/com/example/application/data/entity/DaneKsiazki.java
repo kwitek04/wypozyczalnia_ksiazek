@@ -25,6 +25,9 @@ public class DaneKsiazki {
 
     private Integer rokWydania;
 
+    @Column(length = 2000) // Dłuższy tekst (do 2000 znaków)
+    private String opis;
+
     // --- LOB (ZDJĘCIE) ---
     @Lob
     @Column(length = 10000000)
@@ -64,6 +67,9 @@ public class DaneKsiazki {
         this.wydawnictwo = wydawnictwo;
         this.rokWydania = rokWydania;
     }
+
+    public String getOpis() { return opis; }
+    public void setOpis(String opis) { this.opis = opis; }
 
     // Gettery i Settery
     public String getIsbn() { return isbn; }
