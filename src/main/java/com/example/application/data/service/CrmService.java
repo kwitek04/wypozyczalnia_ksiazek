@@ -299,4 +299,29 @@ public class CrmService {
         if (uzytkownik == null) return java.util.Collections.emptyList();
         return wypozyczenieRepository.findAllByUzytkownikOrderByDataWypozyczeniaDesc(uzytkownik);
     }
+
+    public void zglosZwrot(Wypozyczenie wypozyczenie) {
+        if (wypozyczenie == null || wypozyczenie.getDataOddania() != null) return;
+
+        wypozyczenie.setZwrotZgloszony(true);
+        wypozyczenieRepository.save(wypozyczenie);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void zwrocKsiazke(Wypozyczenie wypozyczenie) {
+        if (wypozyczenie == null || wypozyczenie.getDataOddania() != null) return;
+
+        wypozyczenie.setDataOddania(java.time.LocalDate.now());
+        wypozyczenieRepository.save(wypozyczenie);
+
+        for (WypozyczonaKsiazka wk : wypozyczenie.getWypozyczoneKsiazki()) {
+            Ksiazka k = wk.getKsiazka();
+            k.setStatus(StatusKsiazki.DOSTEPNA);
+            ksiazkaRepository.save(k);
+        }
+    }
+
+    public List<Wypozyczenie> findAllActiveWypozyczenia() {
+        return wypozyczenieRepository.findAllByDataOddaniaIsNullOrderByDataWypozyczeniaDesc();
+    }
 }

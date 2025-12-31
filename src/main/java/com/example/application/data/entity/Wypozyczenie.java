@@ -35,6 +35,8 @@ public class Wypozyczenie {
         this.terminZwrotu = terminZwrotu;
     }
 
+    private boolean zwrotZgloszony = false;
+
     // Gettery i Settery
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -50,4 +52,6 @@ public class Wypozyczenie {
     public void setKara(BigDecimal kara) { this.kara = kara; }
     public List<WypozyczonaKsiazka> getWypozyczoneKsiazki() { return wypozyczoneKsiazki; }
     public void setWypozyczoneKsiazki(List<WypozyczonaKsiazka> wypozyczoneKsiazki) { this.wypozyczoneKsiazki = wypozyczoneKsiazki; }
+    public boolean isZwrotZgloszony() { return zwrotZgloszony; }
+    public void setZwrotZgloszony(boolean zwrotZgloszony) { this.zwrotZgloszony = zwrotZgloszony; }
 }

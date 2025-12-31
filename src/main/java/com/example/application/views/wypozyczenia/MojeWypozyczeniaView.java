@@ -49,17 +49,24 @@ public class MojeWypozyczeniaView extends VerticalLayout {
         grid.setSizeFull();
         grid.removeAllColumns(); // Usuwamy domyślne kolumny
 
-        // 1. Tytuły książek (z listy wypożyczonych pozycji)
         grid.addColumn(wypozyczenie -> {
             return wypozyczenie.getWypozyczoneKsiazki().stream()
                     .map(wk -> wk.getKsiazka().getDaneKsiazki().getTytul())
                     .collect(Collectors.joining(", "));
         }).setHeader("Książka").setAutoWidth(true);
 
-        // 2. Data wypożyczenia
-        grid.addColumn(Wypozyczenie::getDataWypozyczenia).setHeader("Data wypożyczenia").setAutoWidth(true);
+        grid.addColumn(wypozyczenie -> {
+            return wypozyczenie.getWypozyczoneKsiazki().stream()
+                    .map(wk -> wk.getKsiazka().getDaneKsiazki().getIsbn())
+                    .collect(Collectors.joining(", "));
+        }).setHeader("ISBN").setSortable(true).setAutoWidth(true);
 
-        // 3. Termin zwrotu (z logiką kolorów)
+
+        grid.addColumn(Wypozyczenie::getDataWypozyczenia)
+                .setHeader("Data wypożyczenia")
+                .setSortable(true)
+                .setAutoWidth(true);
+
         grid.addComponentColumn(wypozyczenie -> {
             LocalDate termin = wypozyczenie.getTerminZwrotu();
             LocalDate oddano = wypozyczenie.getDataOddania();
@@ -81,15 +88,36 @@ public class MojeWypozyczeniaView extends VerticalLayout {
                 badge.getElement().getThemeList().add("badge success");
             }
             return badge;
-        }).setHeader("Termin zwrotu").setAutoWidth(true);
+        }).setHeader("Termin zwrotu").setSortable(true).setComparator(Wypozyczenie::getTerminZwrotu).setAutoWidth(true);
+
+        grid.addColumn(w -> w.getDataOddania() != null ? w.getDataOddania().toString() : "-")
+                .setHeader("Data oddania")
+                .setSortable(true)
+                .setComparator((w1, w2) -> {
+                    // Obsługa nulli przy sortowaniu
+                    if (w1.getDataOddania() == null && w2.getDataOddania() == null) return 0;
+                    if (w1.getDataOddania() == null) return 1;
+                    if (w2.getDataOddania() == null) return -1;
+                    return w1.getDataOddania().compareTo(w2.getDataOddania());
+                })
+                .setAutoWidth(true);
 
         // 4. Status
         grid.addComponentColumn(wypozyczenie -> {
+            // Najpierw sprawdzamy, czy fizycznie oddano
             if (wypozyczenie.getDataOddania() != null) {
                 Span span = new Span("Zwrócono");
                 span.getElement().getThemeList().add("badge success");
                 return span;
-            } else {
+            }
+            // Jeśli nie oddano, ale użytkownik kliknął "Zgłoś zwrot"
+            else if (wypozyczenie.isZwrotZgloszony()) {
+                Span span = new Span("Zgłoszono zwrot");
+                span.getElement().getThemeList().add("badge warning"); // Żółty kolor
+                return span;
+            }
+            // Standardowy stan
+            else {
                 Span span = new Span("Wypożyczona");
                 span.getElement().getThemeList().add("badge");
                 return span;
@@ -97,6 +125,20 @@ public class MojeWypozyczeniaView extends VerticalLayout {
         }).setHeader("Status").setAutoWidth(true);
 
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
+        grid.addItemClickListener(event -> {
+            Wypozyczenie wyp = event.getItem();
+            WypozyczenieDetailsDialog dialog = new WypozyczenieDetailsDialog(wyp, service);
+
+            // Gdy zamkniesz dialog (np. po zgłoszeniu zwrotu), lista się odświeży
+            dialog.addOpenedChangeListener(e -> {
+                if (!e.isOpened()) {
+                    updateList();
+                }
+            });
+
+            dialog.open();
+        });
     }
 
     private void updateList() {

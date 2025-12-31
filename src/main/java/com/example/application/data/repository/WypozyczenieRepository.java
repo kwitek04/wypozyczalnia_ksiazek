@@ -9,4 +9,6 @@ public interface WypozyczenieRepository extends JpaRepository<Wypozyczenie, Long
     List<Wypozyczenie> findAllByUzytkownikOrderByDataWypozyczeniaDesc(Uzytkownicy uzytkownik);
 
     long countByUzytkownikAndDataOddaniaIsNull(Uzytkownicy uzytkownik);
+
+    List<Wypozyczenie> findAllByDataOddaniaIsNullOrderByDataWypozyczeniaDesc();
 }

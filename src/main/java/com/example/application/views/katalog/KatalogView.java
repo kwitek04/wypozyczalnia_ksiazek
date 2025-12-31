@@ -237,7 +237,7 @@ public class KatalogView extends VerticalLayout {
             StreamResource resource = new StreamResource("cover_" + ksiazka.getId(), () -> new ByteArrayInputStream(okladka));
             coverImage = new Image(resource, "Okładka");
         } else {
-            coverImage = new Image("https://placehold.co/100x150?text=Brak", "Brak");
+            coverImage = new Image("https://placehold.co/100x150?text=Brak+okładki", "Brak okładki");
         }
         coverImage.setWidth("100px");
         coverImage.setHeight("150px");

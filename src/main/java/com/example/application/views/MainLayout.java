@@ -8,6 +8,7 @@ import com.example.application.views.pracownicy.PracownicyView;
 import com.example.application.views.uzytkownicy.UzytkownicyView;
 import com.example.application.views.oczekujacekonta.OczekujaceKontaView;
 import com.example.application.views.wypozyczenia.MojeWypozyczeniaView;
+import com.example.application.views.wypozyczenia.ZarzadzanieWypozyczeniamiView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -82,11 +83,10 @@ public class MainLayout extends AppLayout {
         RouterLink homeLink = new RouterLink("Strona główna", HomeView.class);
         homeLink.setHighlightCondition(HighlightConditions.sameLocation());
         menu.add(homeLink);
-        RouterLink myAccountLink = new RouterLink("Moje Konto", MojeKontoView.class);
-        menu.add(myAccountLink);
 
         if (authContext.isAuthenticated()) {
             menu.add(new RouterLink("Moje wypożyczenia", MojeWypozyczeniaView.class));
+            menu.add(new RouterLink("Moje Konto", MojeKontoView.class));
         }
 
         if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK")) {
@@ -97,6 +97,7 @@ public class MainLayout extends AppLayout {
             menu.add(new RouterLink("Lista użytkowników", UzytkownicyView.class));
             menu.add(new RouterLink("Konta do aktywacji", OczekujaceKontaView.class));
             menu.add(new RouterLink("Lista książek", KsiazkiView.class));
+            menu.add(new RouterLink("Zarządzanie wypożyczeniami", ZarzadzanieWypozyczeniamiView.class));
         }
 
         menu.add(new RouterLink("Katalog", com.example.application.views.katalog.KatalogView.class));
