@@ -26,6 +26,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.security.SecurityService;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.ByteArrayInputStream;
 import java.util.Comparator;
@@ -38,6 +41,8 @@ import java.util.stream.Collectors;
 public class KatalogView extends VerticalLayout {
 
     private final CrmService service;
+    private final SecurityService securityService;
+    private Uzytkownicy currentUser;
 
     // Komponenty interfejsu
     private final TreeGrid<Object> categoryTree = new TreeGrid<>();
@@ -45,8 +50,10 @@ public class KatalogView extends VerticalLayout {
     private final Grid<Ksiazka> bookGrid = new Grid<>(Ksiazka.class);
     private final TextField authorFilter = new TextField();
 
-    public KatalogView(CrmService service) {
+    public KatalogView(CrmService service, SecurityService securityService) {
         this.service = service;
+        this.securityService = securityService;
+        loadCurrentUser();
         setSizeFull();
         setPadding(false);
         setSpacing(false);
@@ -111,6 +118,16 @@ public class KatalogView extends VerticalLayout {
 
         // Załaduj dane na start
         updateBookList(null);
+    }
+
+    private void loadCurrentUser() {
+        UserDetails userDetails = securityService.getAuthenticatedUser();
+        if (userDetails != null) {
+            // Szukamy uzytkownika w bazie po emailu
+            this.currentUser = service.findUzytkownikByEmail(userDetails.getUsername());
+        } else {
+            this.currentUser = null;
+        }
     }
 
     // --- LEWY PANEL: KATEGORIE ---
@@ -189,7 +206,7 @@ public class KatalogView extends VerticalLayout {
         bookGrid.addItemClickListener(event -> {
             Ksiazka clickedBook = event.getItem();
             // Otwieramy dialog ze szczegółami
-            new KsiazkaDetailsDialog(clickedBook).open();
+            new KsiazkaDetailsDialog(clickedBook, service, currentUser).open();
         });
     }
 

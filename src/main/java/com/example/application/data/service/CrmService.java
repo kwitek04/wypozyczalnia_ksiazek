@@ -26,6 +26,8 @@ public class CrmService {
     private final PoddziedzinaRepository poddziedzinaRepository;
     private final DaneKsiazkiRepository daneKsiazkiRepository;
     private final TlumaczRepository tlumaczRepository;
+    private final WypozyczenieRepository wypozyczenieRepository;
+    private final WypozyczonaKsiazkaRepository wypozyczonaKsiazkaRepository;
 
     public CrmService(ContactRepository contactRepository,
                       StatusRepository statusRepository,
@@ -38,7 +40,9 @@ public class CrmService {
                       DziedzinaRepository dziedzinaRepository,
                       PoddziedzinaRepository poddziedzinaRepository,
                       DaneKsiazkiRepository daneKsiazkiRepository,
-                      TlumaczRepository tlumaczRepository) {
+                      TlumaczRepository tlumaczRepository,
+                      WypozyczenieRepository wypozyczenieRepository,
+                      WypozyczonaKsiazkaRepository wypozyczonaKsiazkaRepository) {
         this.ksiazkaRepository = ksiazkaRepository;
         this.autorRepository = autorRepository;
         this.dziedzinaRepository = dziedzinaRepository;
@@ -51,6 +55,8 @@ public class CrmService {
         this.passwordEncoder = passwordEncoder;
         this.uzytkownicyRepository = uzytkownicyRepository;
         this.tlumaczRepository = tlumaczRepository;
+        this.wypozyczenieRepository = wypozyczenieRepository;
+        this.wypozyczonaKsiazkaRepository = wypozyczonaKsiazkaRepository;
     }
 
     public List<Ksiazka> findAllKsiazki(String stringFilter) {
@@ -250,5 +256,47 @@ public class CrmService {
 
     public List<Ksiazka> findKsiazkiByAutor(com.example.application.data.entity.Autor autor) {
         return ksiazkaRepository.findByAutor(autor);
+    }
+
+    public void wypozyczKsiazke(Ksiazka ksiazka, Uzytkownicy uzytkownik) {
+        if (ksiazka == null || uzytkownik == null) {
+            throw new IllegalArgumentException("Nieprawidłowe dane wypożyczenia.");
+        }
+
+        // 1. Sprawdź dostępność
+        if (!StatusKsiazki.DOSTEPNA.equals(ksiazka.getStatus())) {
+            throw new IllegalStateException("Ta książka nie jest już dostępna.");
+        }
+
+        // 2. NOWE ZABEZPIECZENIE: Sprawdź limit
+        long liczbaWypozyczonych = wypozyczenieRepository.countByUzytkownikAndDataOddaniaIsNull(uzytkownik);
+        if (liczbaWypozyczonych >= 5) {
+            throw new IllegalStateException("Osiągnięto limit 5 wypożyczonych książek! Oddaj inną pozycję, aby wypożyczyć nową.");
+        }
+        // 2. Stwórz transakcję wypożyczenia
+        Wypozyczenie wypozyczenie = new Wypozyczenie();
+        wypozyczenie.setUzytkownik(uzytkownik);
+        wypozyczenie.setDataWypozyczenia(java.time.LocalDate.now());
+        wypozyczenie.setTerminZwrotu(java.time.LocalDate.now().plusDays(30)); // np. 30 dni na zwrot
+
+        wypozyczenieRepository.save(wypozyczenie);
+
+        // 3. Przypisz książkę do wypożyczenia
+        WypozyczonaKsiazka pozycja = new WypozyczonaKsiazka(wypozyczenie, ksiazka);
+        wypozyczonaKsiazkaRepository.save(pozycja);
+
+        // 4. Zmień status książki
+        ksiazka.setStatus(StatusKsiazki.WYPOZYCZONA);
+        ksiazkaRepository.save(ksiazka);
+    }
+
+    // Metoda pomocnicza do pobrania użytkownika po emailu (dla Security)
+    public Uzytkownicy findUzytkownikByEmail(String email) {
+        return uzytkownicyRepository.findByEmail(email);
+    }
+
+    public List<Wypozyczenie> findWypozyczeniaByUser(Uzytkownicy uzytkownik) {
+        if (uzytkownik == null) return java.util.Collections.emptyList();
+        return wypozyczenieRepository.findAllByUzytkownikOrderByDataWypozyczeniaDesc(uzytkownik);
     }
 }

@@ -1,6 +1,9 @@
 package com.example.application.views.katalog;
 
 import com.example.application.data.entity.Ksiazka;
+import com.example.application.data.entity.StatusKsiazki;
+import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.service.CrmService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -10,19 +13,29 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 
 import java.io.ByteArrayInputStream;
 import java.util.stream.Collectors;
 
 public class KsiazkaDetailsDialog extends Dialog {
 
-    public KsiazkaDetailsDialog(Ksiazka ksiazka) {
-        setHeaderTitle("Szczegóły książki");
+    private final CrmService service;
+    private final Uzytkownicy currentUser;
+    private final Ksiazka ksiazka;
 
+    public KsiazkaDetailsDialog(Ksiazka ksiazka, CrmService service, Uzytkownicy currentUser) {
+        this.ksiazka = ksiazka;
+        this.service = service;
+        this.currentUser = currentUser;
+
+        setHeaderTitle("Szczegóły książki");
         Button closeButton = new Button(VaadinIcon.CLOSE_SMALL.create(), e -> close());
         closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         getHeader().add(closeButton);
@@ -39,8 +52,11 @@ public class KsiazkaDetailsDialog extends Dialog {
         coverImage.setWidth("100%");
         coverImage.getStyle().set("border-radius", "8px").set("box-shadow", "0 4px 12px rgba(0,0,0,0.15)");
 
-        Span statusBadge = new Span(ksiazka.getStatus().getName());
-        statusBadge.getElement().getThemeList().add("badge " + (ksiazka.getStatus().getName().equals("Dostępna") ? "success" : "error"));
+        boolean czyDostepna = StatusKsiazki.DOSTEPNA.equals(ksiazka.getStatus());
+        String statusText = czyDostepna ? "Dostępna" : "Niedostępna";
+
+        Span statusBadge = new Span(statusText);
+        statusBadge.getElement().getThemeList().add("badge " + (czyDostepna ? "success" : "error"));
         statusBadge.getStyle().set("margin-top", "15px").set("font-size", "1.1em").set("padding", "0.5em 1em");
 
         leftColumn.add(coverImage, statusBadge);
@@ -73,8 +89,56 @@ public class KsiazkaDetailsDialog extends Dialog {
         // --- PRZYCISKI (POPRAWIONE SKALOWANIE) ---
         Button btnWypozycz = new Button("Wypożycz", VaadinIcon.BOOK.create());
         btnWypozycz.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_LARGE);
-        btnWypozycz.setEnabled(ksiazka.getStatus().getName().equals("Dostępna"));
-        // Usunięto setWidthFull() z samego przycisku, żeby nie wymuszał 100%
+        boolean isAvailable = ksiazka.getStatus().getName().equalsIgnoreCase("Dostępna");
+        boolean isLoggedIn = (currentUser != null);
+
+        if (!isLoggedIn) {
+            btnWypozycz.setEnabled(false);
+            btnWypozycz.setTooltipText("Zaloguj się, aby wypożyczyć");
+        } else if (!isAvailable) {
+            btnWypozycz.setEnabled(false);
+            btnWypozycz.setTooltipText("Książka jest obecnie niedostępna");
+        } else {
+            btnWypozycz.setEnabled(true);
+        }
+
+        btnWypozycz.addClickListener(e -> {
+            ConfirmDialog dialog = new ConfirmDialog();
+            dialog.setHeader("Potwierdzenie wypożyczenia");
+            dialog.setText("Czy na pewno chcesz wypożyczyć książkę \"" + ksiazka.getDaneKsiazki().getTytul() + "\"?");
+
+            dialog.setConfirmText("Wypożycz");
+            dialog.setConfirmButtonTheme("primary");
+
+            dialog.setCancelable(true);
+            dialog.setCancelText("Anuluj");
+
+            dialog.addConfirmListener(event -> {
+                try {
+                    // Próbujemy wypożyczyć (teraz metoda jest void)
+                    service.wypozyczKsiazke(ksiazka, currentUser);
+
+                    // Sukces
+                    Notification.show("Pomyślnie wypożyczono książkę!", 3000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                    this.close();
+
+                } catch (IllegalStateException | IllegalArgumentException ex) {
+                    // Błąd logiczny (np. limit książek lub niedostępna)
+                    // Wyświetlamy dokładnie ten tekst, który ustawiliśmy w Serwisie
+                    Notification.show(ex.getMessage(), 5000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+
+                } catch (Exception ex) {
+                    // Inny nieoczekiwany błąd
+                    ex.printStackTrace();
+                    Notification.show("Wystąpił nieoczekiwany błąd serwera.", 3000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                }
+            });
+
+            dialog.open();
+        });
 
         Button btnRezerwuj = new Button("Zarezerwuj", VaadinIcon.CALENDAR_CLOCK.create());
         btnRezerwuj.addThemeVariants(ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_LARGE);

@@ -2,7 +2,9 @@ package com.example.application.views;
 
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Tlumacz;
+import com.example.application.data.entity.Uzytkownicy;
 import com.example.application.data.service.CrmService;
+import com.example.application.security.SecurityService;
 import com.example.application.views.katalog.KsiazkaDetailsDialog;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
@@ -21,6 +23,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,11 +34,19 @@ import java.util.stream.Collectors;
 public class HomeView extends VerticalLayout {
 
     private final CrmService service;
+    private final SecurityService securityService;
     private final Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
     private final TextField searchField = new TextField();
+    private Uzytkownicy currentUser;
 
-    public HomeView(CrmService service) {
+    public HomeView(CrmService service, SecurityService securityService) {
         this.service = service;
+        this.securityService = securityService;
+
+        UserDetails userDetails = securityService.getAuthenticatedUser();
+        if (userDetails != null) {
+            this.currentUser = service.findUzytkownikByEmail(userDetails.getUsername());
+        }
 
         setSizeFull();
         setAlignItems(Alignment.CENTER);
@@ -83,7 +94,7 @@ public class HomeView extends VerticalLayout {
         grid.addItemClickListener(event -> {
             Ksiazka clickedBook = event.getItem();
             // Otwieramy dialog ze szczegółami
-            new KsiazkaDetailsDialog(clickedBook).open();
+            new KsiazkaDetailsDialog(clickedBook, service, currentUser).open();
         });
     }
 

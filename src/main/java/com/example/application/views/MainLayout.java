@@ -7,6 +7,7 @@ import com.example.application.views.mojekonto.MojeKontoView;
 import com.example.application.views.pracownicy.PracownicyView;
 import com.example.application.views.uzytkownicy.UzytkownicyView;
 import com.example.application.views.oczekujacekonta.OczekujaceKontaView;
+import com.example.application.views.wypozyczenia.MojeWypozyczeniaView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -84,9 +85,10 @@ public class MainLayout extends AppLayout {
         RouterLink myAccountLink = new RouterLink("Moje Konto", MojeKontoView.class);
         menu.add(myAccountLink);
 
-        // Sprawdzamy rolę w sposób bezpieczny dla Vaadina
-        // Ważne: hasRole automatycznie szuka przedrostka ROLE_,
-        // więc wpisujemy samo "ADMIN"
+        if (authContext.isAuthenticated()) {
+            menu.add(new RouterLink("Moje wypożyczenia", MojeWypozyczeniaView.class));
+        }
+
         if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK")) {
             menu.add(new RouterLink("Lista pracowników", PracownicyView.class));
             menu.add(new RouterLink("Dziedziny i poddziedziny", DziedzinaView.class));
@@ -97,7 +99,6 @@ public class MainLayout extends AppLayout {
             menu.add(new RouterLink("Lista książek", KsiazkiView.class));
         }
 
-        // W metodzie createDrawer:
         menu.add(new RouterLink("Katalog", com.example.application.views.katalog.KatalogView.class));
 
         addToDrawer(menu);
