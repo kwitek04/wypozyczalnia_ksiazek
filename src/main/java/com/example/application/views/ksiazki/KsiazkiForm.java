@@ -46,7 +46,7 @@ public class KsiazkiForm extends FormLayout {
     MultiSelectComboBox<Tlumacz> tlumacze = new MultiSelectComboBox<>("Tłumacze");
 
     // Pola dla Ksiazka (egzemplarz)
-    ComboBox<String> stanFizyczny = new ComboBox<>("Stan fizyczny");
+    ComboBox<StanFizyczny> stanFizyczny = new ComboBox<>("Stan fizyczny");
     ComboBox<StatusKsiazki> status = new ComboBox<>("Status");
 
     // Relacje
@@ -75,7 +75,8 @@ public class KsiazkiForm extends FormLayout {
         wydawnictwo.setRequired(true);
         rokWydania.setRequiredIndicatorVisible(true);
         stanFizyczny.setRequired(true);
-        stanFizyczny.setItems("Bardzo dobry", "Dobry", "Średni", "Zły");
+        stanFizyczny.setItems(StanFizyczny.values()); // Pobieramy wartości z Enuma
+        stanFizyczny.setItemLabelGenerator(StanFizyczny::getNazwa); // Wyświetlamy ładne nazwy
         stanFizyczny.setPlaceholder("Wybierz stan...");
         status.setRequired(true);
         dziedzina.setRequired(true);

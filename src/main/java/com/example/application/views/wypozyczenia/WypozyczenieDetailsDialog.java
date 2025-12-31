@@ -156,6 +156,7 @@ public class WypozyczenieDetailsDialog extends Dialog {
             confirm.setConfirmText("Zgłoś");
             confirm.setConfirmButtonTheme("primary");
             confirm.setCancelable(true);
+            confirm.setCancelText("Anuluj");
 
             confirm.addConfirmListener(ev -> {
                 service.zglosZwrot(wypozyczenie);

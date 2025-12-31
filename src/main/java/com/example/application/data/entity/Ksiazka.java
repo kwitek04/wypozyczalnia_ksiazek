@@ -10,8 +10,8 @@ public class Ksiazka {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotEmpty
-    private String stanFizyczny; // np. "Bardzo dobry", "Uszkodzona okładka"
+    @Enumerated(EnumType.STRING)
+    private StanFizyczny stanFizyczny = StanFizyczny.BARDZO_DOBRY;
 
     @Enumerated(EnumType.STRING)
     private StatusKsiazki status;
@@ -24,19 +24,21 @@ public class Ksiazka {
     @JoinColumn(name = "poddziedzina_id")
     private Poddziedzina poddziedzina;
 
+    private int licznikWypozyczen = 0;
+    private boolean wymagaKontroli = false;
+
     public Ksiazka() {}
 
-    public Ksiazka(String stanFizyczny, StatusKsiazki status, DaneKsiazki daneKsiazki) {
+    public Ksiazka(StanFizyczny stanFizyczny, StatusKsiazki status, DaneKsiazki daneKsiazki) {
         this.stanFizyczny = stanFizyczny;
         this.status = status;
         this.daneKsiazki = daneKsiazki;
     }
-
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getStanFizyczny() { return stanFizyczny; }
-    public void setStanFizyczny(String stanFizyczny) { this.stanFizyczny = stanFizyczny; }
+    public StanFizyczny getStanFizyczny() { return stanFizyczny; }
+    public void setStanFizyczny(StanFizyczny stanFizyczny) { this.stanFizyczny = stanFizyczny; }
 
     public StatusKsiazki getStatus() { return status; }
     public void setStatus(StatusKsiazki status) { this.status = status; }
@@ -46,4 +48,10 @@ public class Ksiazka {
 
     public Poddziedzina getPoddziedzina() { return poddziedzina; }
     public void setPoddziedzina(Poddziedzina poddziedzina) { this.poddziedzina = poddziedzina; }
+
+    public int getLicznikWypozyczen() { return licznikWypozyczen; }
+    public void setLicznikWypozyczen(int licznikWypozyczen) { this.licznikWypozyczen = licznikWypozyczen; }
+
+    public boolean isWymagaKontroli() { return wymagaKontroli; }
+    public void setWymagaKontroli(boolean wymagaKontroli) { this.wymagaKontroli = wymagaKontroli; }
 }

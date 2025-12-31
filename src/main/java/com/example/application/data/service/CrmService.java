@@ -273,6 +273,14 @@ public class CrmService {
         if (liczbaWypozyczonych >= 5) {
             throw new IllegalStateException("Osiągnięto limit 5 wypożyczonych książek! Oddaj inną pozycję, aby wypożyczyć nową.");
         }
+
+        int nowyLicznik = ksiazka.getLicznikWypozyczen() + 1;
+        ksiazka.setLicznikWypozyczen(nowyLicznik);
+
+        if (nowyLicznik % 5 == 0) {
+            ksiazka.setWymagaKontroli(true);
+        }
+
         // 2. Stwórz transakcję wypożyczenia
         Wypozyczenie wypozyczenie = new Wypozyczenie();
         wypozyczenie.setUzytkownik(uzytkownik);
@@ -316,12 +324,33 @@ public class CrmService {
 
         for (WypozyczonaKsiazka wk : wypozyczenie.getWypozyczoneKsiazki()) {
             Ksiazka k = wk.getKsiazka();
-            k.setStatus(StatusKsiazki.DOSTEPNA);
+
+            if (k.isWymagaKontroli()) {
+                k.setStatus(StatusKsiazki.W_KONTROLI);
+            } else {
+                k.setStatus(StatusKsiazki.DOSTEPNA);
+            }
             ksiazkaRepository.save(k);
         }
     }
 
     public List<Wypozyczenie> findAllActiveWypozyczenia() {
         return wypozyczenieRepository.findAllByDataOddaniaIsNullOrderByDataWypozyczeniaDesc();
+    }
+
+    public List<Ksiazka> findKsiazkiDoKontroli() {
+        // Szukamy tylko tych, które wymagają kontroli I zostały już zwrócone (są dostępne)
+        return ksiazkaRepository.findByWymagaKontroliTrueAndStatus(StatusKsiazki.W_KONTROLI);
+    }
+
+    public void zaktualizujStanPoKontroli(Ksiazka ksiazka, com.example.application.data.entity.StanFizyczny nowyStan) {
+        if (ksiazka == null) return;
+
+        ksiazka.setStanFizyczny(nowyStan);
+        ksiazka.setWymagaKontroli(false); // Zdejmujemy flagę, bo kontrola wykonana
+
+        ksiazka.setStatus(StatusKsiazki.DOSTEPNA);
+
+        ksiazkaRepository.save(ksiazka);
     }
 }

@@ -9,6 +9,7 @@ import com.example.application.views.uzytkownicy.UzytkownicyView;
 import com.example.application.views.oczekujacekonta.OczekujaceKontaView;
 import com.example.application.views.wypozyczenia.MojeWypozyczeniaView;
 import com.example.application.views.wypozyczenia.ZarzadzanieWypozyczeniamiView;
+import com.example.application.views.kontrolastanu.KontrolaStanuView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -98,6 +99,9 @@ public class MainLayout extends AppLayout {
             menu.add(new RouterLink("Konta do aktywacji", OczekujaceKontaView.class));
             menu.add(new RouterLink("Lista książek", KsiazkiView.class));
             menu.add(new RouterLink("Zarządzanie wypożyczeniami", ZarzadzanieWypozyczeniamiView.class));
+        }
+        if (authContext.isAuthenticated() && authContext.hasRole("MAGAZYNIER")) {
+            menu.add(new RouterLink("Kontrola stanu", KontrolaStanuView.class));
         }
 
         menu.add(new RouterLink("Katalog", com.example.application.views.katalog.KatalogView.class));

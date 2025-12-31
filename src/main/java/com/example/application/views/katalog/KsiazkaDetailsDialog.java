@@ -61,6 +61,15 @@ public class KsiazkaDetailsDialog extends Dialog {
 
         leftColumn.add(coverImage, statusBadge);
 
+        boolean isStaff = isCurrentUserStaff();
+
+        if (isStaff) {
+            Span counterBadge = new Span("Licznik wypożyczeń: " + ksiazka.getLicznikWypozyczen());
+            counterBadge.getElement().getThemeList().add("badge contrast");
+            counterBadge.getStyle().set("margin-top", "5px");
+            leftColumn.add(counterBadge);
+        }
+
         // --- PRAWA KOLUMNA ---
         VerticalLayout rightColumn = new VerticalLayout();
         rightColumn.setWidth("65%");
@@ -172,5 +181,15 @@ public class KsiazkaDetailsDialog extends Dialog {
         } else {
             return new Image("https://placehold.co/200x300?text=Brak+okładki", "Brak");
         }
+    }
+
+    private boolean isCurrentUserStaff() {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_KIEROWNIK") ||
+                        a.getAuthority().equals("ROLE_BIBLIOTEKARZ") ||
+                        a.getAuthority().equals("ROLE_MAGAZYNIER"));
     }
 }
