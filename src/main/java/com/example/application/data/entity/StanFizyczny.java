@@ -5,7 +5,7 @@ public enum StanFizyczny {
     DOBRY("Dobry"),
     SREDNI("Średni"),
     DO_RENOWACJI("Do renowacji"),
-    ZNISZCZONA("Zniszczona");
+    DO_WYCOFANIA("Do wycofania");
 
     private final String nazwa;
 

@@ -1,6 +1,7 @@
 package com.example.application.data.repository;
 
 import com.example.application.data.entity.Ksiazka;
+import com.example.application.data.entity.StanFizyczny;
 import com.example.application.data.entity.StatusKsiazki;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +30,6 @@ public interface KsiazkaRepository extends JpaRepository<Ksiazka, Long> {
     List<Ksiazka> findByAutor(@Param("autor") com.example.application.data.entity.Autor autor);
 
     List<Ksiazka> findByWymagaKontroliTrueAndStatus(StatusKsiazki status);
+
+    List<Ksiazka> findByStanFizycznyAndStatusNot(StanFizyczny stan, StatusKsiazki status);
 }

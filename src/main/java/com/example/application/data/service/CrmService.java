@@ -28,6 +28,7 @@ public class CrmService {
     private final TlumaczRepository tlumaczRepository;
     private final WypozyczenieRepository wypozyczenieRepository;
     private final WypozyczonaKsiazkaRepository wypozyczonaKsiazkaRepository;
+    private final WycofanieRepository wycofanieRepository;
 
     public CrmService(ContactRepository contactRepository,
                       StatusRepository statusRepository,
@@ -42,7 +43,8 @@ public class CrmService {
                       DaneKsiazkiRepository daneKsiazkiRepository,
                       TlumaczRepository tlumaczRepository,
                       WypozyczenieRepository wypozyczenieRepository,
-                      WypozyczonaKsiazkaRepository wypozyczonaKsiazkaRepository) {
+                      WypozyczonaKsiazkaRepository wypozyczonaKsiazkaRepository,
+                      WycofanieRepository wycofanieRepository) {
         this.ksiazkaRepository = ksiazkaRepository;
         this.autorRepository = autorRepository;
         this.dziedzinaRepository = dziedzinaRepository;
@@ -57,6 +59,7 @@ public class CrmService {
         this.tlumaczRepository = tlumaczRepository;
         this.wypozyczenieRepository = wypozyczenieRepository;
         this.wypozyczonaKsiazkaRepository = wypozyczonaKsiazkaRepository;
+        this.wycofanieRepository = wycofanieRepository;
     }
 
     public List<Ksiazka> findAllKsiazki(String stringFilter) {
@@ -352,5 +355,29 @@ public class CrmService {
         ksiazka.setStatus(StatusKsiazki.DOSTEPNA);
 
         ksiazkaRepository.save(ksiazka);
+    }
+
+    public List<Ksiazka> findKsiazkiDoDecyzjiWycofania() {
+        // Szukamy książek ze stanem DO_WYCOFANIA, które jeszcze nie mają statusu WYCOFANA
+        return ksiazkaRepository.findByStanFizycznyAndStatusNot(
+                StanFizyczny.DO_WYCOFANIA,
+                StatusKsiazki.WYCOFANA
+        );
+    }
+
+    public void wycofajKsiazke(Ksiazka ksiazka, Pracownicy pracownik, String powod) {
+        if (ksiazka == null || pracownik == null) return;
+
+        // Tworzymy rekord w historii wycofań
+        Wycofanie wycofanie = new Wycofanie(ksiazka, pracownik, java.time.LocalDate.now(), powod);
+        wycofanieRepository.save(wycofanie);
+
+        // Zmieniamy status książki, żeby zniknęła z obiegu
+        ksiazka.setStatus(StatusKsiazki.WYCOFANA);
+        ksiazkaRepository.save(ksiazka);
+    }
+
+    public Pracownicy findPracownikByEmail(String email) {
+        return pracownicyRepository.findByEmail(email);
     }
 }
