@@ -346,13 +346,25 @@ public class CrmService {
         return ksiazkaRepository.findByWymagaKontroliTrueAndStatus(StatusKsiazki.W_KONTROLI);
     }
 
-    public void zaktualizujStanPoKontroli(Ksiazka ksiazka, com.example.application.data.entity.StanFizyczny nowyStan) {
+    public void zaktualizujStanPoKontroli(Ksiazka ksiazka, StanFizyczny nowyStan) {
         if (ksiazka == null) return;
 
         ksiazka.setStanFizyczny(nowyStan);
         ksiazka.setWymagaKontroli(false); // Zdejmujemy flagę, bo kontrola wykonana
 
-        ksiazka.setStatus(StatusKsiazki.DOSTEPNA);
+        // --- ZMIANA: Automatyczna blokada książek uszkodzonych ---
+        if (nowyStan == StanFizyczny.DO_RENOWACJI) {
+            // Blokujemy wypożyczanie
+            ksiazka.setStatus(StatusKsiazki.W_RENOWACJI);
+        } else if (nowyStan == StanFizyczny.DO_WYCOFANIA) {
+            // Blokujemy wypożyczanie (książka czeka na decyzję kierownika w widoku "Do wycofania")
+            // Ustawiamy status W_KONTROLI, żeby nie była dostępna w katalogu
+            ksiazka.setStatus(StatusKsiazki.W_KONTROLI);
+        } else {
+            // Książka jest w dobrym stanie, wraca do obiegu
+            ksiazka.setStatus(StatusKsiazki.DOSTEPNA);
+        }
+        // ---------------------------------------------------------
 
         ksiazkaRepository.save(ksiazka);
     }
