@@ -50,7 +50,7 @@ public class KsiazkiForm extends FormLayout {
 
     // Pola dla Ksiazka (egzemplarz)
     ComboBox<StanFizyczny> stanFizyczny = new ComboBox<>("Stan fizyczny");
-    ComboBox<StatusKsiazki> status = new ComboBox<>("Status");
+    TextField statusField = new TextField("Status");
 
     // Relacje
     ComboBox<Dziedzina> dziedzina = new ComboBox<>("Dziedzina");
@@ -90,7 +90,8 @@ public class KsiazkiForm extends FormLayout {
         stanFizyczny.setItems(StanFizyczny.values()); // Pobieramy wartości z Enuma
         stanFizyczny.setItemLabelGenerator(StanFizyczny::getNazwa); // Wyświetlamy ładne nazwy
         stanFizyczny.setPlaceholder("Wybierz stan...");
-        status.setRequired(true);
+        statusField.setReadOnly(true);
+        statusField.addThemeName("align-center");
         dziedzina.setRequired(true);
         poddziedzina.setRequired(false);
         autorzy.setRequired(true);
@@ -222,10 +223,6 @@ public class KsiazkiForm extends FormLayout {
         binder.bindInstanceFields(this);
         daneBinder.bindInstanceFields(this);
 
-        // Konfiguracja list
-        status.setItems(StatusKsiazki.values());
-        status.setItemLabelGenerator(StatusKsiazki::getName);
-
         dziedzina.setItems(dziedziny);
         dziedzina.setItemLabelGenerator(Dziedzina::getNazwa);
 
@@ -248,7 +245,7 @@ public class KsiazkiForm extends FormLayout {
         daneBinder.bindInstanceFields(this);
 
         add(wycofanieInfo, uploadLayout, isbn, tytul, autorzy, tlumacze, wydawnictwo, rokWydania, opis,
-                dziedzina, poddziedzina, stanFizyczny, status,
+                dziedzina, poddziedzina, stanFizyczny, statusField,
                 createButtonsLayout());
     }
 
@@ -301,7 +298,12 @@ public class KsiazkiForm extends FormLayout {
         save.setEnabled(true);
         delete.setEnabled(true);
         stanFizyczny.setReadOnly(false);
-        status.setReadOnly(false);
+        
+        if (ksiazka != null && ksiazka.getStatus() != null) {
+            statusField.setValue(ksiazka.getStatus().getName());
+        } else {
+            statusField.setValue("");
+        }
 
         // --- SPRAWDZAMY CZY WYCOFANA ---
         if (ksiazka != null && StatusKsiazki.WYCOFANA.equals(ksiazka.getStatus())) {

@@ -37,6 +37,7 @@ public class Uzytkownicy extends AbstractEntity {
 
     @NotEmpty(message = "Hasło nie może być puste")
     @Size(min = 6, message = "Hasło musi mieć minimum 6 znaków")
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-zA-Z]).*$", message = "Hasło musi mieć minimum jedną literę i jedną cyfrę")
     private String password;
 
     @Override
