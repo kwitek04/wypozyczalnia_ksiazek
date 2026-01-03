@@ -66,16 +66,19 @@ public class CrmService {
         if (stringFilter == null || stringFilter.isEmpty()) {
             return ksiazkaRepository.findAll();
         } else {
-            // Tu później dodamy filtrowanie po tytule
-            return ksiazkaRepository.findAll();
+            return ksiazkaRepository.searchAll(stringFilter);
         }
+    }
+
+    public List<Ksiazka> findAllActiveKsiazki() {
+        return ksiazkaRepository.findByStatusNot(StatusKsiazki.WYCOFANA);
     }
 
     public List<Ksiazka> findKsiazkiBySearch(String searchTerm) {
         if (searchTerm == null || searchTerm.isEmpty()) {
-            return ksiazkaRepository.findAll();
+            return ksiazkaRepository.findByStatusNot(StatusKsiazki.WYCOFANA);
         } else {
-            return ksiazkaRepository.search(searchTerm);
+            return ksiazkaRepository.searchWithExclusion(searchTerm, StatusKsiazki.WYCOFANA);
         }
     }
 
@@ -250,16 +253,17 @@ public class CrmService {
     }
 
     public List<Ksiazka> findKsiazkiByPoddziedzina(Poddziedzina p) {
-        return ksiazkaRepository.findByPoddziedzina(p);
+        return ksiazkaRepository.findByPoddziedzinaAndStatusNot(p, StatusKsiazki.WYCOFANA);
     }
 
     public List<Ksiazka> findKsiazkiByDziedzina(Dziedzina d) {
-        return ksiazkaRepository.findByDziedzina(d);
+        return ksiazkaRepository.findByDziedzinaAndStatusNot(d, StatusKsiazki.WYCOFANA);
     }
 
-    public List<Ksiazka> findKsiazkiByAutor(com.example.application.data.entity.Autor autor) {
-        return ksiazkaRepository.findByAutor(autor);
+    public List<Ksiazka> findKsiazkiByAutor(Autor autor) {
+        return ksiazkaRepository.findByAutorAndStatusNot(autor, StatusKsiazki.WYCOFANA);
     }
+
 
     public void wypozyczKsiazke(Ksiazka ksiazka, Uzytkownicy uzytkownik) {
         if (ksiazka == null || uzytkownik == null) {
@@ -391,5 +395,9 @@ public class CrmService {
 
     public Pracownicy findPracownikByEmail(String email) {
         return pracownicyRepository.findByEmail(email);
+    }
+
+    public com.example.application.data.entity.Wycofanie findWycofanieByKsiazka(Ksiazka ksiazka) {
+        return wycofanieRepository.findByKsiazka(ksiazka).orElse(null);
     }
 }

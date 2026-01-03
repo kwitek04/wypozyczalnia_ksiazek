@@ -217,7 +217,8 @@ public class KatalogView extends VerticalLayout {
         } else if (selection instanceof Poddziedzina) {
             ksiazki = service.findKsiazkiByPoddziedzina((Poddziedzina) selection);
         } else {
-            ksiazki = service.findAllKsiazki(null);
+            // ZMIANA TUTAJ: Używamy nowej metody, żeby w katalogu NIE było widać wycofanych
+            ksiazki = service.findAllActiveKsiazki();
         }
         bookGrid.setItems(ksiazki);
     }

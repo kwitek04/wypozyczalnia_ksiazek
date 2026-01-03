@@ -10,7 +10,9 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -34,6 +36,7 @@ import java.util.Set;
 
 public class KsiazkiForm extends FormLayout {
     // Pola dla DaneKsiazki (część stała)
+    private Div wycofanieInfo = new Div();
     MemoryBuffer buffer = new MemoryBuffer();
     Upload upload = new Upload(buffer);
     Image previewImage = new Image();
@@ -65,6 +68,15 @@ public class KsiazkiForm extends FormLayout {
     public KsiazkiForm(CrmService service) {
         this.service = service;
         addClassName("ksiazka-form");
+
+        wycofanieInfo.setVisible(false);
+        wycofanieInfo.getStyle().set("background-color", "#ffe0e0")
+                .set("color", "#d32f2f")
+                .set("padding", "15px")
+                .set("border-radius", "5px")
+                .set("margin-bottom", "20px")
+                .set("border", "1px solid #ffcdd2");
+        setColspan(wycofanieInfo, 2);
 
         List<Dziedzina> dziedziny = service.findAllDziedziny();
         List<Autor> dostepniAutorzy = service.findAllAutorzy();
@@ -235,7 +247,7 @@ public class KsiazkiForm extends FormLayout {
         binder.bindInstanceFields(this);
         daneBinder.bindInstanceFields(this);
 
-        add(uploadLayout, isbn, tytul, autorzy, tlumacze, wydawnictwo, rokWydania, opis,
+        add(wycofanieInfo, uploadLayout, isbn, tytul, autorzy, tlumacze, wydawnictwo, rokWydania, opis,
                 dziedzina, poddziedzina, stanFizyczny, status,
                 createButtonsLayout());
     }
@@ -282,6 +294,38 @@ public class KsiazkiForm extends FormLayout {
 
         upload.clearFileList();
         previewImage.setVisible(false);
+        wycofanieInfo.setVisible(false);
+        wycofanieInfo.removeAll();
+
+        // Resetujemy stan przycisków na aktywny
+        save.setEnabled(true);
+        delete.setEnabled(true);
+        stanFizyczny.setReadOnly(false);
+        status.setReadOnly(false);
+
+        // --- SPRAWDZAMY CZY WYCOFANA ---
+        if (ksiazka != null && StatusKsiazki.WYCOFANA.equals(ksiazka.getStatus())) {
+            // 1. Blokujemy przyciski
+            save.setEnabled(false);
+            delete.setEnabled(false);
+
+            // 2. Pobieramy informacje o powodzie
+            Wycofanie wycofanie = service.findWycofanieByKsiazka(ksiazka);
+            if (wycofanie != null) {
+                wycofanieInfo.setVisible(true);
+                wycofanieInfo.add(new Span("Książka została wycofana"));
+                wycofanieInfo.add(new Div(new Span("Data: " + wycofanie.getDataWycofania())));
+                wycofanieInfo.add(new Div(new Span("Przez: " + wycofanie.getPracownik().getImie() + " " + wycofanie.getPracownik().getNazwisko())));
+
+                Span powodSpan = new Span("Powód: " + wycofanie.getPowod());
+                powodSpan.getStyle().set("font-weight", "bold");
+                wycofanieInfo.add(new Div(powodSpan));
+            } else {
+                // Fallback, jeśli z jakiegoś powodu nie ma rekordu w tabeli Wycofanie
+                wycofanieInfo.setVisible(true);
+                wycofanieInfo.add(new Span("⚠️ Książka ma status WYCOFANA (brak szczegółów w historii). Edycja zablokowana."));
+            }
+        }
 
         // 1. Logika kaskady: Najpierw przygotuj listy rozwijane!
         if (ksiazka != null && ksiazka.getPoddziedzina() != null) {
