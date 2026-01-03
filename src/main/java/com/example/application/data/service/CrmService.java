@@ -335,7 +335,7 @@ public class CrmService {
             if (k.isWymagaKontroli()) {
                 k.setStatus(StatusKsiazki.W_KONTROLI);
             } else {
-                k.setStatus(StatusKsiazki.DOSTEPNA);
+                k.setStatus(StatusKsiazki.DO_ODLOZENIA);
             }
             ksiazkaRepository.save(k);
         }
@@ -366,7 +366,7 @@ public class CrmService {
             ksiazka.setStatus(StatusKsiazki.W_KONTROLI);
         } else {
             // Książka jest w dobrym stanie, wraca do obiegu
-            ksiazka.setStatus(StatusKsiazki.DOSTEPNA);
+            ksiazka.setStatus(StatusKsiazki.DO_ODLOZENIA);
         }
         // ---------------------------------------------------------
 
@@ -399,5 +399,15 @@ public class CrmService {
 
     public com.example.application.data.entity.Wycofanie findWycofanieByKsiazka(Ksiazka ksiazka) {
         return wycofanieRepository.findByKsiazka(ksiazka).orElse(null);
+    }
+
+    public List<Ksiazka> findKsiazkiDoOdlozenia() {
+        return ksiazkaRepository.findByStatus(StatusKsiazki.DO_ODLOZENIA);
+    }
+
+    public void potwierdzOdlozenie(Ksiazka ksiazka) {
+        if (ksiazka == null) return;
+        ksiazka.setStatus(StatusKsiazki.DOSTEPNA);
+        ksiazkaRepository.save(ksiazka);
     }
 }

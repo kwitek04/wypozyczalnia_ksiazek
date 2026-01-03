@@ -43,4 +43,6 @@ public interface KsiazkaRepository extends JpaRepository<Ksiazka, Long> {
     List<Ksiazka> findByWymagaKontroliTrueAndStatus(StatusKsiazki status);
 
     List<Ksiazka> findByStanFizycznyAndStatusNot(StanFizyczny stan, StatusKsiazki status);
+
+    List<Ksiazka> findByStatus(StatusKsiazki status);
 }

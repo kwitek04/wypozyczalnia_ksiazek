@@ -197,8 +197,13 @@ public class KsiazkiForm extends FormLayout {
 
         // To samo dla DaneKsiazki
         daneBinder.forField(isbn)
-                .asRequired("ISBN musi mieć 13 znaków")
-                .withValidator(s -> s.length() == 13, "ISBN musi mieć dokładnie 13 znaków")
+                .asRequired("ISBN jest wymagany")
+                .withValidator(s -> {
+                    // Do sprawdzenia długości usuwamy myślniki
+                    String clean = s.replaceAll("[^0-9X]", "");
+                    // Ale jeśli jest OK, to przepuszczamy wersję z myślnikami
+                    return clean.length() == 10 || clean.length() == 13;
+                }, "ISBN musi mieć 10 lub 13 cyfr (myślniki i spacje są dozwolone)")
                 .bind(DaneKsiazki::getIsbn, DaneKsiazki::setIsbn);
 
         daneBinder.forField(tytul)
@@ -298,7 +303,7 @@ public class KsiazkiForm extends FormLayout {
         save.setEnabled(true);
         delete.setEnabled(true);
         stanFizyczny.setReadOnly(false);
-        
+
         if (ksiazka != null && ksiazka.getStatus() != null) {
             statusField.setValue(ksiazka.getStatus().getName());
         } else {

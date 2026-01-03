@@ -11,6 +11,7 @@ import com.example.application.views.wycofanie.KsiazkiDoWycofaniaView;
 import com.example.application.views.wypozyczenia.MojeWypozyczeniaView;
 import com.example.application.views.wypozyczenia.ZarzadzanieWypozyczeniamiView;
 import com.example.application.views.kontrolastanu.KontrolaStanuView;
+import com.example.application.views.odlozenie.KsiazkiDoOdlozeniaView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -104,6 +105,7 @@ public class MainLayout extends AppLayout {
         }
         if (authContext.isAuthenticated() && authContext.hasRole("MAGAZYNIER")) {
             menu.add(new RouterLink("Kontrola stanu", KontrolaStanuView.class));
+            menu.add(new RouterLink("Książki do odłożenia", KsiazkiDoOdlozeniaView.class));
         }
 
         menu.add(new RouterLink("Katalog", com.example.application.views.katalog.KatalogView.class));

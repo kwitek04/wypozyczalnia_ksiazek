@@ -12,7 +12,7 @@ public class DaneKsiazki {
 
     @Id
     @NotEmpty
-    @Size(min = 13, max = 13)
+    @Size(min = 10, max = 20)
     private String isbn; // Klucz główny (ISBN-13)
 
     @NotEmpty
