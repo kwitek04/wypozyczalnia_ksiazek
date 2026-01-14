@@ -6,7 +6,8 @@ public enum StatusKsiazki {
     WYCOFANA("Wycofana"),
     W_RENOWACJI("W renowacji"),
     W_KONTROLI("W kontroli"),
-    DO_ODLOZENIA("Do odłożenia");;
+    DO_ODLOZENIA("Do odłożenia"),
+    ZAREZERWOWANA("Zarezerwowana");
 
     private final String name;
 

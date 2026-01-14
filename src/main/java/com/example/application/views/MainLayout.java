@@ -27,6 +27,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.example.application.views.mojekonto.MojeRezerwacjeView;
 
 public class MainLayout extends AppLayout {
 
@@ -88,8 +89,9 @@ public class MainLayout extends AppLayout {
         menu.add(homeLink);
 
         if (authContext.isAuthenticated()) {
-            menu.add(new RouterLink("Moje wypożyczenia", MojeWypozyczeniaView.class));
             menu.add(new RouterLink("Moje Konto", MojeKontoView.class));
+            menu.add(new RouterLink("Moje wypożyczenia", MojeWypozyczeniaView.class));
+            menu.add(new RouterLink("Moje Rezerwacje", MojeRezerwacjeView.class));
         }
 
         if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK")) {

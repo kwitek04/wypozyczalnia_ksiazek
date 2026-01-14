@@ -151,7 +151,37 @@ public class KsiazkaDetailsDialog extends Dialog {
 
         Button btnRezerwuj = new Button("Zarezerwuj", VaadinIcon.CALENDAR_CLOCK.create());
         btnRezerwuj.addThemeVariants(ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_LARGE);
-        // Usunięto setWidthFull()
+
+        // Logika dostępności przycisku (tylko dla zalogowanych i jeśli dostępna)
+        if (!isLoggedIn) {
+            btnRezerwuj.setEnabled(false);
+        } else if (!isAvailable) {
+            btnRezerwuj.setEnabled(false); // Można odblokować jeśli chcesz kolejkować, ale na razie blokujemy
+        }
+
+        btnRezerwuj.addClickListener(e -> {
+            ConfirmDialog dialog = new ConfirmDialog();
+            dialog.setHeader("Potwierdź rezerwację");
+            dialog.setText("Czy chcesz zarezerwować książkę \"" + ksiazka.getDaneKsiazki().getTytul() + "\"?\nBędziesz miał 3 dni na jej odbiór.");
+
+            dialog.setConfirmText("Rezerwuję");
+            dialog.setConfirmButtonTheme("primary");
+            dialog.setCancelable(true);
+            dialog.setCancelText("Anuluj");
+
+            dialog.addConfirmListener(ev -> {
+                try {
+                    service.zarezerwujKsiazke(ksiazka, currentUser);
+                    Notification.show("Rezerwacja pomyślna! Masz 3 dni na odbiór.", 5000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                    this.close();
+                } catch (Exception ex) {
+                    Notification.show(ex.getMessage(), 5000, Notification.Position.MIDDLE)
+                            .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                }
+            });
+            dialog.open();
+        });
 
         HorizontalLayout actions = new HorizontalLayout(btnWypozycz, btnRezerwuj);
         actions.setWidthFull(); // Kontener zajmuje całą szerokość

@@ -29,6 +29,8 @@ public class CrmService {
     private final WypozyczenieRepository wypozyczenieRepository;
     private final WypozyczonaKsiazkaRepository wypozyczonaKsiazkaRepository;
     private final WycofanieRepository wycofanieRepository;
+    private final RezerwacjaRepository rezerwacjaRepository;
+    private final ZarezerwowanaKsiazkaRepository zarezerwowanaKsiazkaRepository;
 
     public CrmService(ContactRepository contactRepository,
                       StatusRepository statusRepository,
@@ -44,8 +46,9 @@ public class CrmService {
                       TlumaczRepository tlumaczRepository,
                       WypozyczenieRepository wypozyczenieRepository,
                       WypozyczonaKsiazkaRepository wypozyczonaKsiazkaRepository,
-                      WycofanieRepository wycofanieRepository) {
-        this.ksiazkaRepository = ksiazkaRepository;
+                      WycofanieRepository wycofanieRepository,
+                      RezerwacjaRepository rezerwacjaRepository,
+                      ZarezerwowanaKsiazkaRepository zarezerwowanaKsiazkaRepository) {       this.ksiazkaRepository = ksiazkaRepository;
         this.autorRepository = autorRepository;
         this.dziedzinaRepository = dziedzinaRepository;
         this.poddziedzinaRepository = poddziedzinaRepository;
@@ -60,6 +63,8 @@ public class CrmService {
         this.wypozyczenieRepository = wypozyczenieRepository;
         this.wypozyczonaKsiazkaRepository = wypozyczonaKsiazkaRepository;
         this.wycofanieRepository = wycofanieRepository;
+        this.rezerwacjaRepository = rezerwacjaRepository;
+        this.zarezerwowanaKsiazkaRepository = zarezerwowanaKsiazkaRepository;
     }
 
     public List<Ksiazka> findAllKsiazki(String stringFilter) {
@@ -265,22 +270,42 @@ public class CrmService {
     }
 
 
+    @Transactional
     public void wypozyczKsiazke(Ksiazka ksiazka, Uzytkownicy uzytkownik) {
         if (ksiazka == null || uzytkownik == null) {
             throw new IllegalArgumentException("Nieprawidłowe dane wypożyczenia.");
         }
 
-        // 1. Sprawdź dostępność
-        if (!StatusKsiazki.DOSTEPNA.equals(ksiazka.getStatus())) {
-            throw new IllegalStateException("Ta książka nie jest już dostępna.");
+        // --- ZMIANA LOGIKI DOSTĘPNOŚCI ---
+        boolean czyMoznaWypozyczyc = false;
+        Rezerwacja rezerwacjaDoRealizacji = null;
+
+        if (StatusKsiazki.DOSTEPNA.equals(ksiazka.getStatus())) {
+            // Klasyczna sytuacja - książka z półki
+            czyMoznaWypozyczyc = true;
+        } else if (StatusKsiazki.ZAREZERWOWANA.equals(ksiazka.getStatus())) {
+            // Książka zarezerwowana - sprawdzamy czy przez TEGO użytkownika
+            rezerwacjaDoRealizacji = rezerwacjaRepository.findActiveReservationForBook(ksiazka)
+                    .orElseThrow(() -> new IllegalStateException("Błąd spójności danych: Książka ma status Zarezerwowana, ale brak aktywnej rezerwacji."));
+
+            if (rezerwacjaDoRealizacji.getUzytkownik().getId().equals(uzytkownik.getId())) {
+                czyMoznaWypozyczyc = true; // To ten sam użytkownik, można wydać
+            } else {
+                throw new IllegalStateException("Ta książka jest zarezerwowana przez innego użytkownika!");
+            }
+        } else {
+            throw new IllegalStateException("Ta książka nie jest dostępna (Status: " + ksiazka.getStatus().getName() + ")");
         }
 
-        // 2. NOWE ZABEZPIECZENIE: Sprawdź limit
+        if (!czyMoznaWypozyczyc) return;
+
+        // Sprawdzenie limitu wypożyczeń (5 sztuk)
         long liczbaWypozyczonych = wypozyczenieRepository.countByUzytkownikAndDataOddaniaIsNull(uzytkownik);
         if (liczbaWypozyczonych >= 5) {
-            throw new IllegalStateException("Osiągnięto limit 5 wypożyczonych książek! Oddaj inną pozycję, aby wypożyczyć nową.");
+            throw new IllegalStateException("Osiągnięto limit 5 wypożyczonych książek!");
         }
 
+        // --- REALIZACJA WYPOŻYCZENIA ---
         int nowyLicznik = ksiazka.getLicznikWypozyczen() + 1;
         ksiazka.setLicznikWypozyczen(nowyLicznik);
 
@@ -288,21 +313,25 @@ public class CrmService {
             ksiazka.setWymagaKontroli(true);
         }
 
-        // 2. Stwórz transakcję wypożyczenia
         Wypozyczenie wypozyczenie = new Wypozyczenie();
         wypozyczenie.setUzytkownik(uzytkownik);
         wypozyczenie.setDataWypozyczenia(java.time.LocalDate.now());
-        wypozyczenie.setTerminZwrotu(java.time.LocalDate.now().plusDays(30)); // np. 30 dni na zwrot
+        wypozyczenie.setTerminZwrotu(java.time.LocalDate.now().plusDays(30));
 
         wypozyczenieRepository.save(wypozyczenie);
 
-        // 3. Przypisz książkę do wypożyczenia
         WypozyczonaKsiazka pozycja = new WypozyczonaKsiazka(wypozyczenie, ksiazka);
         wypozyczonaKsiazkaRepository.save(pozycja);
 
-        // 4. Zmień status książki
         ksiazka.setStatus(StatusKsiazki.WYPOZYCZONA);
         ksiazkaRepository.save(ksiazka);
+
+        // --- JEŚLI BYŁA TO REZERWACJA, OZNACZAMY JAKO ZREALIZOWANĄ ---
+        if (rezerwacjaDoRealizacji != null) {
+            rezerwacjaDoRealizacji.setStatus(StatusRezerwacji.ZREALIZOWANA);
+            rezerwacjaDoRealizacji.setZrealizowana(true);
+            rezerwacjaRepository.save(rezerwacjaDoRealizacji);
+        }
     }
 
     // Metoda pomocnicza do pobrania użytkownika po emailu (dla Security)
@@ -409,5 +438,55 @@ public class CrmService {
         if (ksiazka == null) return;
         ksiazka.setStatus(StatusKsiazki.DOSTEPNA);
         ksiazkaRepository.save(ksiazka);
+    }
+
+    // ... (wewnątrz CrmService)
+
+    @Transactional
+    public void zarezerwujKsiazke(Ksiazka ksiazka, Uzytkownicy uzytkownik) {
+        if (ksiazka == null || uzytkownik == null) return;
+
+        // 1. Sprawdź status książki
+        if (!StatusKsiazki.DOSTEPNA.equals(ksiazka.getStatus())) {
+            throw new IllegalStateException("Tej książki nie można zarezerwować (jest niedostępna).");
+        }
+
+        // 2. NOWOŚĆ: Sprawdź limit rezerwacji (Max 3 aktywne)
+        long aktywneRezerwacje = rezerwacjaRepository.countByUzytkownikAndStatus(uzytkownik, StatusRezerwacji.AKTYWNA);
+        if (aktywneRezerwacje >= 3) {
+            throw new IllegalStateException("Osiągnięto limit 3 aktywnych rezerwacji. Anuluj lub odbierz inne książki.");
+        }
+
+        Rezerwacja rezerwacja = new Rezerwacja(uzytkownik);
+        rezerwacjaRepository.save(rezerwacja);
+
+        ZarezerwowanaKsiazka zk = new ZarezerwowanaKsiazka(rezerwacja, ksiazka);
+        zarezerwowanaKsiazkaRepository.save(zk);
+
+        ksiazka.setStatus(StatusKsiazki.ZAREZERWOWANA);
+        ksiazkaRepository.save(ksiazka);
+    }
+
+    @Transactional
+    public void anulujRezerwacje(Rezerwacja rezerwacja) {
+        if (rezerwacja == null || rezerwacja.getStatus() != StatusRezerwacji.AKTYWNA) {
+            return; // Można rzucić wyjątek, ale tutaj po prostu ignorujemy
+        }
+
+        // 1. Zmień status rezerwacji
+        rezerwacja.setStatus(StatusRezerwacji.ANULOWANA);
+        rezerwacjaRepository.save(rezerwacja);
+
+        // 2. Zwolnij książki (Status: ZAREZERWOWANA -> DOSTEPNA)
+        for (ZarezerwowanaKsiazka zk : rezerwacja.getZarezerwowaneKsiazki()) {
+            Ksiazka ksiazka = zk.getKsiazka();
+            ksiazka.setStatus(StatusKsiazki.DOSTEPNA);
+            ksiazkaRepository.save(ksiazka);
+        }
+    }
+
+    public List<Rezerwacja> findRezerwacjeByUser(Uzytkownicy uzytkownik) {
+        if (uzytkownik == null) return java.util.Collections.emptyList();
+        return rezerwacjaRepository.findByUzytkownikOrderByDataRezerwacjiDesc(uzytkownik);
     }
 }

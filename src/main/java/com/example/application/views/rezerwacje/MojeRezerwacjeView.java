@@ -1,0 +1,147 @@
+package com.example.application.views.mojekonto;
+
+import com.example.application.data.entity.Ksiazka;
+import com.example.application.data.entity.Rezerwacja;
+import com.example.application.data.entity.StatusRezerwacji;
+import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.ZarezerwowanaKsiazka;
+import com.example.application.data.service.CrmService;
+import com.example.application.security.SecurityService;
+import com.example.application.views.MainLayout;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
+
+import java.util.stream.Collectors;
+
+@PermitAll
+@Route(value = "moje-rezerwacje", layout = MainLayout.class)
+@PageTitle("Moje Rezerwacje | Biblioteka")
+public class MojeRezerwacjeView extends VerticalLayout {
+
+    private final CrmService service;
+    private final SecurityService securityService;
+    private final Grid<Rezerwacja> grid = new Grid<>(Rezerwacja.class);
+
+    public MojeRezerwacjeView(CrmService service, SecurityService securityService) {
+        this.service = service;
+        this.securityService = securityService;
+
+        setSizeFull();
+        setPadding(true);
+        addClassName("moje-rezerwacje-view");
+
+        add(new H2("Moje zarezerwowane książki"));
+        add(new Span("Gdy weźmiesz książkę z półki, kliknij 'Odbierz', aby ją wypożyczyć."));
+
+        configureGrid();
+        add(grid);
+
+        updateList();
+    }
+
+    private void configureGrid() {
+        grid.addClassName("rezerwacje-grid");
+        grid.setSizeFull();
+        grid.removeAllColumns();
+
+        grid.addColumn(rezerwacja ->
+                rezerwacja.getZarezerwowaneKsiazki().stream()
+                        .map(zk -> zk.getKsiazka().getDaneKsiazki().getTytul())
+                        .collect(Collectors.joining(", "))
+        ).setHeader("Książki").setAutoWidth(true);
+
+        grid.addColumn(Rezerwacja::getDataRezerwacji).setHeader("Data rezerwacji").setAutoWidth(true);
+        grid.addColumn(Rezerwacja::getWaznaDo).setHeader("Ważna do").setAutoWidth(true);
+
+        // Status
+        grid.addComponentColumn(rezerwacja -> {
+            Span badge = new Span(rezerwacja.getStatus() != null ? rezerwacja.getStatus().getNazwa() : "Błąd");
+            badge.getElement().getThemeList().add("badge");
+
+            if (rezerwacja.getStatus() == StatusRezerwacji.AKTYWNA) {
+                badge.getElement().getThemeList().add("success");
+            } else if (rezerwacja.getStatus() == StatusRezerwacji.ANULOWANA) {
+                badge.getElement().getThemeList().add("error");
+            } else if (rezerwacja.getStatus() == StatusRezerwacji.ZREALIZOWANA) {
+                badge.getElement().getThemeList().add("contrast");
+            }
+            return badge;
+        }).setHeader("Status").setAutoWidth(true);
+
+        // --- PRZYCISK ODBIERZ (WYPOŻYCZ) ---
+        grid.addComponentColumn(rezerwacja -> {
+            Button odbierzBtn = new Button("Odbierz (Wypożycz)");
+            odbierzBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+
+            // Przycisk aktywny tylko dla aktywnych rezerwacji
+            odbierzBtn.setEnabled(rezerwacja.getStatus() == StatusRezerwacji.AKTYWNA);
+
+            odbierzBtn.addClickListener(e -> {
+                odbierzRezerwacje(rezerwacja);
+            });
+
+            return odbierzBtn;
+        }).setHeader("Odbiór").setAutoWidth(true);
+
+        // --- PRZYCISK ANULUJ ---
+        grid.addComponentColumn(rezerwacja -> {
+            Button anulujBtn = new Button("Anuluj");
+            anulujBtn.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
+
+            anulujBtn.setEnabled(rezerwacja.getStatus() == StatusRezerwacji.AKTYWNA);
+
+            anulujBtn.addClickListener(e -> {
+                service.anulujRezerwacje(rezerwacja);
+                Notification.show("Rezerwacja anulowana", 3000, Notification.Position.MIDDLE);
+                updateList();
+            });
+
+            return anulujBtn;
+        }).setHeader("Anulowanie");
+
+        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+    }
+
+    private void odbierzRezerwacje(Rezerwacja rezerwacja) {
+        try {
+            // Pobieramy aktualnie zalogowanego użytkownika
+            String username = securityService.getAuthenticatedUser().getUsername();
+            Uzytkownicy currentUser = service.findUzytkownikByEmail(username);
+
+            // Iterujemy po książkach w rezerwacji i wypożyczamy każdą z nich
+            for (ZarezerwowanaKsiazka zk : rezerwacja.getZarezerwowaneKsiazki()) {
+                Ksiazka ksiazka = zk.getKsiazka();
+                // Wywołujemy tę samą metodę co wcześniej, ale teraz robi to UŻYTKOWNIK
+                service.wypozyczKsiazke(ksiazka, currentUser);
+            }
+
+            Notification.show("Pomyślnie wypożyczono książki!", 3000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+
+            updateList();
+
+        } catch (Exception ex) {
+            Notification.show("Błąd: " + ex.getMessage(), 5000, Notification.Position.MIDDLE)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+    }
+
+    private void updateList() {
+        String username = securityService.getAuthenticatedUser().getUsername();
+        Uzytkownicy uzytkownik = service.findUzytkownikByEmail(username);
+
+        if (uzytkownik != null) {
+            grid.setItems(service.findRezerwacjeByUser(uzytkownik));
+        }
+    }
+}
