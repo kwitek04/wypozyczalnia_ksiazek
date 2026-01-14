@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -29,7 +30,7 @@ public class PracownicyForm extends FormLayout {
     TextField nrTelefonu = new TextField("Numer telefonu");
     EmailField email = new EmailField("Email");
     PasswordField password = new PasswordField("Hasło");
-    ComboBox<Rola> rola = new ComboBox<>("Rola");
+    MultiSelectComboBox<Rola> role = new MultiSelectComboBox<>("Role");
     private Button lockBtn = new Button();
 
     Button save = new Button("Zapisz");
@@ -77,14 +78,17 @@ public class PracownicyForm extends FormLayout {
         }
     }
 
-    public PracownicyForm(List<Rola> role) {
+    public PracownicyForm(List<Rola> dostepneRole) {
         addClassName("pracownicy-form");
+
+        // Konfiguracja MultiSelect
+        role.setItems(dostepneRole);
+        role.setItemLabelGenerator(Rola::getName);
+        role.setPlaceholder("Wybierz role...");
+
         binder.bindInstanceFields(this);
-        rola.setItems(role);
-        rola.setItemLabelGenerator(Rola::getName);
 
-
-        add(imie, nazwisko, nrTelefonu, email, password, rola, lockBtn, createButtonsLayout());
+        add(imie, nazwisko, nrTelefonu, email, password, role, lockBtn, createButtonsLayout());
         lockBtn.addClickListener(event -> toggleStatus());
     }
 

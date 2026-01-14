@@ -4,6 +4,7 @@ import com.example.application.data.entity.Pracownicy;
 import com.example.application.data.entity.Uzytkownicy;
 import com.example.application.data.repository.PracownicyRepository;
 import com.example.application.data.repository.UzytkownicyRepository;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,8 +13,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
-
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -33,28 +35,32 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         // 1. Szukamy w pracownikach
         Pracownicy pracownik = pracownicyRepository.findByEmail(username);
         if (pracownik != null) {
+            // --- ZMIANA: Mapujemy listę ról na uprawnienia Spring Security ---
+            List<GrantedAuthority> authorities = pracownik.getRole().stream()
+                    .map(rola -> new SimpleGrantedAuthority("ROLE_" + rola.getName().toUpperCase()))
+                    .collect(Collectors.toList());
+
             return new User(
                     pracownik.getEmail(),
                     pracownik.getPassword(),
-                    pracownik.isEnabled(), // enabled
-                    true, // accountNonExpired
-                    true, // credentialsNonExpired
-                    true, // accountNonLocked
-                    Collections.singleton(new SimpleGrantedAuthority("ROLE_" + pracownik.getRola().getName().toUpperCase()))
+                    pracownik.isEnabled(),
+                    true,
+                    true,
+                    true,
+                    authorities // Przekazujemy listę ról
             );
         }
 
-        // 2. Jeśli nie ma w pracownikach, szukamy w użytkownikach
+        // 2. Jeśli nie ma w pracownikach, szukamy w użytkownikach (czytelnikach)
         Uzytkownicy uzytkownik = uzytkownicyRepository.findByEmail(username);
         if (uzytkownik != null) {
-            // Użytkownikom (czytelnikom) nadajemy domyślną rolę ROLE_USER
             return new User(
                     uzytkownik.getEmail(),
                     uzytkownik.getPassword(),
-                    uzytkownik.isEnabled(), // enabled
-                    true, // accountNonExpired
-                    true, // credentialsNonExpired
-                    !uzytkownik.isLocked(), // accountNonLocked
+                    uzytkownik.isEnabled(),
+                    true,
+                    true,
+                    !uzytkownik.isLocked(),
                     Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))
             );
         }

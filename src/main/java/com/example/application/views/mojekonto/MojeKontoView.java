@@ -41,7 +41,8 @@ public class MojeKontoView extends VerticalLayout {
         if (p != null) {
             fullName = p.getImie() + " " + p.getNazwisko();
             phone = p.getNrTelefonu();
-            role = "Pracownik (" + p.getRola().getName() + ")";
+            // ZMIANA: Pobieranie ról jako string
+            role = "Pracownik (" + p.getRoleAsString() + ")";
         } else {
             Uzytkownicy u = uzytkownicyRepository.findByEmail(email);
             if (u != null) {

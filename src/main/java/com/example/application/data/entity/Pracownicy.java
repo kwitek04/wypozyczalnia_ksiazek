@@ -1,13 +1,16 @@
 package com.example.application.data.entity;
 
 import com.example.application.data.repository.AbstractEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 public class Pracownicy extends AbstractEntity {
@@ -30,10 +33,13 @@ public class Pracownicy extends AbstractEntity {
     @Size(min = 9, max = 15, message = "Numer telefonu musi mieć od 9 do 15 cyfr")
     private String nrTelefonu = "";
 
-    @NotNull
-    @ManyToOne
-    private Rola rola;
-
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "pracownik_role",
+            joinColumns = @JoinColumn(name = "pracownik_id"),
+            inverseJoinColumns = @JoinColumn(name = "rola_id")
+    )
+    private Set<Rola> role = new HashSet<>();
     @NotEmpty(message = "Hasło nie może być puste")
     @Size(min = 6, message = "Hasło musi mieć minimum 6 znaków")
     private String password;
@@ -62,9 +68,13 @@ public class Pracownicy extends AbstractEntity {
     public String getNrTelefonu() { return nrTelefonu; }
     public void setNrTelefonu(String nrTelefonu) { this.nrTelefonu = nrTelefonu; }
 
-    public Rola getRola() { return rola; }
-    public void setRola(Rola rola) { this.rola = rola; }
+    public Set<Rola> getRole() { return role; }
+    public void setRole(Set<Rola> role) { this.role = role; }
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public String getRoleAsString() {
+        return role.stream().map(Rola::getName).collect(Collectors.joining(", "));
+    }
 }

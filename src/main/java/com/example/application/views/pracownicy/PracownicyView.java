@@ -43,7 +43,9 @@ public class PracownicyView extends VerticalLayout {
         grid.addClassNames("pracownicy-grid");
         grid.setSizeFull();
         grid.setColumns("imie", "nazwisko", "email", "nrTelefonu");
-        grid.addColumn(p -> p.getRola() != null ? p.getRola().getName() : "").setHeader("Rola").setSortable(true);;
+        grid.addColumn(Pracownicy::getRoleAsString)
+                .setHeader("Role")
+                .setSortable(false);
         grid.addColumn(p -> p.isEnabled() ? "Aktywne" : "Zablokowane")
                 .setHeader("Status konta")
                 .setSortable(true);
