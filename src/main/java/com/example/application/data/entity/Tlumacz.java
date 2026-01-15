@@ -33,7 +33,6 @@ public class Tlumacz {
     public String getNazwisko() { return nazwisko; }
     public void setNazwisko(String nazwisko) { this.nazwisko = nazwisko; }
 
-    // Ważne dla Vaadina
     @Override
     public final int hashCode() {
         return getClass().hashCode();

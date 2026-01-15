@@ -17,14 +17,13 @@ public class Rezerwacja {
     private Uzytkownicy uzytkownik;
 
     private LocalDate dataRezerwacji;
-    private LocalDate waznaDo; // np. rezerwacja ważna przez 3 dni
+    private LocalDate waznaDo;
 
     private boolean zrealizowana = false;
 
     @Enumerated(EnumType.STRING)
-    private StatusRezerwacji status;// true jeśli odebrano książki
+    private StatusRezerwacji status;
 
-    // Relacja do pozycji rezerwacji
     @OneToMany(mappedBy = "rezerwacja", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<ZarezerwowanaKsiazka> zarezerwowaneKsiazki = new ArrayList<>();
 

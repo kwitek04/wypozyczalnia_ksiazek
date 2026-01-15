@@ -27,7 +27,6 @@ public class OczekujaceKontaView extends VerticalLayout {
 
         grid.setColumns("imie", "nazwisko", "email", "dataUrodzenia");
 
-        // Przycisk AKTYWUJ
         grid.addComponentColumn(uzytkownik -> {
             Button activeBtn = new Button("Aktywuj", e -> {
                 uzytkownik.setEnabled(true);
@@ -44,7 +43,6 @@ public class OczekujaceKontaView extends VerticalLayout {
     }
 
     private void updateList() {
-        // Musisz dodać metodę findAllPending() w CrmService
         grid.setItems(service.findAllPendingUzytkownicy());
     }
 }

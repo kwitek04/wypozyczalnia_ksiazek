@@ -15,7 +15,6 @@ public class Poddziedzina {
     @Size(max = 50)
     private String nazwa;
 
-    // Klucz obcy wskazujący na Dziedzinę
     @ManyToOne
     @JoinColumn(name = "dziedzina_id")
     private Dziedzina dziedzina;

@@ -50,7 +50,6 @@ public class Uzytkownicy extends AbstractEntity {
     private boolean locked = false;
 
     // Gettery i Settery
-
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
 

@@ -19,11 +19,10 @@ public class Wypozyczenie {
 
     private LocalDate dataWypozyczenia;
     private LocalDate terminZwrotu;
-    private LocalDate dataOddania; // Null, dopóki nie odda
+    private LocalDate dataOddania;
 
-    private BigDecimal kara; // Null lub 0, dopóki nie ma kary
+    private BigDecimal kara;
 
-    // Relacja do tabeli łączącej (Twoje "Wypożyczone książki")
     @OneToMany(mappedBy = "wypozyczenie", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<WypozyczonaKsiazka> wypozyczoneKsiazki = new ArrayList<>();
 

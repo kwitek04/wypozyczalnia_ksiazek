@@ -31,7 +31,6 @@ public class RejestracjaView extends VerticalLayout {
     private final CrmService crmService;
     private final Binder<Uzytkownicy> binder = new BeanValidationBinder<>(Uzytkownicy.class);
 
-    // PRZENIEŚ POLA TUTAJ (jako pola klasy):
     TextField imie = new TextField("Imię");
     TextField nazwisko = new TextField("Nazwisko");
     EmailField email = new EmailField("Email");
@@ -56,7 +55,6 @@ public class RejestracjaView extends VerticalLayout {
 
         dataUrodzenia.setLocale(new Locale("pl", "PL"));
 
-        // Teraz bindInstanceFields znajdzie powyższe pola
         binder.bindInstanceFields(this);
 
         Button registerButton = new Button("Zarejestruj się", e -> zarejestruj());

@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Set;
 
 public class KsiazkiForm extends FormLayout {
-    // Pola dla DaneKsiazki (część stała)
     private Div wycofanieInfo = new Div();
     MemoryBuffer buffer = new MemoryBuffer();
     Upload upload = new Upload(buffer);
@@ -48,11 +47,9 @@ public class KsiazkiForm extends FormLayout {
     MultiSelectComboBox<Autor> autorzy = new MultiSelectComboBox<>("Autorzy");
     MultiSelectComboBox<Tlumacz> tlumacze = new MultiSelectComboBox<>("Tłumacze");
 
-    // Pola dla Ksiazka (egzemplarz)
     ComboBox<StanFizyczny> stanFizyczny = new ComboBox<>("Stan fizyczny");
     TextField statusField = new TextField("Status");
 
-    // Relacje
     ComboBox<Dziedzina> dziedzina = new ComboBox<>("Dziedzina");
     ComboBox<Poddziedzina> poddziedzina = new ComboBox<>("Poddziedzina");
 
@@ -87,8 +84,8 @@ public class KsiazkiForm extends FormLayout {
         wydawnictwo.setRequired(true);
         rokWydania.setRequiredIndicatorVisible(true);
         stanFizyczny.setRequired(true);
-        stanFizyczny.setItems(StanFizyczny.values()); // Pobieramy wartości z Enuma
-        stanFizyczny.setItemLabelGenerator(StanFizyczny::getNazwa); // Wyświetlamy ładne nazwy
+        stanFizyczny.setItems(StanFizyczny.values());
+        stanFizyczny.setItemLabelGenerator(StanFizyczny::getNazwa);
         stanFizyczny.setPlaceholder("Wybierz stan...");
         statusField.setReadOnly(true);
         statusField.addThemeName("align-center");
@@ -102,23 +99,20 @@ public class KsiazkiForm extends FormLayout {
         setColspan(opis, 2);
 
         upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/gif");
-        upload.setMaxFileSize(5 * 1024 * 1024); // Max 5MB
+        upload.setMaxFileSize(5 * 1024 * 1024);
         upload.setDropLabel(new com.vaadin.flow.component.html.Span("Upuść okładkę tutaj (max 5MB)"));
 
         previewImage.setWidth("150px");
-        previewImage.setVisible(false); // Domyślnie ukryte
+        previewImage.setVisible(false);
 
-        // Logika po załadowaniu pliku
         upload.addSucceededListener(event -> {
             try {
-                // Pobieramy dane z buffora
                 byte[] imageBytes = buffer.getInputStream().readAllBytes();
 
-                // Zapisujemy w obiekcie, który jest aktualnie edytowany
                 DaneKsiazki currentDane = daneBinder.getBean();
                 if (currentDane != null) {
                     currentDane.setOkladka(imageBytes);
-                    showImage(imageBytes); // Pokazujemy podgląd
+                    showImage(imageBytes);
                 }
             } catch (IOException e) {
                 Notification.show("Błąd podczas wczytywania obrazka");
@@ -139,24 +133,19 @@ public class KsiazkiForm extends FormLayout {
 
         autorzy.addCustomValueSetListener(e -> {
             String wpisanaWartosc = e.getDetail();
-            // Prosta logika: dzielimy tekst po pierwszej spacji
-            // np. "Adam Mickiewicz" -> imie="Adam", nazwisko="Mickiewicz"
             String[] czesci = wpisanaWartosc.trim().split(" ", 2);
 
             String imie = czesci[0];
-            String nazwisko = czesci.length > 1 ? czesci[1] : ""; // Jeśli brak nazwiska, pusty string
+            String nazwisko = czesci.length > 1 ? czesci[1] : "";
 
             if (!imie.isEmpty()) {
                 Autor nowyAutor = new Autor(imie, nazwisko);
-                service.saveAutor(nowyAutor); // Zapis do bazy
+                service.saveAutor(nowyAutor);
 
-                // Odświeżenie listy w ComboBoxie
                 Set<Autor> aktualnieWybrani = new HashSet<>(autorzy.getValue());
                 aktualnieWybrani.add(nowyAutor);
 
-                // Przeładowujemy listę z bazy żeby mieć pewność
                 autorzy.setItems(service.findAllAutorzy());
-                // Zaznaczamy stare + ten nowy
                 autorzy.setValue(aktualnieWybrani);
 
                 Notification.show("Dodano autora: " + imie + " " + nazwisko);
@@ -188,20 +177,14 @@ public class KsiazkiForm extends FormLayout {
             }
         });
 
-        // 2. Konfiguracja Bindera dla pól obowiązkowych
-        // Dla każdego pola musisz dodać asRequired()
-
         binder.forField(stanFizyczny)
                 .asRequired("Pole jest wymagane")
                 .bind(Ksiazka::getStanFizyczny, Ksiazka::setStanFizyczny);
 
-        // To samo dla DaneKsiazki
         daneBinder.forField(isbn)
                 .asRequired("ISBN jest wymagany")
                 .withValidator(s -> {
-                    // Do sprawdzenia długości usuwamy myślniki
                     String clean = s.replaceAll("[^0-9X]", "");
-                    // Ale jeśli jest OK, to przepuszczamy wersję z myślnikami
                     return clean.length() == 10 || clean.length() == 13;
                 }, "ISBN musi mieć 10 lub 13 cyfr (myślniki i spacje są dozwolone)")
                 .bind(DaneKsiazki::getIsbn, DaneKsiazki::setIsbn);
@@ -232,9 +215,8 @@ public class KsiazkiForm extends FormLayout {
         dziedzina.setItemLabelGenerator(Dziedzina::getNazwa);
 
         poddziedzina.setItemLabelGenerator(Poddziedzina::getNazwa);
-        poddziedzina.setEnabled(false); // Blokujemy, póki dziedzina nie jest wybrana
+        poddziedzina.setEnabled(false);
 
-        // LOGIKA KASKADOWA: Wybór dziedziny filtruje poddziedziny
         dziedzina.addValueChangeListener(e -> {
             if (e.getValue() != null) {
                 poddziedzina.setItems(e.getValue().getPoddziedziny());
@@ -245,7 +227,6 @@ public class KsiazkiForm extends FormLayout {
             }
         });
 
-        // Mapowanie pól
         binder.bindInstanceFields(this);
         daneBinder.bindInstanceFields(this);
 
@@ -281,14 +262,11 @@ public class KsiazkiForm extends FormLayout {
 
     private void validateAndSave() {
         try {
-            // Próbujemy zapisać dane z pól do obiektów
             binder.writeBean(binder.getBean());
             daneBinder.writeBean(daneBinder.getBean());
 
-            // Jeśli nie rzuciło błędu (ValidationException), wysyłamy zdarzenie
             fireEvent(new SaveEvent(this, binder.getBean()));
         } catch (ValidationException e) {
-            // Jeśli pola są puste, Vaadin sam podświetli je na czerwono
         }
     }
 
@@ -299,7 +277,6 @@ public class KsiazkiForm extends FormLayout {
         wycofanieInfo.setVisible(false);
         wycofanieInfo.removeAll();
 
-        // Resetujemy stan przycisków na aktywny
         save.setEnabled(true);
         delete.setEnabled(true);
         stanFizyczny.setReadOnly(false);
@@ -310,13 +287,10 @@ public class KsiazkiForm extends FormLayout {
             statusField.setValue("");
         }
 
-        // --- SPRAWDZAMY CZY WYCOFANA ---
         if (ksiazka != null && StatusKsiazki.WYCOFANA.equals(ksiazka.getStatus())) {
-            // 1. Blokujemy przyciski
             save.setEnabled(false);
             delete.setEnabled(false);
 
-            // 2. Pobieramy informacje o powodzie
             Wycofanie wycofanie = service.findWycofanieByKsiazka(ksiazka);
             if (wycofanie != null) {
                 wycofanieInfo.setVisible(true);
@@ -328,50 +302,39 @@ public class KsiazkiForm extends FormLayout {
                 powodSpan.getStyle().set("font-weight", "bold");
                 wycofanieInfo.add(new Div(powodSpan));
             } else {
-                // Fallback, jeśli z jakiegoś powodu nie ma rekordu w tabeli Wycofanie
                 wycofanieInfo.setVisible(true);
                 wycofanieInfo.add(new Span("⚠️ Książka ma status WYCOFANA (brak szczegółów w historii). Edycja zablokowana."));
             }
         }
 
-        // 1. Logika kaskady: Najpierw przygotuj listy rozwijane!
         if (ksiazka != null && ksiazka.getPoddziedzina() != null) {
-            // Pobieramy dziedzinę z poddziedziny zapisanej w książce
             Dziedzina parentDziedzina = ksiazka.getPoddziedzina().getDziedzina();
 
-            // Ustawiamy wartość w polu Dziedzina (żeby użytkownik widział co wybrano)
             dziedzina.setValue(parentDziedzina);
 
-            // Ładujemy poddziedziny do drugiego ComboBoxa
-            // ZANIM binder spróbuje ustawić tam wartość
             if (parentDziedzina != null) {
                 poddziedzina.setItems(parentDziedzina.getPoddziedziny());
                 poddziedzina.setEnabled(true);
             }
         } else {
-            // Jeśli nowa książka lub brak poddziedziny
             if (ksiazka != null && ksiazka.getId() == null) {
-                dziedzina.clear(); // Czyścimy przy nowej
+                dziedzina.clear();
                 poddziedzina.clear();
                 poddziedzina.setItems(Collections.emptyList());
                 poddziedzina.setEnabled(false);
             }
         }
 
-        // 2. Bindowanie głównej encji (Ksiazka)
         binder.setBean(ksiazka);
 
         if (ksiazka != null && ksiazka.getDaneKsiazki() != null) {
             daneBinder.setBean(ksiazka.getDaneKsiazki());
-            // Jeśli książka ma już okładkę w bazie - pokaż ją
             showImage(ksiazka.getDaneKsiazki().getOkladka());
         } else {
             daneBinder.setBean(null);
         }
     }
 
-
-    // Eventy (SaveEvent, DeleteEvent, CloseEvent - analogicznie jak w PracownicyForm)
     public static abstract class KsiazkaFormEvent extends ComponentEvent<KsiazkiForm> {
         private Ksiazka ksiazka;
         protected KsiazkaFormEvent(KsiazkiForm source, Ksiazka ksiazka) {

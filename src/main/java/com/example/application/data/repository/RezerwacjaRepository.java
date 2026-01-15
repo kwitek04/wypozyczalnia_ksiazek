@@ -18,7 +18,6 @@ public interface RezerwacjaRepository extends JpaRepository<Rezerwacja, Long> {
     @Query("select count(r) from Rezerwacja r where r.uzytkownik = :uzytkownik and r.status = :status")
     long countByUzytkownikAndStatus(@Param("uzytkownik") Uzytkownicy uzytkownik, @Param("status") StatusRezerwacji status);
 
-    // Znajduje aktywną rezerwację dla konkretnej książki (potrzebne przy wydawaniu)
     @Query("select r from Rezerwacja r join r.zarezerwowaneKsiazki zk where zk.ksiazka = :ksiazka and r.status = 'AKTYWNA'")
     Optional<Rezerwacja> findActiveReservationForBook(@Param("ksiazka") Ksiazka ksiazka);
 }

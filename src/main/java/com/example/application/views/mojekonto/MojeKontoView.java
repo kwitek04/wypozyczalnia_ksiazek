@@ -29,19 +29,16 @@ public class MojeKontoView extends VerticalLayout {
         setSpacing(true);
         setAlignItems(Alignment.CENTER);
 
-        // 1. Pobieranie danych zalogowanego użytkownika
         UserDetails authenticatedUser = securityService.getAuthenticatedUser();
         String email = authenticatedUser.getUsername();
         String fullName = "";
         String phone = "";
         String role = "";
 
-        // Sprawdzamy czy to pracownik czy czytelnik
         Pracownicy p = pracownicyRepository.findByEmail(email);
         if (p != null) {
             fullName = p.getImie() + " " + p.getNazwisko();
             phone = p.getNrTelefonu();
-            // ZMIANA: Pobieranie ról jako string
             role = "Pracownik (" + p.getRoleAsString() + ")";
         } else {
             Uzytkownicy u = uzytkownicyRepository.findByEmail(email);
@@ -52,7 +49,6 @@ public class MojeKontoView extends VerticalLayout {
             }
         }
 
-        // 2. Tworzenie UI
         Avatar avatar = new Avatar(fullName);
         avatar.setWidth("100px");
         avatar.setHeight("100px");

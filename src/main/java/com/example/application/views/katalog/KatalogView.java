@@ -44,7 +44,6 @@ public class KatalogView extends VerticalLayout {
     private final SecurityService securityService;
     private Uzytkownicy currentUser;
 
-    // Komponenty interfejsu
     private final TreeGrid<Object> categoryTree = new TreeGrid<>();
     private final Grid<Autor> authorGrid = new Grid<>(Autor.class);
     private final Grid<Ksiazka> bookGrid = new Grid<>(Ksiazka.class);
@@ -59,16 +58,13 @@ public class KatalogView extends VerticalLayout {
         setSpacing(false);
         addClassName("katalog-view");
 
-        // 1. Konfiguracja lewego panelu (Kategorie i Autorzy)
         configureCategoryTree();
         configureAuthorGrid();
 
-        // Kontener na lewą stronę (zmienna zawartość)
         Div leftPanelContent = new Div();
         leftPanelContent.setSizeFull();
         leftPanelContent.add(categoryTree);
 
-        // Zakładki
         Tab tabKategorie = new Tab(VaadinIcon.FOLDER.create(), new Span(" Kategorie"));
         Tab tabAutorzy = new Tab(VaadinIcon.USER.create(), new Span(" Autorzy"));
 
@@ -93,44 +89,36 @@ public class KatalogView extends VerticalLayout {
             }
         });
 
-        // Lewy Layout (Tabs + Content) - STAŁA SZEROKOŚĆ
         VerticalLayout leftSide = new VerticalLayout(tabs, leftPanelContent);
         leftSide.setPadding(false);
         leftSide.setSpacing(false);
         leftSide.setHeightFull();
-        leftSide.setWidth("350px");     // Sztywna szerokość
-        leftSide.setMinWidth("350px");  // Blokada zmniejszania
-        leftSide.setMaxWidth("350px");  // Blokada zwiększania
-        // Dodajemy ramkę z prawej strony, żeby oddzielić od książek
+        leftSide.setWidth("350px");
+        leftSide.setMinWidth("350px");
+        leftSide.setMaxWidth("350px");
         leftSide.getStyle().set("border-right", "1px solid #e0e0e0");
 
-        // 2. Konfiguracja prawej strony (Lista książek)
         configureBookGrid();
 
-        // 3. Główny układ (HorizontalLayout zamiast SplitLayout)
         HorizontalLayout mainLayout = new HorizontalLayout(leftSide, bookGrid);
         mainLayout.setSizeFull();
-        mainLayout.setSpacing(false); // Brak odstępów między panelem a gridem
-        // bookGrid zajmie całą pozostałą przestrzeń
+        mainLayout.setSpacing(false);
         mainLayout.setFlexGrow(1, bookGrid);
 
         add(mainLayout);
 
-        // Załaduj dane na start
         updateBookList(null);
     }
 
     private void loadCurrentUser() {
         UserDetails userDetails = securityService.getAuthenticatedUser();
         if (userDetails != null) {
-            // Szukamy uzytkownika w bazie po emailu
             this.currentUser = service.findUzytkownikByEmail(userDetails.getUsername());
         } else {
             this.currentUser = null;
         }
     }
 
-    // --- LEWY PANEL: KATEGORIE ---
     private void configureCategoryTree() {
         categoryTree.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_ROW_STRIPES);
         categoryTree.setSizeFull();
@@ -158,24 +146,18 @@ public class KatalogView extends VerticalLayout {
         categoryTree.asSingleSelect().addValueChangeListener(e -> updateBookList(e.getValue()));
     }
 
-    // --- LEWY PANEL: AUTORZY (Z SORTOWANIEM) ---
     private void configureAuthorGrid() {
         authorGrid.setSizeFull();
         authorGrid.removeAllColumns();
         authorGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_ROW_STRIPES);
-
-        // Wyświetlanie: Nazwisko Imię (czytelniej przy sortowaniu po nazwisku)
         authorGrid.addColumn(a -> a.getNazwisko() + " " + a.getImie()).setHeader("Nazwisko i Imię");
 
-        // Pobieramy wszystkich autorów i SORTUJEMY
         List<Autor> allAuthors = service.findAllAutorzy();
-        // Sortowanie: Najpierw Nazwisko, potem Imię
         allAuthors.sort(Comparator.comparing(Autor::getNazwisko)
                 .thenComparing(Autor::getImie));
 
         authorGrid.setItems(allAuthors);
 
-        // Filtrowanie autorów
         authorFilter.setPlaceholder("Szukaj autora...");
         authorFilter.setValueChangeMode(ValueChangeMode.LAZY);
         authorFilter.setPrefixComponent(VaadinIcon.SEARCH.create());
@@ -195,7 +177,6 @@ public class KatalogView extends VerticalLayout {
         });
     }
 
-    // --- PRAWY PANEL: KSIĄŻKI ---
     private void configureBookGrid() {
         bookGrid.addClassName("katalog-books");
         bookGrid.setSizeFull();
@@ -205,7 +186,6 @@ public class KatalogView extends VerticalLayout {
 
         bookGrid.addItemClickListener(event -> {
             Ksiazka clickedBook = event.getItem();
-            // Otwieramy dialog ze szczegółami
             new KsiazkaDetailsDialog(clickedBook, service, currentUser).open();
         });
     }
@@ -217,7 +197,6 @@ public class KatalogView extends VerticalLayout {
         } else if (selection instanceof Poddziedzina) {
             ksiazki = service.findKsiazkiByPoddziedzina((Poddziedzina) selection);
         } else {
-            // ZMIANA TUTAJ: Używamy nowej metody, żeby w katalogu NIE było widać wycofanych
             ksiazki = service.findAllActiveKsiazki();
         }
         bookGrid.setItems(ksiazki);
@@ -231,7 +210,6 @@ public class KatalogView extends VerticalLayout {
         card.setWidthFull();
         card.setAlignItems(Alignment.START);
 
-        // ZDJĘCIE
         Image coverImage;
         byte[] okladka = ksiazka.getDaneKsiazki().getOkladka();
         if (okladka != null && okladka.length > 0) {
@@ -245,7 +223,6 @@ public class KatalogView extends VerticalLayout {
         coverImage.getStyle().set("border-radius", "5px").set("object-fit", "cover");
         coverImage.getStyle().set("box-shadow", "0 4px 6px rgba(0,0,0,0.1)");
 
-        // DANE
         VerticalLayout details = new VerticalLayout();
         details.setSpacing(false);
         details.setPadding(false);
@@ -275,7 +252,6 @@ public class KatalogView extends VerticalLayout {
 
         details.add(tytul, autor, meta, isbn, kategoria);
 
-        // STATUS
         Div spacer = new Div();
         card.setFlexGrow(1, spacer);
 

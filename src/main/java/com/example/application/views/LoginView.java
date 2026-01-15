@@ -23,24 +23,22 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
-        // Konfiguracja tekstów (I18n)
         LoginI18n i18n = LoginI18n.createDefault();
         LoginI18n.Form i18nForm = i18n.getForm();
 
         i18nForm.setTitle("");
-        i18nForm.setUsername("Email"); // Zmieniamy etykietę z "Username" na "Email"
+        i18nForm.setUsername("Email");
         i18nForm.setPassword("Hasło");
         i18nForm.setSubmit("Zaloguj się");
         i18nForm.setForgotPassword("Nie pamiętasz hasła?");
 
         i18n.setForm(i18nForm);
 
-        // Tekst błędu z polskimi znakami
         i18n.getErrorMessage().setTitle("Błędny email lub hasło");
         i18n.getErrorMessage().setMessage("Upewnij się, że wpisałeś poprawne dane i spróbuj ponownie.");
 
         login.setI18n(i18n);
-        login.setAction("login"); // Spring Security będzie szukać POST na /login
+        login.setAction("login");
 
         add(new H1("Zaloguj się"), login);
     }

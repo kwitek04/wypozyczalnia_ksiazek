@@ -103,18 +103,10 @@ public class CrmService {
     public void deletePoddziedzina(Poddziedzina poddziedzina) {
         if (poddziedzina == null) return;
 
-        // 1. Pobieramy świeżą wersję rodzica (Dziedziny) z bazy danych
-        // Używamy findById, żeby mieć pewność, że operujemy na zarządzanej encji
         Dziedzina parent = dziedzinaRepository.findById(poddziedzina.getDziedzina().getId()).orElse(null);
 
         if (parent != null) {
-            // 2. Usuwamy poddziedzinę z listy rodzica, sprawdzając po ID
-            // (to najbezpieczniejszy sposób, który działa nawet bez metod equals/hashCode)
             parent.getPoddziedziny().removeIf(p -> p.getId().equals(poddziedzina.getId()));
-
-            // 3. Zapisujemy rodzica.
-            // Mechanizm 'orphanRemoval=true' w encji Dziedzina automatycznie usunie
-            // odłączoną poddziedzinę z bazy danych (wykona SQL DELETE).
             dziedzinaRepository.save(parent);
         }
     }
@@ -142,7 +134,7 @@ public class CrmService {
 
     public void saveContact(Contact contact) {
         if (contact == null) {
-            System.err.println("Contact is null. Are you sure you have connected your form to the application?");
+            System.err.println("Kontakt jest pusty");
             return;
         }
         contactRepository.save(contact);
@@ -171,10 +163,7 @@ public class CrmService {
             pracownik.setEnabled(true);
         }
 
-        // Logika: Jeśli pole hasła nie jest puste, szyfrujemy je przed zapisem
         if (pracownik.getPassword() != null && !pracownik.getPassword().isEmpty()) {
-            // Sprawdzamy, czy hasło już jest zakodowane (zaczyna się od $2a$)
-            // Jeśli nie jest - szyfrujemy
             if (!pracownik.getPassword().startsWith("$2a$")) {
                 pracownik.setPassword(passwordEncoder.encode(pracownik.getPassword()));
             }
@@ -202,12 +191,10 @@ public class CrmService {
     public void saveKsiazka(Ksiazka ksiazka) {
         if (ksiazka == null) return;
 
-        // 1. Najpierw zapisujemy opis (ISBN), jeśli to nowa pozycja w katalogu
         if (ksiazka.getDaneKsiazki() != null) {
             daneKsiazkiRepository.save(ksiazka.getDaneKsiazki());
         }
 
-        // 2. Potem zapisujemy konkretny egzemplarz (Ksiazka)
         ksiazkaRepository.save(ksiazka);
     }
 
@@ -224,7 +211,6 @@ public class CrmService {
             uzytkownik.setEnabled(false);
         }
 
-        // Szyfrowanie hasła (identycznie jak u pracowników)
         if (uzytkownik.getPassword() != null && !uzytkownik.getPassword().isEmpty()) {
             if (!uzytkownik.getPassword().startsWith("$2a$")) {
                 uzytkownik.setPassword(passwordEncoder.encode(uzytkownik.getPassword()));
@@ -276,20 +262,17 @@ public class CrmService {
             throw new IllegalArgumentException("Nieprawidłowe dane wypożyczenia.");
         }
 
-        // --- ZMIANA LOGIKI DOSTĘPNOŚCI ---
         boolean czyMoznaWypozyczyc = false;
         Rezerwacja rezerwacjaDoRealizacji = null;
 
         if (StatusKsiazki.DOSTEPNA.equals(ksiazka.getStatus())) {
-            // Klasyczna sytuacja - książka z półki
             czyMoznaWypozyczyc = true;
         } else if (StatusKsiazki.ZAREZERWOWANA.equals(ksiazka.getStatus())) {
-            // Książka zarezerwowana - sprawdzamy czy przez TEGO użytkownika
             rezerwacjaDoRealizacji = rezerwacjaRepository.findActiveReservationForBook(ksiazka)
-                    .orElseThrow(() -> new IllegalStateException("Błąd spójności danych: Książka ma status Zarezerwowana, ale brak aktywnej rezerwacji."));
+                    .orElseThrow(() -> new IllegalStateException("Błąd spójności danych"));
 
             if (rezerwacjaDoRealizacji.getUzytkownik().getId().equals(uzytkownik.getId())) {
-                czyMoznaWypozyczyc = true; // To ten sam użytkownik, można wydać
+                czyMoznaWypozyczyc = true;
             } else {
                 throw new IllegalStateException("Ta książka jest zarezerwowana przez innego użytkownika!");
             }
@@ -299,13 +282,11 @@ public class CrmService {
 
         if (!czyMoznaWypozyczyc) return;
 
-        // Sprawdzenie limitu wypożyczeń (5 sztuk)
         long liczbaWypozyczonych = wypozyczenieRepository.countByUzytkownikAndDataOddaniaIsNull(uzytkownik);
         if (liczbaWypozyczonych >= 5) {
             throw new IllegalStateException("Osiągnięto limit 5 wypożyczonych książek!");
         }
 
-        // --- REALIZACJA WYPOŻYCZENIA ---
         int nowyLicznik = ksiazka.getLicznikWypozyczen() + 1;
         ksiazka.setLicznikWypozyczen(nowyLicznik);
 
@@ -326,7 +307,6 @@ public class CrmService {
         ksiazka.setStatus(StatusKsiazki.WYPOZYCZONA);
         ksiazkaRepository.save(ksiazka);
 
-        // --- JEŚLI BYŁA TO REZERWACJA, OZNACZAMY JAKO ZREALIZOWANĄ ---
         if (rezerwacjaDoRealizacji != null) {
             rezerwacjaDoRealizacji.setStatus(StatusRezerwacji.ZREALIZOWANA);
             rezerwacjaDoRealizacji.setZrealizowana(true);
@@ -334,7 +314,6 @@ public class CrmService {
         }
     }
 
-    // Metoda pomocnicza do pobrania użytkownika po emailu (dla Security)
     public Uzytkownicy findUzytkownikByEmail(String email) {
         return uzytkownicyRepository.findByEmail(email);
     }
@@ -375,7 +354,6 @@ public class CrmService {
     }
 
     public List<Ksiazka> findKsiazkiDoKontroli() {
-        // Szukamy tylko tych, które wymagają kontroli I zostały już zwrócone (są dostępne)
         return ksiazkaRepository.findByWymagaKontroliTrueAndStatus(StatusKsiazki.W_KONTROLI);
     }
 
@@ -383,27 +361,20 @@ public class CrmService {
         if (ksiazka == null) return;
 
         ksiazka.setStanFizyczny(nowyStan);
-        ksiazka.setWymagaKontroli(false); // Zdejmujemy flagę, bo kontrola wykonana
+        ksiazka.setWymagaKontroli(false);
 
-        // --- ZMIANA: Automatyczna blokada książek uszkodzonych ---
         if (nowyStan == StanFizyczny.DO_RENOWACJI) {
-            // Blokujemy wypożyczanie
             ksiazka.setStatus(StatusKsiazki.W_RENOWACJI);
         } else if (nowyStan == StanFizyczny.DO_WYCOFANIA) {
-            // Blokujemy wypożyczanie (książka czeka na decyzję kierownika w widoku "Do wycofania")
-            // Ustawiamy status W_KONTROLI, żeby nie była dostępna w katalogu
             ksiazka.setStatus(StatusKsiazki.W_KONTROLI);
         } else {
-            // Książka jest w dobrym stanie, wraca do obiegu
             ksiazka.setStatus(StatusKsiazki.DO_ODLOZENIA);
         }
-        // ---------------------------------------------------------
 
         ksiazkaRepository.save(ksiazka);
     }
 
     public List<Ksiazka> findKsiazkiDoDecyzjiWycofania() {
-        // Szukamy książek ze stanem DO_WYCOFANIA, które jeszcze nie mają statusu WYCOFANA
         return ksiazkaRepository.findByStanFizycznyAndStatusNot(
                 StanFizyczny.DO_WYCOFANIA,
                 StatusKsiazki.WYCOFANA
@@ -413,11 +384,9 @@ public class CrmService {
     public void wycofajKsiazke(Ksiazka ksiazka, Pracownicy pracownik, String powod) {
         if (ksiazka == null || pracownik == null) return;
 
-        // Tworzymy rekord w historii wycofań
         Wycofanie wycofanie = new Wycofanie(ksiazka, pracownik, java.time.LocalDate.now(), powod);
         wycofanieRepository.save(wycofanie);
 
-        // Zmieniamy status książki, żeby zniknęła z obiegu
         ksiazka.setStatus(StatusKsiazki.WYCOFANA);
         ksiazkaRepository.save(ksiazka);
     }
@@ -440,18 +409,14 @@ public class CrmService {
         ksiazkaRepository.save(ksiazka);
     }
 
-    // ... (wewnątrz CrmService)
-
     @Transactional
     public void zarezerwujKsiazke(Ksiazka ksiazka, Uzytkownicy uzytkownik) {
         if (ksiazka == null || uzytkownik == null) return;
 
-        // 1. Sprawdź status książki
         if (!StatusKsiazki.DOSTEPNA.equals(ksiazka.getStatus())) {
             throw new IllegalStateException("Tej książki nie można zarezerwować (jest niedostępna).");
         }
 
-        // 2. NOWOŚĆ: Sprawdź limit rezerwacji (Max 3 aktywne)
         long aktywneRezerwacje = rezerwacjaRepository.countByUzytkownikAndStatus(uzytkownik, StatusRezerwacji.AKTYWNA);
         if (aktywneRezerwacje >= 3) {
             throw new IllegalStateException("Osiągnięto limit 3 aktywnych rezerwacji. Anuluj lub odbierz inne książki.");
@@ -470,14 +435,12 @@ public class CrmService {
     @Transactional
     public void anulujRezerwacje(Rezerwacja rezerwacja) {
         if (rezerwacja == null || rezerwacja.getStatus() != StatusRezerwacji.AKTYWNA) {
-            return; // Można rzucić wyjątek, ale tutaj po prostu ignorujemy
+            return;
         }
 
-        // 1. Zmień status rezerwacji
         rezerwacja.setStatus(StatusRezerwacji.ANULOWANA);
         rezerwacjaRepository.save(rezerwacja);
 
-        // 2. Zwolnij książki (Status: ZAREZERWOWANA -> DOSTEPNA)
         for (ZarezerwowanaKsiazka zk : rezerwacja.getZarezerwowaneKsiazki()) {
             Ksiazka ksiazka = zk.getKsiazka();
             ksiazka.setStatus(StatusKsiazki.DOSTEPNA);

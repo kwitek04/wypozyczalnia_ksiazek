@@ -32,10 +32,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 1. Szukamy w pracownikach
         Pracownicy pracownik = pracownicyRepository.findByEmail(username);
         if (pracownik != null) {
-            // --- ZMIANA: Mapujemy listę ról na uprawnienia Spring Security ---
             List<GrantedAuthority> authorities = pracownik.getRole().stream()
                     .map(rola -> new SimpleGrantedAuthority("ROLE_" + rola.getName().toUpperCase()))
                     .collect(Collectors.toList());
@@ -47,11 +45,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                     true,
                     true,
                     true,
-                    authorities // Przekazujemy listę ról
+                    authorities
             );
         }
 
-        // 2. Jeśli nie ma w pracownikach, szukamy w użytkownikach (czytelnikach)
         Uzytkownicy uzytkownik = uzytkownicyRepository.findByEmail(username);
         if (uzytkownik != null) {
             return new User(

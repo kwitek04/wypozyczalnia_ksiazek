@@ -48,24 +48,19 @@ public class KontrolaStanuView extends VerticalLayout {
         grid.setSizeFull();
         grid.removeAllColumns();
 
-        // Informacje o książce
         grid.addColumn(k -> k.getDaneKsiazki().getTytul()).setHeader("Tytuł").setAutoWidth(true);
         grid.addColumn(k -> k.getDaneKsiazki().getIsbn()).setHeader("ISBN");
         grid.addColumn(Ksiazka::getLicznikWypozyczen).setHeader("Licznik wypożyczeń").setSortable(true);
-
-        // KOLUMNA AKCJI - Zmiana stanu
         grid.addComponentColumn(ksiazka -> {
             HorizontalLayout actions = new HorizontalLayout();
             actions.setAlignItems(Alignment.BASELINE);
 
-            // Lista rozwijana ze stanami
             Select<StanFizyczny> statusSelect = new Select<>();
             statusSelect.setItems(StanFizyczny.values());
-            statusSelect.setValue(ksiazka.getStanFizyczny()); // Ustaw obecny stan
+            statusSelect.setValue(ksiazka.getStanFizyczny());
             statusSelect.setPlaceholder("Wybierz stan");
             statusSelect.setWidth("180px");
 
-            // Przycisk zatwierdzenia
             Button confirmBtn = new Button("Zatwierdź");
             confirmBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
@@ -73,7 +68,7 @@ public class KontrolaStanuView extends VerticalLayout {
                 service.zaktualizujStanPoKontroli(ksiazka, statusSelect.getValue());
                 Notification.show("Stan zaktualizowany. Książka wraca do obiegu.", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                updateList(); // Odśwież listę (książka zniknie)
+                updateList();
             });
 
             actions.add(statusSelect, confirmBtn);

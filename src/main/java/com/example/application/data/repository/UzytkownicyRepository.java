@@ -15,7 +15,6 @@ public interface UzytkownicyRepository extends JpaRepository<Uzytkownicy, Long> 
             "or lower(u.nazwisko) like lower(concat('%', :searchTerm, '%'))")
     List<Uzytkownicy> search(@Param("searchTerm") String searchTerm);
 
-    // Metoda potrzebna do logowania (jeśli zdecydujesz się je włączyć dla czytelników)
     Uzytkownicy findByEmail(String email);
 
     List<Uzytkownicy> findByEnabled(boolean enabled);

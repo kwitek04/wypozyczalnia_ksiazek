@@ -52,7 +52,6 @@ public class Pracownicy extends AbstractEntity {
     private boolean enabled = false; // Domyślnie konto jest nieaktywne
 
     // Gettery i Settery
-
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
 

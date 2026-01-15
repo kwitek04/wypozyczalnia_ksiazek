@@ -13,7 +13,7 @@ public class DaneKsiazki {
     @Id
     @NotEmpty
     @Size(min = 10, max = 20)
-    private String isbn; // Klucz główny (ISBN-13)
+    private String isbn;
 
     @NotEmpty
     @Size(max = 50)
@@ -25,27 +25,20 @@ public class DaneKsiazki {
 
     private Integer rokWydania;
 
-    @Column(length = 2000) // Dłuższy tekst (do 2000 znaków)
+    @Column(length = 2000)
     private String opis;
 
-    // --- LOB (ZDJĘCIE) ---
     @Lob
     @Column(length = 10000000)
     private byte[] okladka;
 
-    // --- RELACJA AUTORZY ---
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "autor_ksiazka",
-            // ZMIANA TUTAJ: Wracamy do "ksiazka_id", bo taką kolumnę masz w bazie danych
             joinColumns = @JoinColumn(name = "ksiazka_id"),
             inverseJoinColumns = @JoinColumn(name = "autor_id")
     )
     private Set<Autor> autorzy = new HashSet<>();
-
-// W DaneKsiazki.java
-
-    // ... inne pola ...
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -58,7 +51,6 @@ public class DaneKsiazki {
     public Set<Tlumacz> getTlumacze() { return tlumacze; }
     public void setTlumacze(Set<Tlumacz> tlumacze) { this.tlumacze = tlumacze; }
 
-    // Konstruktory
     public DaneKsiazki() {}
 
     public DaneKsiazki(String isbn, String tytul, String wydawnictwo, int rokWydania) {
@@ -68,10 +60,10 @@ public class DaneKsiazki {
         this.rokWydania = rokWydania;
     }
 
+    // Gettery i Settery
     public String getOpis() { return opis; }
     public void setOpis(String opis) { this.opis = opis; }
 
-    // Gettery i Settery
     public String getIsbn() { return isbn; }
     public void setIsbn(String isbn) { this.isbn = isbn; }
 

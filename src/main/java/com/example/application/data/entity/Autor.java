@@ -21,9 +21,6 @@ public class Autor {
     @Size(max = 25)
     private String nazwisko;
 
-    // Relacja ManyToMany zostanie zdefiniowana w encji DaneKsiazki,
-    // ale tutaj możemy dodać mapowanie zwrotne, jeśli będziemy chcieli
-    // łatwo pobrać wszystkie książki danego autora.
     @ManyToMany(mappedBy = "autorzy")
     private Set<DaneKsiazki> ksiazki = new HashSet<>();
 

@@ -45,9 +45,6 @@ public class PracownicyForm extends FormLayout {
         if (pracownicy != null) {
             this.setEnabled(true);
             lockBtn.setEnabled(true);
-
-            // PRZYCISK WIDOCZNY TYLKO DLA ISTNIEJĄCYCH PRACOWNIKÓW
-            // Jeśli getId() != null, to znaczy że pracownik jest już w bazie
             lockBtn.setVisible(pracownicy.getId() != null);
 
             updateStatusButton();
@@ -55,7 +52,6 @@ public class PracownicyForm extends FormLayout {
     }
 
     private void updateStatusButton() {
-        // Dla pracownicya enabled=true oznacza aktywny, false oznacza zablokowany
         if (pracownicy.isEnabled()) {
             lockBtn.setText("Zablokuj");
             lockBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
@@ -72,7 +68,6 @@ public class PracownicyForm extends FormLayout {
         if (pracownicy != null) {
             pracownicy.setEnabled(!pracownicy.isEnabled());
             updateStatusButton();
-            // Wywołujemy SaveEvent, aby widok nadrzędny zapisał zmiany w DB i odświeżył Grida
             fireEvent(new SaveEvent(this, pracownicy));
             Notification.show(pracownicy.isEnabled() ? "Pracownik odblokowany" : "Pracownik zablokowany");
         }
@@ -81,7 +76,6 @@ public class PracownicyForm extends FormLayout {
     public PracownicyForm(List<Rola> dostepneRole) {
         addClassName("pracownicy-form");
 
-        // Konfiguracja MultiSelect
         role.setItems(dostepneRole);
         role.setItemLabelGenerator(Rola::getName);
         role.setPlaceholder("Wybierz role...");
@@ -116,7 +110,6 @@ public class PracownicyForm extends FormLayout {
         }
     }
 
-    // Events
     public static abstract class PracownicyFormEvent extends ComponentEvent<PracownicyForm> {
         private Pracownicy pracownicy;
 

@@ -42,7 +42,7 @@ public class DziedzinaView extends VerticalLayout {
                     com.vaadin.flow.component.notification.Notification.show("Dodano dziedzinę!");
                 }
             } catch (Exception ex) {
-                ex.printStackTrace(); // To wypisze DOKŁADNY błąd w konsoli IntelliJ
+                ex.printStackTrace();
                 com.vaadin.flow.component.notification.Notification.show("Błąd: " + ex.getMessage(),
                         5000, com.vaadin.flow.component.notification.Notification.Position.MIDDLE);
             }
@@ -57,7 +57,6 @@ public class DziedzinaView extends VerticalLayout {
         grid.addColumn(d -> d.getPoddziedziny() != null ? d.getPoddziedziny().size() : 0)
                 .setHeader("Liczba poddziedzin");
 
-        // KLIKNIĘCIE OTWIERA OKNO PODDZIEDZIN
         grid.asSingleSelect().addValueChangeListener(e -> {
             if (e.getValue() != null) {
                 openPoddziedzinaDialog(e.getValue());

@@ -17,10 +17,6 @@ public class WypozyczonaKsiazka {
     @JoinColumn(name = "ksiazka_id")
     private Ksiazka ksiazka;
 
-    // Możemy tu dodać nadmiarowo użytkownika, jeśli bardzo tego potrzebujesz w tej tabeli,
-    // ale w JPA wystarczy, że jest on w encji 'Wypozyczenie'.
-    // Dla czystości kodu zostawiam powiązanie przez Wypozyczenie.
-
     public WypozyczonaKsiazka() {}
 
     public WypozyczonaKsiazka(Wypozyczenie wypozyczenie, Ksiazka ksiazka) {

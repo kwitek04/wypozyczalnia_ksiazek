@@ -40,7 +40,6 @@ public class UzytkownicyForm extends FormLayout {
     public UzytkownicyForm() {
         addClassName("uzytkownicy-form");
 
-        // Ustawienie polskiego formatu daty w kalendarzu
         dataUrodzenia.setLocale(new Locale("pl", "PL"));
 
         binder.bindInstanceFields(this);
@@ -55,8 +54,6 @@ public class UzytkownicyForm extends FormLayout {
 
         if (uzytkownik != null) {
             updateLockButton();
-            // Ukrywamy przycisk blokady, jeśli konto nie jest jeszcze aktywne (enabled = false)
-            // Bo zablokować można tylko kogoś, kto już jest aktywnym użytkownikiem
             lockBtn.setVisible(uzytkownik.isEnabled());
         }
     }
@@ -71,7 +68,6 @@ public class UzytkownicyForm extends FormLayout {
             lockBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
             lockBtn.removeThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
         }
-        // Przycisk zajmuje całą szerokość dla lepszej widoczności
         lockBtn.setWidthFull();
     }
 
@@ -79,7 +75,6 @@ public class UzytkownicyForm extends FormLayout {
         if (uzytkownik != null) {
             uzytkownik.setLocked(!uzytkownik.isLocked());
             updateLockButton();
-            // Automatycznie zapisujemy zmianę statusu
             fireEvent(new SaveEvent(this, uzytkownik));
             Notification.show(uzytkownik.isLocked() ? "Konto zablokowane" : "Konto odblokowane");
         }
@@ -110,8 +105,6 @@ public class UzytkownicyForm extends FormLayout {
             e.printStackTrace();
         }
     }
-
-    // --- System Eventów (analogiczny do Pracowników) ---
 
     public static abstract class UzytkownicyFormEvent extends ComponentEvent<UzytkownicyForm> {
         private Uzytkownicy uzytkownik;

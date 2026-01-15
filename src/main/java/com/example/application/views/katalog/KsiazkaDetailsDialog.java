@@ -43,7 +43,6 @@ public class KsiazkaDetailsDialog extends Dialog {
         setWidth("800px");
         setMaxWidth("90vw");
 
-        // --- LEWA KOLUMNA ---
         VerticalLayout leftColumn = new VerticalLayout();
         leftColumn.setWidth("35%");
         leftColumn.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -70,7 +69,6 @@ public class KsiazkaDetailsDialog extends Dialog {
             leftColumn.add(counterBadge);
         }
 
-        // --- PRAWA KOLUMNA ---
         VerticalLayout rightColumn = new VerticalLayout();
         rightColumn.setWidth("65%");
         rightColumn.getStyle().set("overflow-wrap", "anywhere");
@@ -95,7 +93,6 @@ public class KsiazkaDetailsDialog extends Dialog {
                 ksiazka.getDaneKsiazki().getOpis() : "Brak opisu dla tej pozycji.");
         opis.getStyle().set("text-align", "justify").set("line-height", "1.6");
 
-        // --- PRZYCISKI (POPRAWIONE SKALOWANIE) ---
         Button btnWypozycz = new Button("Wypożycz", VaadinIcon.BOOK.create());
         btnWypozycz.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_LARGE);
         boolean isAvailable = ksiazka.getStatus().getName().equalsIgnoreCase("Dostępna");
@@ -124,22 +121,17 @@ public class KsiazkaDetailsDialog extends Dialog {
 
             dialog.addConfirmListener(event -> {
                 try {
-                    // Próbujemy wypożyczyć (teraz metoda jest void)
                     service.wypozyczKsiazke(ksiazka, currentUser);
 
-                    // Sukces
                     Notification.show("Pomyślnie wypożyczono książkę!", 3000, Notification.Position.MIDDLE)
                             .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                     this.close();
 
                 } catch (IllegalStateException | IllegalArgumentException ex) {
-                    // Błąd logiczny (np. limit książek lub niedostępna)
-                    // Wyświetlamy dokładnie ten tekst, który ustawiliśmy w Serwisie
                     Notification.show(ex.getMessage(), 5000, Notification.Position.MIDDLE)
                             .addThemeVariants(NotificationVariant.LUMO_ERROR);
 
                 } catch (Exception ex) {
-                    // Inny nieoczekiwany błąd
                     ex.printStackTrace();
                     Notification.show("Wystąpił nieoczekiwany błąd serwera.", 3000, Notification.Position.MIDDLE)
                             .addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -152,11 +144,10 @@ public class KsiazkaDetailsDialog extends Dialog {
         Button btnRezerwuj = new Button("Zarezerwuj", VaadinIcon.CALENDAR_CLOCK.create());
         btnRezerwuj.addThemeVariants(ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_LARGE);
 
-        // Logika dostępności przycisku (tylko dla zalogowanych i jeśli dostępna)
         if (!isLoggedIn) {
             btnRezerwuj.setEnabled(false);
         } else if (!isAvailable) {
-            btnRezerwuj.setEnabled(false); // Można odblokować jeśli chcesz kolejkować, ale na razie blokujemy
+            btnRezerwuj.setEnabled(false);
         }
 
         btnRezerwuj.addClickListener(e -> {
@@ -184,13 +175,9 @@ public class KsiazkaDetailsDialog extends Dialog {
         });
 
         HorizontalLayout actions = new HorizontalLayout(btnWypozycz, btnRezerwuj);
-        actions.setWidthFull(); // Kontener zajmuje całą szerokość
+        actions.setWidthFull();
         actions.setSpacing(true);
         actions.getStyle().set("margin-top", "auto");
-
-        // KLUCZOWA ZMIANA: FlexGrow
-        // To mówi: "Podzielcie się dostępnym miejscem po równo (1:1)"
-        // Dzięki temu przyciski zawsze wypełnią kontener, ale nigdy go nie rozsadzą.
         actions.setFlexGrow(1, btnWypozycz, btnRezerwuj);
 
         rightColumn.add(tytul, autor, details, opis, actions);

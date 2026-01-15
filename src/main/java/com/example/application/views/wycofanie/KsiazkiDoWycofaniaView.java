@@ -53,13 +53,11 @@ public class KsiazkiDoWycofaniaView extends VerticalLayout {
         grid.addColumn(k -> k.getDaneKsiazki().getIsbn()).setHeader("ISBN");
         grid.addColumn(Ksiazka::getLicznikWypozyczen).setHeader("Licznik wyp.");
 
-        // Kolumna Akcji
         grid.addComponentColumn(ksiazka -> {
             Button wycofajBtn = new Button("Wycofaj z biblioteki");
             wycofajBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
             wycofajBtn.addClickListener(e -> {
-                // Otwieramy dialog z powodem
                 TextArea powodField = new TextArea("Powód wycofania");
                 powodField.setPlaceholder("np. Zniszczona okładka, brak stron, zalanie...");
                 powodField.setWidthFull();
@@ -79,10 +77,9 @@ public class KsiazkiDoWycofaniaView extends VerticalLayout {
                 dialog.addConfirmListener(event -> {
                     if (powodField.getValue().isEmpty()) {
                         Notification.show("Musisz podać powód!", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_ERROR);
-                        return; // Nie zamyka dialogu jeśli brak powodu (w teorii, w ConfirmDialog Vaadina listener zamyka, więc walidacja jest trudniejsza, ale tu upraszczamy)
+                        return;
                     }
 
-                    // Pobieramy zalogowanego kierownika
                     UserDetails userDetails = securityService.getAuthenticatedUser();
                     Pracownicy kierownik = service.findPracownikByEmail(userDetails.getUsername());
 

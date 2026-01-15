@@ -42,7 +42,7 @@ public class KsiazkiView extends VerticalLayout {
 
     private Component getContent() {
         HorizontalLayout content = new HorizontalLayout(grid, form);
-        content.setFlexGrow(2, grid); // Grid zajmuje więcej miejsca
+        content.setFlexGrow(2, grid);
         content.setFlexGrow(1, form);
         content.addClassName("content");
         content.setSizeFull();
@@ -52,8 +52,6 @@ public class KsiazkiView extends VerticalLayout {
     private void configureForm() {
         form = new KsiazkiForm(service);
         form.setWidth("25em");
-
-        // Obsługa zdarzeń z formularza
         form.addListener(KsiazkiForm.SaveEvent.class, this::saveKsiazka);
         form.addListener(KsiazkiForm.DeleteEvent.class, this::deleteKsiazka);
         form.addListener(KsiazkiForm.CloseEvent.class, e -> closeEditor());
@@ -62,14 +60,8 @@ public class KsiazkiView extends VerticalLayout {
     private void configureGrid() {
         grid.addClassNames("ksiazka-grid");
         grid.setSizeFull();
-
-        // Czyścimy automatyczne kolumny, aby zdefiniować własne (z relacjami)
         grid.setColumns();
-
-        // Kolumny z encji DaneKsiazki (przez relację OneToOne)
         grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getTytul()).setHeader("Tytuł").setSortable(true);
-
-        // Wyświetlanie autorów (relacja ManyToMany w DaneKsiazki)
         grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getAutorzy().stream()
                         .map(autor -> autor.getImie() + " " + autor.getNazwisko())
                         .collect(Collectors.joining(", ")))
@@ -77,12 +69,11 @@ public class KsiazkiView extends VerticalLayout {
 
         grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getIsbn()).setHeader("ISBN");
 
-        // Poddziedzina i Dziedzina (przez relację ManyToOne)
+
         grid.addColumn(ksiazka -> ksiazka.getPoddziedzina() != null ?
                         ksiazka.getPoddziedzina().getDziedzina().getNazwa() : "-")
                 .setHeader("Dziedzina");
 
-        // Kolumny bezpośrednio z encji Ksiazka
         grid.addColumn(ksiazka -> ksiazka.getStatus().getName()).setHeader("Status").setSortable(true);
         grid.addColumn(Ksiazka::getStanFizyczny).setHeader("Stan fizyczny");
 
@@ -130,8 +121,8 @@ public class KsiazkiView extends VerticalLayout {
     private void addKsiazka() {
         grid.asSingleSelect().clear();
         Ksiazka nowaKsiazka = new Ksiazka();
-        nowaKsiazka.setDaneKsiazki(new DaneKsiazki()); // Ważne: tworzymy też obiekt opisu
-        nowaKsiazka.setStatus(StatusKsiazki.DOSTEPNA); // Domyślny status
+        nowaKsiazka.setDaneKsiazki(new DaneKsiazki());
+        nowaKsiazka.setStatus(StatusKsiazki.DOSTEPNA);
         editKsiazka(nowaKsiazka);
     }
 

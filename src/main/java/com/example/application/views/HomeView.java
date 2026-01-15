@@ -52,14 +52,11 @@ public class HomeView extends VerticalLayout {
         setAlignItems(Alignment.CENTER);
         addClassName("home-view");
 
-        // Pasek wyszukiwania
         add(createSearchBar());
 
-        // Konfiguracja Grida
         configureGrid();
         add(grid);
 
-        // Ładowanie danych
         updateList();
     }
 
@@ -86,14 +83,11 @@ public class HomeView extends VerticalLayout {
         grid.setSizeFull();
         grid.removeAllColumns();
 
-        // TWORZYMY JEDNĄ "SUPER KOLUMNĘ" Z WŁASNYM UKŁADEM
         grid.addComponentColumn(ksiazka -> createBookCard(ksiazka));
 
-        // Usuwamy nagłówek tabeli
         grid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS, GridVariant.LUMO_NO_BORDER);
         grid.addItemClickListener(event -> {
             Ksiazka clickedBook = event.getItem();
-            // Otwieramy dialog ze szczegółami
             new KsiazkaDetailsDialog(clickedBook, service, currentUser).open();
         });
     }
@@ -106,38 +100,32 @@ public class HomeView extends VerticalLayout {
         card.setWidthFull();
         card.setAlignItems(Alignment.START);
 
-        // 1. ZDJĘCIE
         Image coverImage;
         byte[] okladka = ksiazka.getDaneKsiazki().getOkladka();
 
         if (okladka != null && okladka.length > 0) {
-            // Tworzymy zasób z bajtów pobranych z bazy
             StreamResource resource = new StreamResource("cover_" + ksiazka.getId(), () -> new java.io.ByteArrayInputStream(okladka));
             coverImage = new Image(resource, "Okładka książki");
         } else {
-            // Placeholder, jeśli brak okładki
             coverImage = new Image("https://placehold.co/100x150?text=Brak+okładki", "Brak okładki");
         }
 
-        // Style dla zdjęcia (bez zmian)
         coverImage.setWidth("100px");
         coverImage.setHeight("150px");
         coverImage.getStyle().set("border-radius", "5px");
         coverImage.getStyle().set("box-shadow", "0 4px 6px rgba(0,0,0,0.1)");
-        coverImage.getStyle().set("object-fit", "cover"); // Ważne: przycina zdjęcie, żeby nie było rozciągnięte
+        coverImage.getStyle().set("object-fit", "cover");
 
-        // 2. DANE KSIĄŻKI (Środek)
         VerticalLayout details = new VerticalLayout();
         details.setSpacing(false);
         details.setPadding(false);
 
-        // Tytuł
+
         H3 tytul = new H3(ksiazka.getDaneKsiazki().getTytul());
         tytul.getStyle().set("margin-top", "0");
-        tytul.getStyle().set("margin-bottom", "5px"); // Lekki odstęp pod tytułem
+        tytul.getStyle().set("margin-bottom", "5px");
         tytul.getStyle().set("color", "#2c3e50");
 
-        // Autorzy
         String autorzyStr = "Brak autora";
         if (ksiazka.getDaneKsiazki().getAutorzy() != null && !ksiazka.getDaneKsiazki().getAutorzy().isEmpty()) {
             autorzyStr = ksiazka.getDaneKsiazki().getAutorzy().stream()
@@ -148,8 +136,6 @@ public class HomeView extends VerticalLayout {
         autor.getStyle().set("font-weight", "bold");
         autor.getStyle().set("color", "#7f8c8d");
 
-        // --- ZMIANA TUTAJ ---
-        // Linia 1: Wydawnictwo i Rok
         Span wydawnictwoRok = new Span(
                 ksiazka.getDaneKsiazki().getWydawnictwo() + " • " +
                         ksiazka.getDaneKsiazki().getRokWydania()
@@ -157,11 +143,9 @@ public class HomeView extends VerticalLayout {
         wydawnictwoRok.getStyle().set("font-size", "0.9em");
         wydawnictwoRok.getStyle().set("color", "#95a5a6");
 
-        // Linia 2: ISBN (teraz w nowej linii)
         Span isbn = new Span("ISBN: " + ksiazka.getDaneKsiazki().getIsbn());
         isbn.getStyle().set("font-size", "0.9em");
         isbn.getStyle().set("color", "#95a5a6");
-        // ---------------------
 
         Span tlumaczSpan = new Span();
         Set<Tlumacz> tlumaczeList = ksiazka.getDaneKsiazki().getTlumacze();
@@ -173,10 +157,9 @@ public class HomeView extends VerticalLayout {
 
             tlumaczSpan.setText("Tłumacz: " + tlumaczeStr);
             tlumaczSpan.getStyle().set("font-size", "0.9em");
-            tlumaczSpan.getStyle().set("color", "#95a5a6"); // Nieco ciemniejszy szary
+            tlumaczSpan.getStyle().set("color", "#95a5a6");
         }
 
-        // Kategoria
         String kategoriaStr = "-";
         if (ksiazka.getPoddziedzina() != null) {
             kategoriaStr = ksiazka.getPoddziedzina().getDziedzina().getNazwa() + " > " + ksiazka.getPoddziedzina().getNazwa();
@@ -186,10 +169,8 @@ public class HomeView extends VerticalLayout {
         kategoria.getElement().getThemeList().add("contrast");
         kategoria.getStyle().set("margin-top", "10px");
 
-        // Dodajemy wszystko do układu (kolejność ma znaczenie)
         details.add(tytul, autor, wydawnictwoRok, isbn, tlumaczSpan, kategoria);
 
-        // 3. STATUS (Prawy dolny róg)
         Div spacer = new Div();
         card.setFlexGrow(1, spacer);
 

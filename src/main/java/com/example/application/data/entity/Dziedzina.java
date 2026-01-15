@@ -18,7 +18,6 @@ public class Dziedzina {
     @Size(max = 50)
     private String nazwa;
 
-    // Mapowanie relacji - jedna dziedzina ma wiele poddziedzin
     @OneToMany(mappedBy = "dziedzina", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<Poddziedzina> poddziedziny = new ArrayList<>();
     public Dziedzina() {}

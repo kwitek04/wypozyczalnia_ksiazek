@@ -17,7 +17,7 @@ public class Ksiazka {
     private StatusKsiazki status;
 
     @OneToOne
-    @JoinColumn(name = "isbn_id") // Klucz obcy łączący fizyczny egzemplarz z opisem (ISBN)
+    @JoinColumn(name = "isbn_id")
     private DaneKsiazki daneKsiazki;
 
     @ManyToOne

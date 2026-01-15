@@ -63,7 +63,6 @@ public class MojeRezerwacjeView extends VerticalLayout {
         grid.addColumn(Rezerwacja::getDataRezerwacji).setHeader("Data rezerwacji").setAutoWidth(true);
         grid.addColumn(Rezerwacja::getWaznaDo).setHeader("Ważna do").setAutoWidth(true);
 
-        // Status
         grid.addComponentColumn(rezerwacja -> {
             Span badge = new Span(rezerwacja.getStatus() != null ? rezerwacja.getStatus().getNazwa() : "Błąd");
             badge.getElement().getThemeList().add("badge");
@@ -78,12 +77,10 @@ public class MojeRezerwacjeView extends VerticalLayout {
             return badge;
         }).setHeader("Status").setAutoWidth(true);
 
-        // --- PRZYCISK ODBIERZ (WYPOŻYCZ) ---
         grid.addComponentColumn(rezerwacja -> {
             Button odbierzBtn = new Button("Odbierz (Wypożycz)");
             odbierzBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
-            // Przycisk aktywny tylko dla aktywnych rezerwacji
             odbierzBtn.setEnabled(rezerwacja.getStatus() == StatusRezerwacji.AKTYWNA);
 
             odbierzBtn.addClickListener(e -> {
@@ -93,7 +90,6 @@ public class MojeRezerwacjeView extends VerticalLayout {
             return odbierzBtn;
         }).setHeader("Odbiór").setAutoWidth(true);
 
-        // --- PRZYCISK ANULUJ ---
         grid.addComponentColumn(rezerwacja -> {
             Button anulujBtn = new Button("Anuluj");
             anulujBtn.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
@@ -114,14 +110,11 @@ public class MojeRezerwacjeView extends VerticalLayout {
 
     private void odbierzRezerwacje(Rezerwacja rezerwacja) {
         try {
-            // Pobieramy aktualnie zalogowanego użytkownika
             String username = securityService.getAuthenticatedUser().getUsername();
             Uzytkownicy currentUser = service.findUzytkownikByEmail(username);
 
-            // Iterujemy po książkach w rezerwacji i wypożyczamy każdą z nich
             for (ZarezerwowanaKsiazka zk : rezerwacja.getZarezerwowaneKsiazki()) {
                 Ksiazka ksiazka = zk.getKsiazka();
-                // Wywołujemy tę samą metodę co wcześniej, ale teraz robi to UŻYTKOWNIK
                 service.wypozyczKsiazke(ksiazka, currentUser);
             }
 

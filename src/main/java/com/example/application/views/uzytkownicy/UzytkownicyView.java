@@ -43,7 +43,6 @@ public class UzytkownicyView extends VerticalLayout {
         grid.setSizeFull();
         grid.setColumns("imie", "nazwisko", "email", "nrTelefonu");
 
-        // Dodatkowa kolumna dla daty urodzenia
         grid.addColumn(u -> u.getDataUrodzenia() != null ? u.getDataUrodzenia().toString() : "")
                 .setHeader("Data urodzenia").setSortable(true);;
 
@@ -53,7 +52,6 @@ public class UzytkownicyView extends VerticalLayout {
             return "Aktywne";
         }).setHeader("Status konta").setSortable(true);;
 
-        // Kolumna z ikonką edycji
         grid.addComponentColumn(uzytkownik -> {
             Button editBtn = new Button(new Icon(VaadinIcon.EDIT));
             editBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
@@ -131,7 +129,6 @@ public class UzytkownicyView extends VerticalLayout {
     }
 
     private void updateList() {
-        // Zakładam, że masz metodę findAllUzytkownicy w CrmService
         grid.setItems(service.findAllUzytkownicy(filterText.getValue()));
     }
 }

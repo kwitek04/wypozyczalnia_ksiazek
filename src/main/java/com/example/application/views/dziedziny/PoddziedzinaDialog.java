@@ -28,10 +28,8 @@ public class PoddziedzinaDialog extends Dialog {
         setWidth("600px");
         setHeight("600px");
 
-        // Konfiguracja Grida
         grid.setColumns("nazwa");
 
-        // KOLUMNA USUWANIA - teraz poprawnie wewnątrz konstruktora
         grid.addComponentColumn(poddziedzina -> {
             Button deleteBtn = new Button(VaadinIcon.TRASH.create());
             deleteBtn.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
@@ -46,10 +44,8 @@ public class PoddziedzinaDialog extends Dialog {
                 confirm.setConfirmButtonTheme("error primary");
 
                 confirm.addConfirmListener(event -> {
-                    // 1. Wołamy serwis (który teraz zajmie się i listą, i bazą)
                     service.deletePoddziedzina(poddziedzina);
 
-                    // 2. Odświeżamy widoki
                     updateGrid();
                     onUpdate.run();
                 });
@@ -59,7 +55,6 @@ public class PoddziedzinaDialog extends Dialog {
             return deleteBtn;
         }).setHeader("").setFlexGrow(0).setWidth("80px");
 
-        // Formularz dodawania
         TextField nowaPoddziedzina = new TextField("Nazwa poddziedziny");
         Button addBtn = new Button("Dodaj", e -> {
             if (!nowaPoddziedzina.isEmpty()) {
@@ -82,7 +77,6 @@ public class PoddziedzinaDialog extends Dialog {
     }
 
     private void updateGrid() {
-        // Pobieramy świeżą listę bezpośrednio z bazy dla tej konkretnej dziedziny
         grid.setItems(service.findPoddziedzinyByDziedzina(dziedzina));
     }
 }

@@ -46,7 +46,6 @@ public class KsiazkiDoOdlozeniaView extends VerticalLayout {
         grid.addColumn(k -> k.getDaneKsiazki().getTytul()).setHeader("Tytuł").setAutoWidth(true);
         grid.addColumn(k -> k.getDaneKsiazki().getIsbn()).setHeader("ISBN");
 
-        // Lokalizacja (Dziedzina -> Poddziedzina)
         grid.addColumn(k -> {
             if (k.getPoddziedzina() != null) {
                 return k.getPoddziedzina().getDziedzina().getNazwa() + " > " + k.getPoddziedzina().getNazwa();
@@ -54,7 +53,6 @@ public class KsiazkiDoOdlozeniaView extends VerticalLayout {
             return "Brak lokalizacji";
         }).setHeader("Lokalizacja na półce").setAutoWidth(true);
 
-        // Przycisk akcji
         grid.addComponentColumn(ksiazka -> {
             Button confirmBtn = new Button("Potwierdź odłożenie");
             confirmBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);

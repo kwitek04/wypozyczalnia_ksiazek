@@ -28,12 +28,8 @@ public class Application implements AppShellConfigurator {
 
     @Override
     public void configurePage(AppShellSettings settings) {
-        // Dodajemy ikonę (favicon)
         settings.addFavIcon("icon", "icons/icon.png", "192x192");
-        // Opcjonalnie dodajemy też jako 'shortcut icon' dla starszych przeglądarek
         settings.addLink("shortcut icon", "icons/icon.png");
-
-        // Możesz tu też ustawić tytuł domyślny strony
         settings.setPageTitle("Wypożyczalnia Książek");
     }
 }

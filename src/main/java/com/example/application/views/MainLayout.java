@@ -44,13 +44,11 @@ public class MainLayout extends AppLayout {
         H1 logo = new H1("Wypożyczalnia książek");
         logo.addClassNames("text-xl", "m-m");
 
-        // KLUCZ: Pozycjonowanie absolutne logo względem paska nawigacji
         logo.getStyle().set("position", "absolute");
         logo.getStyle().set("left", "50%");
         logo.getStyle().set("transform", "translateX(-50%)");
         logo.getStyle().set("margin", "0");
 
-        // Kontener na przyciski po prawej
         Div buttons = new Div();
         if (authContext.isAuthenticated()) {
             Button logout = new Button("Wyloguj się", new Icon(VaadinIcon.SIGN_OUT), e -> authContext.logout());
@@ -58,7 +56,6 @@ public class MainLayout extends AppLayout {
             buttons.add(logout);
         } else {
             Button login = new Button("Zaloguj się", e -> getUI().ifPresent(ui -> ui.navigate("login")));
-            // Zamiast: Button register = new Button("Załóż konto");
             Button register = new Button("Załóż konto", e -> getUI().ifPresent(ui -> ui.navigate("rejestracja")));
             login.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
             register.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
@@ -66,24 +63,20 @@ public class MainLayout extends AppLayout {
             buttons.add(login, register);
         }
 
-        // Tworzymy layout nagłówka
         HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), buttons);
 
         header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         header.setWidthFull();
 
-        // Rozpychamy toggle i buttons na skrajne końce
         header.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         header.addClassNames("py-0", "px-m");
 
-        // Dodajemy logo bezpośrednio do navbar, obok layoutu z przyciskami
         addToNavbar(header, logo);
     }
 
     private void createDrawer() {
         VerticalLayout menu = new VerticalLayout();
 
-        // Strona główna - dostępna dla każdego
         RouterLink homeLink = new RouterLink("Strona główna", HomeView.class);
         homeLink.setHighlightCondition(HighlightConditions.sameLocation());
         menu.add(homeLink);
