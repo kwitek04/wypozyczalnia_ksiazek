@@ -3,7 +3,7 @@ package com.example.application.views;
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Tlumacz;
 import com.example.application.data.entity.Uzytkownicy;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.example.application.security.SecurityService;
 import com.example.application.views.katalog.KsiazkaDetailsDialog;
 import com.vaadin.flow.component.Key;
@@ -15,7 +15,6 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -33,13 +32,13 @@ import java.util.stream.Collectors;
 @PageTitle("Strona Główna | Biblioteka")
 public class HomeView extends VerticalLayout {
 
-    private final CrmService service;
+    private final LibraryService service;
     private final SecurityService securityService;
     private final Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
     private final TextField searchField = new TextField();
     private Uzytkownicy currentUser;
 
-    public HomeView(CrmService service, SecurityService securityService) {
+    public HomeView(LibraryService service, SecurityService securityService) {
         this.service = service;
         this.securityService = securityService;
 

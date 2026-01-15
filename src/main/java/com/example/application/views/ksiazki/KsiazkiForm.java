@@ -1,7 +1,7 @@
 package com.example.application.views.ksiazki;
 
 import com.example.application.data.entity.*;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -57,12 +57,12 @@ public class KsiazkiForm extends FormLayout {
     Button delete = new Button("Usuń");
     Button close = new Button("Anuluj");
 
-    private final CrmService service;
+    private final LibraryService service;
 
     Binder<Ksiazka> binder = new BeanValidationBinder<>(Ksiazka.class);
     Binder<DaneKsiazki> daneBinder = new BeanValidationBinder<>(DaneKsiazki.class);
 
-    public KsiazkiForm(CrmService service) {
+    public KsiazkiForm(LibraryService service) {
         this.service = service;
         addClassName("ksiazka-form");
 

@@ -12,10 +12,8 @@ import java.util.List;
 
 @Service
 @Transactional
-public class CrmService {
+public class LibraryService {
 
-    private final ContactRepository contactRepository;
-    private final StatusRepository statusRepository;
     private final RolaRepository rolaRepository;
     private final PracownicyRepository pracownicyRepository;
     private final PasswordEncoder passwordEncoder;
@@ -32,29 +30,25 @@ public class CrmService {
     private final RezerwacjaRepository rezerwacjaRepository;
     private final ZarezerwowanaKsiazkaRepository zarezerwowanaKsiazkaRepository;
 
-    public CrmService(ContactRepository contactRepository,
-                      StatusRepository statusRepository,
-                      RolaRepository rolaRepository,
-                      PracownicyRepository pracownicyRepository,
-                      PasswordEncoder passwordEncoder,
-                      UzytkownicyRepository uzytkownicyRepository,
-                      KsiazkaRepository ksiazkaRepository,
-                      AutorRepository autorRepository,
-                      DziedzinaRepository dziedzinaRepository,
-                      PoddziedzinaRepository poddziedzinaRepository,
-                      DaneKsiazkiRepository daneKsiazkiRepository,
-                      TlumaczRepository tlumaczRepository,
-                      WypozyczenieRepository wypozyczenieRepository,
-                      WypozyczonaKsiazkaRepository wypozyczonaKsiazkaRepository,
-                      WycofanieRepository wycofanieRepository,
-                      RezerwacjaRepository rezerwacjaRepository,
-                      ZarezerwowanaKsiazkaRepository zarezerwowanaKsiazkaRepository) {       this.ksiazkaRepository = ksiazkaRepository;
+    public LibraryService(RolaRepository rolaRepository,
+                          PracownicyRepository pracownicyRepository,
+                          PasswordEncoder passwordEncoder,
+                          UzytkownicyRepository uzytkownicyRepository,
+                          KsiazkaRepository ksiazkaRepository,
+                          AutorRepository autorRepository,
+                          DziedzinaRepository dziedzinaRepository,
+                          PoddziedzinaRepository poddziedzinaRepository,
+                          DaneKsiazkiRepository daneKsiazkiRepository,
+                          TlumaczRepository tlumaczRepository,
+                          WypozyczenieRepository wypozyczenieRepository,
+                          WypozyczonaKsiazkaRepository wypozyczonaKsiazkaRepository,
+                          WycofanieRepository wycofanieRepository,
+                          RezerwacjaRepository rezerwacjaRepository,
+                          ZarezerwowanaKsiazkaRepository zarezerwowanaKsiazkaRepository) {       this.ksiazkaRepository = ksiazkaRepository;
         this.autorRepository = autorRepository;
         this.dziedzinaRepository = dziedzinaRepository;
         this.poddziedzinaRepository = poddziedzinaRepository;
         this.daneKsiazkiRepository = daneKsiazkiRepository;
-        this.contactRepository = contactRepository;
-        this.statusRepository = statusRepository;
         this.rolaRepository = rolaRepository;
         this.pracownicyRepository = pracownicyRepository;
         this.passwordEncoder = passwordEncoder;
@@ -119,27 +113,6 @@ public class CrmService {
         dziedzinaRepository.save(dziedzina);
     }
 
-
-    public List<Contact> findAllContacts(String stringFilter) {
-        if (stringFilter == null || stringFilter.isEmpty()) {
-            return contactRepository.findAll();
-        } else {
-            return contactRepository.search(stringFilter);
-        }
-    }
-
-    public void deleteContact(Contact contact) {
-        contactRepository.delete(contact);
-    }
-
-    public void saveContact(Contact contact) {
-        if (contact == null) {
-            System.err.println("Kontakt jest pusty");
-            return;
-        }
-        contactRepository.save(contact);
-    }
-
     public List<Pracownicy> findAllPracownicy(String stringFilter) {
         if (stringFilter == null || stringFilter.isEmpty()) {
             return pracownicyRepository.findAll();
@@ -170,10 +143,6 @@ public class CrmService {
         }
 
         pracownicyRepository.save(pracownik);
-    }
-
-    public List<Status> findAllStatuses(){
-        return statusRepository.findAll();
     }
 
     public List<Rola> findAllRoles(){

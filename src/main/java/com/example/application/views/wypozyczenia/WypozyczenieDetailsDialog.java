@@ -2,7 +2,7 @@ package com.example.application.views.wypozyczenia;
 
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Wypozyczenie;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -25,9 +25,9 @@ import java.time.temporal.ChronoUnit;
 public class WypozyczenieDetailsDialog extends Dialog {
 
     private final Wypozyczenie wypozyczenie;
-    private final CrmService service;
+    private final LibraryService service;
 
-    public WypozyczenieDetailsDialog(Wypozyczenie wypozyczenie, CrmService service) {
+    public WypozyczenieDetailsDialog(Wypozyczenie wypozyczenie, LibraryService service) {
         this.wypozyczenie = wypozyczenie;
         this.service = service;
 

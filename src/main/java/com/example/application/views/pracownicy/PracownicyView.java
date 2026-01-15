@@ -1,6 +1,6 @@
 package com.example.application.views.pracownicy;
 import com.example.application.data.entity.Pracownicy;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -25,9 +25,9 @@ public class PracownicyView extends VerticalLayout {
     Grid<Pracownicy> grid = new Grid<>(Pracownicy.class);
     TextField filterText = new TextField();
     PracownicyForm form;
-    CrmService service;
+    LibraryService service;
 
-    public PracownicyView(CrmService service) {
+    public PracownicyView(LibraryService service) {
         this.service = service;
         addClassName("pracownicy-view");
         setSizeFull();

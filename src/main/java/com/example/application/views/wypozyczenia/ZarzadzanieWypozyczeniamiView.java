@@ -1,7 +1,7 @@
 package com.example.application.views.wypozyczenia;
 
 import com.example.application.data.entity.Wypozyczenie;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -24,11 +24,11 @@ import java.util.stream.Collectors;
 @PageTitle("Zarządzanie Wypożyczeniami | Biblioteka")
 public class ZarzadzanieWypozyczeniamiView extends VerticalLayout {
 
-    private final CrmService service;
+    private final LibraryService service;
     private final Grid<Wypozyczenie> grid = new Grid<>(Wypozyczenie.class);
     private final TextField searchField = new TextField();
 
-    public ZarzadzanieWypozyczeniamiView(CrmService service) {
+    public ZarzadzanieWypozyczeniamiView(LibraryService service) {
         this.service = service;
         setSizeFull();
         setPadding(true);

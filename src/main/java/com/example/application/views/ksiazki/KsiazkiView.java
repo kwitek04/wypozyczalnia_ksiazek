@@ -1,10 +1,9 @@
 package com.example.application.views.ksiazki;
 
-import com.example.application.data.entity.Autor;
 import com.example.application.data.entity.DaneKsiazki;
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.StatusKsiazki;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -23,12 +22,12 @@ import java.util.stream.Collectors;
 @Route(value = "ksiazki", layout = MainLayout.class)
 @PageTitle("Książki | Biblioteka")
 public class KsiazkiView extends VerticalLayout {
-    private final CrmService service;
+    private final LibraryService service;
     Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
     TextField filterText = new TextField();
     KsiazkiForm form;
 
-    public KsiazkiView(CrmService service) {
+    public KsiazkiView(LibraryService service) {
         this.service = service;
         addClassName("ksiazka-view");
         setSizeFull();

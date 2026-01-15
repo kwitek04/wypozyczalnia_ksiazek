@@ -2,7 +2,7 @@ package com.example.application.views.dziedziny;
 
 import com.example.application.data.entity.Dziedzina;
 import com.example.application.data.entity.Poddziedzina;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -14,12 +14,12 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
 public class PoddziedzinaDialog extends Dialog {
-    private final CrmService service;
+    private final LibraryService service;
     private final Dziedzina dziedzina;
     private Grid<Poddziedzina> grid = new Grid<>(Poddziedzina.class);
     private Runnable onUpdate;
 
-    public PoddziedzinaDialog(CrmService service, Dziedzina dziedzina, Runnable onUpdate) {
+    public PoddziedzinaDialog(LibraryService service, Dziedzina dziedzina, Runnable onUpdate) {
         this.service = service;
         this.dziedzina = dziedzina;
         this.onUpdate = onUpdate;

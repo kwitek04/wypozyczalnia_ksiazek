@@ -3,7 +3,7 @@ package com.example.application.views.katalog;
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.StatusKsiazki;
 import com.example.application.data.entity.Uzytkownicy;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -26,11 +26,11 @@ import java.util.stream.Collectors;
 
 public class KsiazkaDetailsDialog extends Dialog {
 
-    private final CrmService service;
+    private final LibraryService service;
     private final Uzytkownicy currentUser;
     private final Ksiazka ksiazka;
 
-    public KsiazkaDetailsDialog(Ksiazka ksiazka, CrmService service, Uzytkownicy currentUser) {
+    public KsiazkaDetailsDialog(Ksiazka ksiazka, LibraryService service, Uzytkownicy currentUser) {
         this.ksiazka = ksiazka;
         this.service = service;
         this.currentUser = currentUser;

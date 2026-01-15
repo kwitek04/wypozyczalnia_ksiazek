@@ -1,7 +1,7 @@
 package com.example.application.views.rejestracja;
 
 import com.example.application.data.entity.Uzytkownicy;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -15,8 +15,6 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
-import com.example.application.data.service.CrmService;
-import com.example.application.data.entity.Uzytkownicy;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -28,7 +26,7 @@ import java.util.Locale;
 @PageTitle("Załóż konto | Biblioteka")
 public class RejestracjaView extends VerticalLayout {
 
-    private final CrmService crmService;
+    private final LibraryService libraryService;
     private final Binder<Uzytkownicy> binder = new BeanValidationBinder<>(Uzytkownicy.class);
 
     TextField imie = new TextField("Imię");
@@ -38,8 +36,8 @@ public class RejestracjaView extends VerticalLayout {
     TextField nrTelefonu = new TextField("Numer telefonu");
     DatePicker dataUrodzenia = new DatePicker("Data urodzenia");
 
-    public RejestracjaView(CrmService crmService) {
-        this.crmService = crmService;
+    public RejestracjaView(LibraryService libraryService) {
+        this.libraryService = libraryService;
 
         addClassName("rejestracja-view");
         setSizeFull();
@@ -71,7 +69,7 @@ public class RejestracjaView extends VerticalLayout {
 
     private void zarejestruj() {
         if (binder.isValid()) {
-            crmService.saveUzytkownik(binder.getBean());
+            libraryService.saveUzytkownik(binder.getBean());
             Notification.show("Konto utworzone!", 5000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             getUI().ifPresent(ui -> ui.navigate("login"));

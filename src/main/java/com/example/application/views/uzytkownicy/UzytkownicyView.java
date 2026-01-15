@@ -1,7 +1,7 @@
 package com.example.application.views.uzytkownicy;
 
 import com.example.application.data.entity.Uzytkownicy;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -24,9 +24,9 @@ public class UzytkownicyView extends VerticalLayout {
     Grid<Uzytkownicy> grid = new Grid<>(Uzytkownicy.class);
     TextField filterText = new TextField();
     UzytkownicyForm form;
-    CrmService service;
+    LibraryService service;
 
-    public UzytkownicyView(CrmService service) {
+    public UzytkownicyView(LibraryService service) {
         this.service = service;
         addClassName("uzytkownicy-view");
         setSizeFull();

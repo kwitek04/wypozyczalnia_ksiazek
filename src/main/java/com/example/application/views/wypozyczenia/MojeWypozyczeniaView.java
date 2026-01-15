@@ -2,8 +2,7 @@ package com.example.application.views.wypozyczenia;
 
 import com.example.application.data.entity.Uzytkownicy;
 import com.example.application.data.entity.Wypozyczenie;
-import com.example.application.data.entity.WypozyczonaKsiazka;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.example.application.security.SecurityService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -25,11 +24,11 @@ import java.util.stream.Collectors;
 @PageTitle("Moje Wypożyczenia | Biblioteka")
 public class MojeWypozyczeniaView extends VerticalLayout {
 
-    private final CrmService service;
+    private final LibraryService service;
     private final SecurityService securityService;
     private final Grid<Wypozyczenie> grid = new Grid<>(Wypozyczenie.class);
 
-    public MojeWypozyczeniaView(CrmService service, SecurityService securityService) {
+    public MojeWypozyczeniaView(LibraryService service, SecurityService securityService) {
         this.service = service;
         this.securityService = securityService;
 

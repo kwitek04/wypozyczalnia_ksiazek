@@ -1,7 +1,7 @@
 package com.example.application.views.dziedziny;
 
 import com.example.application.data.entity.Dziedzina;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -11,18 +11,17 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 
 @RolesAllowed("KIEROWNIK")
 @Route(value = "dziedziny", layout = MainLayout.class)
 @PageTitle("Dziedziny | Biblioteka")
 public class DziedzinaView extends VerticalLayout {
-    private final CrmService service;
+    private final LibraryService service;
     Grid<Dziedzina> grid = new Grid<>(Dziedzina.class);
     TextField nazwaField = new TextField("Nowa dziedzina");
     Button addBtn = new Button("Dodaj");
 
-    public DziedzinaView(CrmService service) {
+    public DziedzinaView(LibraryService service) {
         this.service = service;
         setSizeFull();
 

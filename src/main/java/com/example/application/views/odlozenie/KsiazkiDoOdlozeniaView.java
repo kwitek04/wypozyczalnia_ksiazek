@@ -1,7 +1,7 @@
 package com.example.application.views.odlozenie;
 
 import com.example.application.data.entity.Ksiazka;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -21,10 +21,10 @@ import jakarta.annotation.security.RolesAllowed;
 @PageTitle("Książki do odłożenia | Magazyn")
 public class KsiazkiDoOdlozeniaView extends VerticalLayout {
 
-    private final CrmService service;
+    private final LibraryService service;
     private final Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
 
-    public KsiazkiDoOdlozeniaView(CrmService service) {
+    public KsiazkiDoOdlozeniaView(LibraryService service) {
         this.service = service;
         setSizeFull();
         setPadding(true);

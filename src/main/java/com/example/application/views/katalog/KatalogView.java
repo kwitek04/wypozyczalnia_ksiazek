@@ -4,7 +4,7 @@ import com.example.application.data.entity.Autor;
 import com.example.application.data.entity.Dziedzina;
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Poddziedzina;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @PageTitle("Katalog | Biblioteka")
 public class KatalogView extends VerticalLayout {
 
-    private final CrmService service;
+    private final LibraryService service;
     private final SecurityService securityService;
     private Uzytkownicy currentUser;
 
@@ -49,7 +49,7 @@ public class KatalogView extends VerticalLayout {
     private final Grid<Ksiazka> bookGrid = new Grid<>(Ksiazka.class);
     private final TextField authorFilter = new TextField();
 
-    public KatalogView(CrmService service, SecurityService securityService) {
+    public KatalogView(LibraryService service, SecurityService securityService) {
         this.service = service;
         this.securityService = securityService;
         loadCurrentUser();

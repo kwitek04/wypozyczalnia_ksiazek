@@ -2,7 +2,7 @@ package com.example.application.views.kontrolastanu;
 
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.StanFizyczny;
-import com.example.application.data.service.CrmService;
+import com.example.application.data.service.LibraryService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -19,17 +19,15 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
-import java.util.stream.Collectors;
-
 @RolesAllowed({"MAGAZYNIER", "KIEROWNIK", "BIBLIOTEKARZ"}) // Dostęp dla obsługi
 @Route(value = "kontrola-stanu", layout = MainLayout.class)
 @PageTitle("Kontrola Stanu | Magazyn")
 public class KontrolaStanuView extends VerticalLayout {
 
-    private final CrmService service;
+    private final LibraryService service;
     private final Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
 
-    public KontrolaStanuView(CrmService service) {
+    public KontrolaStanuView(LibraryService service) {
         this.service = service;
         setSizeFull();
         setPadding(true);
