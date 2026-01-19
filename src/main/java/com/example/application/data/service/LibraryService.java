@@ -452,4 +452,16 @@ public class LibraryService {
 
         wypozyczenieRepository.save(wypozyczenie);
     }
+
+    public void updatePassword(Uzytkownicy uzytkownik, String newPassword) {
+        if (uzytkownik == null) return;
+        uzytkownik.setPassword(passwordEncoder.encode(newPassword));
+        uzytkownicyRepository.save(uzytkownik);
+    }
+
+    public void updatePassword(Pracownicy pracownik, String newPassword) {
+        if (pracownik == null) return;
+        pracownik.setPassword(passwordEncoder.encode(newPassword));
+        pracownicyRepository.save(pracownik);
+    }
 }
