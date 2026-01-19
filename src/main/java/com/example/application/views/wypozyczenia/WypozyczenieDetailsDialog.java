@@ -54,7 +54,6 @@ public class WypozyczenieDetailsDialog extends Dialog {
         layout.setSizeFull();
         layout.setAlignItems(FlexComponent.Alignment.START);
 
-        // LEWA STRONA
         VerticalLayout leftColumn = new VerticalLayout();
         leftColumn.setWidth("35%");
         leftColumn.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -63,7 +62,6 @@ public class WypozyczenieDetailsDialog extends Dialog {
         coverImage.getStyle().set("border-radius", "8px").set("box-shadow", "0 4px 12px rgba(0,0,0,0.15)");
         leftColumn.add(coverImage);
 
-        // PRAWA STRONA
         VerticalLayout rightColumn = new VerticalLayout();
         rightColumn.setWidth("65%");
 
@@ -76,21 +74,20 @@ public class WypozyczenieDetailsDialog extends Dialog {
         H4 autorLabel = new H4(autorzy);
         autorLabel.getStyle().set("color", "#555").set("margin-top", "0");
 
-        // --- SEKCJA DAT ---
         VerticalLayout datesInfo = new VerticalLayout();
         datesInfo.setPadding(false);
-        datesInfo.setSpacing(true); // Trochę odstępu między liniami
+        datesInfo.setSpacing(true);
         datesInfo.getStyle().set("background-color", "#f5f5f5").set("border-radius", "5px").set("padding", "15px");
 
-        // 1. Kto i kiedy
         if (isStaff) {
             datesInfo.add(new Span("Wypożyczający: " + wypozyczenie.getUzytkownik().getImie() + " " + wypozyczenie.getUzytkownik().getNazwisko()));
         }
         datesInfo.add(new Span("Data wypożyczenia: " + wypozyczenie.getDataWypozyczenia()));
 
-        // 2. Termin zwrotu
         Span terminLabel = new Span("Termin zwrotu: " + wypozyczenie.getTerminZwrotu());
         terminLabel.getStyle().set("font-weight", "bold");
+
+        long daysUntilDue = ChronoUnit.DAYS.between(LocalDate.now(), wypozyczenie.getTerminZwrotu());
 
         if (wypozyczenie.getDataOddania() == null) {
             long dniSpoznienia = ChronoUnit.DAYS.between(wypozyczenie.getTerminZwrotu(), LocalDate.now());
@@ -106,7 +103,6 @@ public class WypozyczenieDetailsDialog extends Dialog {
         }
         datesInfo.add(terminLabel);
 
-        // 3. Status zgłoszenia (Na samym dole sekcji dat)
         if (wypozyczenie.getDataOddania() == null && wypozyczenie.isZwrotZgloszony()) {
             Div separator = new Div();
             separator.setHeight("10px"); // Odstęp
@@ -118,10 +114,10 @@ public class WypozyczenieDetailsDialog extends Dialog {
             datesInfo.add(separator, zgloszonoInfo);
         }
 
-        // --- PRZYCISKI AKCJI ---
+        HorizontalLayout actions = new HorizontalLayout();
+        actions.setWidthFull();
+        actions.getStyle().set("margin-top", "20px");
 
-
-        // 1. BUTTON DLA PRACOWNIKA (Zatwierdź)
         Button btnZatwierdzZwrot = new Button("Zatwierdź zwrot", VaadinIcon.CHECK.create());
         btnZatwierdzZwrot.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
         btnZatwierdzZwrot.setVisible(isStaff);
@@ -144,7 +140,10 @@ public class WypozyczenieDetailsDialog extends Dialog {
             confirm.open();
         });
 
-        // 2. BUTTON DLA UŻYTKOWNIKA (Zgłoś)
+        if (btnZatwierdzZwrot.isVisible()) {
+            actions.add(btnZatwierdzZwrot);
+        }
+
         Button btnZglosZwrot = new Button("Zgłoś zwrot", VaadinIcon.ARROW_RIGHT.create());
         btnZglosZwrot.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         btnZglosZwrot.setVisible(!isStaff && wypozyczenie.getDataOddania() == null && !wypozyczenie.isZwrotZgloszony());
@@ -167,29 +166,56 @@ public class WypozyczenieDetailsDialog extends Dialog {
             confirm.open();
         });
 
-        // 3. BUTTON PRZEDŁUŻ
-        Button btnPrzedluz = new Button("Przedłuż termin", VaadinIcon.TIMER.create());
-        btnPrzedluz.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
-
-        // ZMIANA: Ukrywamy przycisk przedłużania dla pracownika (isStaff) oraz w innych przypadkach
-        if (isStaff || wypozyczenie.getDataOddania() != null || wypozyczenie.isZwrotZgloszony()) {
-            btnPrzedluz.setVisible(false);
+        if (btnZglosZwrot.isVisible()) {
+            actions.add(btnZglosZwrot);
         }
 
-        HorizontalLayout actions = new HorizontalLayout();
-        actions.setWidthFull();
-        actions.setFlexGrow(1, btnZatwierdzZwrot, btnZglosZwrot, btnPrzedluz);
-        actions.getStyle().set("margin-top", "20px");
+        if (!isStaff && wypozyczenie.getDataOddania() == null && !wypozyczenie.isZwrotZgloszony()) {
+            Button btnPrzedluz = new Button("Przedłuż o tydzień", VaadinIcon.TIMER.create());
+            btnPrzedluz.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
 
-        if (btnZatwierdzZwrot.isVisible()) actions.add(btnZatwierdzZwrot);
-        if (btnZglosZwrot.isVisible()) actions.add(btnZglosZwrot);
-        if (btnPrzedluz.isVisible()) actions.add(btnPrzedluz);
+            // Sprawdzanie warunków dostępności
+            if (wypozyczenie.isPrzedluzone()) {
+                btnPrzedluz.setEnabled(false);
+                btnPrzedluz.setText("Już przedłużono");
+            } else if (daysUntilDue > 3) {
+                btnPrzedluz.setEnabled(false);
+                btnPrzedluz.setTooltipText("Dostępne dopiero 3 dni przed terminem (od " + wypozyczenie.getTerminZwrotu().minusDays(3) + ")");
+            } else if (daysUntilDue < 0) {
+                btnPrzedluz.setEnabled(false);
+                btnPrzedluz.setTooltipText("Nie można przedłużyć po terminie");
+            } else {
+                // Jest OK (<= 3 dni i >= 0 dni)
+                btnPrzedluz.setEnabled(true);
+                btnPrzedluz.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+            }
 
-        if (wypozyczenie.getDataOddania() != null) {
-            actions.setVisible(false);
+            btnPrzedluz.addClickListener(e -> {
+                ConfirmDialog dialog = new ConfirmDialog();
+                dialog.setHeader("Przedłużenie wypożyczenia");
+                dialog.setText("Czy chcesz przedłużyć termin zwrotu o 7 dni?\nMożesz to zrobić tylko raz.");
+                dialog.setConfirmText("Przedłuż");
+                dialog.setCancelable(true);
+                dialog.setCancelText("Anuluj");
+
+                dialog.addConfirmListener(ev -> {
+                    try {
+                        service.przedluzWypozyczenie(wypozyczenie);
+                        Notification.show("Termin wydłużony pomyślnie!", 3000, Notification.Position.MIDDLE)
+                                .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                        close();
+                    } catch (Exception ex) {
+                        Notification.show(ex.getMessage(), 5000, Notification.Position.MIDDLE)
+                                .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    }
+                });
+                dialog.open();
+            });
+
+            actions.add(btnPrzedluz);
         }
 
-        rightColumn.add(tytul, autorLabel, datesInfo, actions);
+        rightColumn.add(tytul, datesInfo, actions);
         layout.add(leftColumn, rightColumn);
         add(layout);
     }

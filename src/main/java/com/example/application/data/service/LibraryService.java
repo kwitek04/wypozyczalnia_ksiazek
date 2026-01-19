@@ -421,4 +421,35 @@ public class LibraryService {
         if (uzytkownik == null) return java.util.Collections.emptyList();
         return rezerwacjaRepository.findByUzytkownikOrderByDataRezerwacjiDesc(uzytkownik);
     }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void przedluzWypozyczenie(Wypozyczenie wypozyczenie) {
+        if (wypozyczenie == null) return;
+
+        if (wypozyczenie.getDataOddania() != null) {
+            throw new IllegalStateException("Nie można przedłużyć oddanej książki.");
+        }
+
+        if (wypozyczenie.isPrzedluzone()) {
+            throw new IllegalStateException("To wypożyczenie było już raz przedłużane.");
+        }
+
+        long dniDoTerminu = java.time.temporal.ChronoUnit.DAYS.between(
+                java.time.LocalDate.now(),
+                wypozyczenie.getTerminZwrotu()
+        );
+
+        if (dniDoTerminu > 3) {
+            throw new IllegalStateException("Przedłużenie możliwe najwcześniej 3 dni przed terminem zwrotu.");
+        }
+
+        if (dniDoTerminu < 0) {
+            throw new IllegalStateException("Termin minął. Prosimy o zwrot książki.");
+        }
+
+        wypozyczenie.setTerminZwrotu(wypozyczenie.getTerminZwrotu().plusDays(7));
+        wypozyczenie.setPrzedluzone(true);
+
+        wypozyczenieRepository.save(wypozyczenie);
+    }
 }

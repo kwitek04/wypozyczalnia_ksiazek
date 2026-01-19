@@ -10,6 +10,7 @@ import com.example.application.security.SecurityService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
@@ -78,13 +79,27 @@ public class MojeRezerwacjeView extends VerticalLayout {
         }).setHeader("Status").setAutoWidth(true);
 
         grid.addComponentColumn(rezerwacja -> {
-            Button odbierzBtn = new Button("Odbierz (Wypożycz)");
+            Button odbierzBtn = new Button("Odbierz");
             odbierzBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 
             odbierzBtn.setEnabled(rezerwacja.getStatus() == StatusRezerwacji.AKTYWNA);
 
             odbierzBtn.addClickListener(e -> {
-                odbierzRezerwacje(rezerwacja);
+                ConfirmDialog dialog = new ConfirmDialog();
+                dialog.setHeader("Potwierdzenie odbioru");
+                dialog.setText("Czy potwierdzasz odbiór książki?");
+
+                dialog.setCancelable(true);
+                dialog.setCancelText("Anuluj");
+
+                dialog.setConfirmText("Tak, odbieram");
+                dialog.setConfirmButtonTheme("success primary");
+
+                dialog.addConfirmListener(event -> {
+                    odbierzRezerwacje(rezerwacja);
+                });
+
+                dialog.open();
             });
 
             return odbierzBtn;
@@ -97,9 +112,23 @@ public class MojeRezerwacjeView extends VerticalLayout {
             anulujBtn.setEnabled(rezerwacja.getStatus() == StatusRezerwacji.AKTYWNA);
 
             anulujBtn.addClickListener(e -> {
-                service.anulujRezerwacje(rezerwacja);
-                Notification.show("Rezerwacja anulowana", 3000, Notification.Position.MIDDLE);
-                updateList();
+                ConfirmDialog dialog = new ConfirmDialog();
+                dialog.setHeader("Anulowanie rezerwacji");
+                dialog.setText("Czy na pewno chcesz anulować rezerwację?");
+
+                dialog.setCancelable(true);
+                dialog.setCancelText("Nie");
+
+                dialog.setConfirmText("Tak, anuluj");
+                dialog.setConfirmButtonTheme("error primary");
+
+                dialog.addConfirmListener(event -> {
+                    service.anulujRezerwacje(rezerwacja);
+                    Notification.show("Rezerwacja anulowana", 3000, Notification.Position.MIDDLE);
+                    updateList();
+                });
+
+                dialog.open();
             });
 
             return anulujBtn;

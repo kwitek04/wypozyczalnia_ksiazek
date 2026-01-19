@@ -23,6 +23,8 @@ public class Wypozyczenie {
 
     private BigDecimal kara;
 
+    private boolean przedluzone = false;
+
     @OneToMany(mappedBy = "wypozyczenie", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<WypozyczonaKsiazka> wypozyczoneKsiazki = new ArrayList<>();
 
@@ -53,4 +55,6 @@ public class Wypozyczenie {
     public void setWypozyczoneKsiazki(List<WypozyczonaKsiazka> wypozyczoneKsiazki) { this.wypozyczoneKsiazki = wypozyczoneKsiazki; }
     public boolean isZwrotZgloszony() { return zwrotZgloszony; }
     public void setZwrotZgloszony(boolean zwrotZgloszony) { this.zwrotZgloszony = zwrotZgloszony; }
+    public boolean isPrzedluzone() { return przedluzone; }
+    public void setPrzedluzone(boolean przedluzone) { this.przedluzone = przedluzone; }
 }

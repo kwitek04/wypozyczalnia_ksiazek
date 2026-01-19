@@ -52,7 +52,7 @@ public class MojeWypozyczeniaView extends VerticalLayout {
             return wypozyczenie.getWypozyczoneKsiazki().stream()
                     .map(wk -> wk.getKsiazka().getDaneKsiazki().getTytul())
                     .collect(Collectors.joining(", "));
-        }).setHeader("Książka").setAutoWidth(true);
+        }).setHeader("Książka").setSortable(true).setAutoWidth(true);
 
         grid.addColumn(wypozyczenie -> {
             return wypozyczenie.getWypozyczoneKsiazki().stream()
@@ -72,18 +72,14 @@ public class MojeWypozyczeniaView extends VerticalLayout {
             Span badge = new Span(termin.toString());
 
             if (oddano == null) {
-                // Jeszcze nie oddano
                 long daysOverdue = ChronoUnit.DAYS.between(termin, LocalDate.now());
                 if (daysOverdue > 0) {
-                    // Przetrzymana!
                     badge.setText(termin + " (Opóźnienie: " + daysOverdue + " dni)");
                     badge.getElement().getThemeList().add("badge error");
                 } else {
-                    // W terminie
                     badge.getElement().getThemeList().add("badge contrast");
                 }
             } else {
-                // Oddano - data jest historyczna
                 badge.getElement().getThemeList().add("badge success");
             }
             return badge;
@@ -93,7 +89,6 @@ public class MojeWypozyczeniaView extends VerticalLayout {
                 .setHeader("Data oddania")
                 .setSortable(true)
                 .setComparator((w1, w2) -> {
-                    // Obsługa nulli przy sortowaniu
                     if (w1.getDataOddania() == null && w2.getDataOddania() == null) return 0;
                     if (w1.getDataOddania() == null) return 1;
                     if (w2.getDataOddania() == null) return -1;
@@ -101,27 +96,32 @@ public class MojeWypozyczeniaView extends VerticalLayout {
                 })
                 .setAutoWidth(true);
 
-        // 4. Status
         grid.addComponentColumn(wypozyczenie -> {
-            // Najpierw sprawdzamy, czy fizycznie oddano
             if (wypozyczenie.getDataOddania() != null) {
                 Span span = new Span("Zwrócono");
                 span.getElement().getThemeList().add("badge success");
                 return span;
             }
-            // Jeśli nie oddano, ale użytkownik kliknął "Zgłoś zwrot"
             else if (wypozyczenie.isZwrotZgloszony()) {
                 Span span = new Span("Zgłoszono zwrot");
-                span.getElement().getThemeList().add("badge warning"); // Żółty kolor
+                span.getElement().getThemeList().add("badge warning");
                 return span;
             }
-            // Standardowy stan
             else {
                 Span span = new Span("Wypożyczona");
                 span.getElement().getThemeList().add("badge");
                 return span;
             }
-        }).setHeader("Status").setAutoWidth(true);
+        })
+                .setHeader("Status")
+                .setSortable(true)
+                .setAutoWidth(true)
+                .setComparator((w1, w2) -> {
+                    int waga1 = getStatusWeight(w1);
+                    int waga2 = getStatusWeight(w2);
+
+                    return Integer.compare(waga1, waga2);
+                });
 
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
@@ -129,7 +129,6 @@ public class MojeWypozyczeniaView extends VerticalLayout {
             Wypozyczenie wyp = event.getItem();
             WypozyczenieDetailsDialog dialog = new WypozyczenieDetailsDialog(wyp, service);
 
-            // Gdy zamkniesz dialog (np. po zgłoszeniu zwrotu), lista się odświeży
             dialog.addOpenedChangeListener(e -> {
                 if (!e.isOpened()) {
                     updateList();
@@ -147,6 +146,16 @@ public class MojeWypozyczeniaView extends VerticalLayout {
             if (u != null) {
                 grid.setItems(service.findWypozyczeniaByUser(u));
             }
+        }
+    }
+
+    private int getStatusWeight(Wypozyczenie w) {
+        if (w.getDataOddania() != null) {
+            return 3; // Zwrócono
+        } else if (w.isZwrotZgloszony()) {
+            return 2; // Zgłoszono zwrot
+        } else {
+            return 1; // Wypożyczona
         }
     }
 }
