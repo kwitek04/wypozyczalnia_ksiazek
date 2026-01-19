@@ -464,4 +464,34 @@ public class LibraryService {
         pracownik.setPassword(passwordEncoder.encode(newPassword));
         pracownicyRepository.save(pracownik);
     }
+
+    // --- METODY STATYSTYCZNE ---
+
+    public long countWypozyczeniaWOkresie(java.time.LocalDate start, java.time.LocalDate end) {
+        return wypozyczenieRepository.countByDataWypozyczeniaBetween(start, end);
+    }
+
+    public long countZwrotyWOkresie(java.time.LocalDate start, java.time.LocalDate end) {
+        return wypozyczenieRepository.countByDataOddaniaBetween(start, end);
+    }
+
+    public long countAllUsers() {
+        return uzytkownicyRepository.count();
+    }
+
+    public long countAllEmployees() {
+        return pracownicyRepository.count();
+    }
+
+    public long countAllBooks() {
+        return ksiazkaRepository.count();
+    }
+
+    public long countKsiazkiByStatus(StatusKsiazki status) {
+        return ksiazkaRepository.countByStatus(status);
+    }
+
+    public long countActiveUsersInPeriod(java.time.LocalDate start, java.time.LocalDate end) {
+        return wypozyczenieRepository.countUniqueUsersByDataWypozyczeniaBetween(start, end);
+    }
 }

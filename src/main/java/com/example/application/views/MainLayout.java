@@ -5,6 +5,7 @@ import com.example.application.views.dziedziny.DziedzinaView;
 import com.example.application.views.ksiazki.KsiazkiView;
 import com.example.application.views.mojekonto.MojeKontoView;
 import com.example.application.views.pracownicy.PracownicyView;
+import com.example.application.views.statystyki.StatystykiView;
 import com.example.application.views.uzytkownicy.UzytkownicyView;
 import com.example.application.views.oczekujacekonta.OczekujaceKontaView;
 import com.example.application.views.wycofanie.KsiazkiDoWycofaniaView;
@@ -91,6 +92,7 @@ public class MainLayout extends AppLayout {
             menu.add(new RouterLink("Lista pracowników", PracownicyView.class));
             menu.add(new RouterLink("Dziedziny i poddziedziny", DziedzinaView.class));
             menu.add(new RouterLink("Książki do wycofania", KsiazkiDoWycofaniaView.class));
+            menu.add(new RouterLink("Statystyki", StatystykiView.class));
         }
         if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK") || authContext.hasRole("BIBLIOTEKARZ")) {
             menu.add(new RouterLink("Lista użytkowników", UzytkownicyView.class));
