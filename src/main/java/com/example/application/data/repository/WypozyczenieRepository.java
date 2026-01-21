@@ -20,4 +20,6 @@ public interface WypozyczenieRepository extends JpaRepository<Wypozyczenie, Long
 
     @Query("select count(distinct w.uzytkownik) from Wypozyczenie w where w.dataWypozyczenia between :start and :end")
     long countUniqueUsersByDataWypozyczeniaBetween(@Param("start") java.time.LocalDate start, @Param("end") java.time.LocalDate end);
+
+    List<Wypozyczenie> findAllByUzytkownik(Uzytkownicy uzytkownik);
 }

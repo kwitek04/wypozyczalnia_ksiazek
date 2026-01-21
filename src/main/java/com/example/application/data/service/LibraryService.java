@@ -494,4 +494,57 @@ public class LibraryService {
     public long countActiveUsersInPeriod(java.time.LocalDate start, java.time.LocalDate end) {
         return wypozyczenieRepository.countUniqueUsersByDataWypozyczeniaBetween(start, end);
     }
+
+    public void przeliczKaryUzytkownika(Uzytkownicy uzytkownik) {
+        if (uzytkownik == null) return;
+
+        List<Wypozyczenie> wypozyczenia = wypozyczenieRepository.findAllByUzytkownik(uzytkownik); // Używamy istniejącej metody repozytorium (Spring Data sam ją wygeneruje po nazwie jeśli jej nie ma, a w poprzednich krokach z niej korzystaliśmy)
+        // Jeśli findAllByUzytkownik nie jest widoczne, użyj: findWypozyczeniaByUser(uzytkownik) i pracuj na tej liście
+
+        for (Wypozyczenie w : wypozyczenia) {
+            // Jeśli kara została już opłacona (np. wprowadzimy status opłacenia w przyszłości), pomijamy.
+            // Na razie po prostu sprawdzamy terminy.
+
+            boolean czyNalezySieKara = false;
+            java.time.LocalDate termin = w.getTerminZwrotu();
+            java.time.LocalDate oddanie = w.getDataOddania();
+            java.time.LocalDate dzis = java.time.LocalDate.now();
+
+            if (oddanie != null) {
+                // Książka oddana, sprawdzamy czy po terminie
+                if (oddanie.isAfter(termin)) {
+                    czyNalezySieKara = true;
+                }
+            } else {
+                // Książka nadal u czytelnika, sprawdzamy czy dzisiaj jest po terminie
+                if (dzis.isAfter(termin)) {
+                    czyNalezySieKara = true;
+                }
+            }
+
+            if (czyNalezySieKara) {
+                if (w.getKara() == 0.0) { // Jeśli jeszcze nie ma kary, wpisz 10
+                    w.setKara(10.0);
+                    wypozyczenieRepository.save(w);
+                }
+            }
+        }
+    }
+
+    public List<Wypozyczenie> findWypozyczeniaZKarami(Uzytkownicy uzytkownik) {
+        // Najpierw upewnijmy się, że kary są aktualne
+        przeliczKaryUzytkownika(uzytkownik);
+
+        // Pobieramy wszystkie i filtrujemy te, które mają karę > 0
+        return findWypozyczeniaByUser(uzytkownik).stream()
+                .filter(w -> w.getKara() > 0)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public Double obliczSumeKar(Uzytkownicy uzytkownik) {
+        List<Wypozyczenie> zadluzone = findWypozyczeniaZKarami(uzytkownik);
+        return zadluzone.stream()
+                .mapToDouble(Wypozyczenie::getKara)
+                .sum();
+    }
 }

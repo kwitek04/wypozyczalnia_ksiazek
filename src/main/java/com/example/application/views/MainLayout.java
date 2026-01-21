@@ -2,6 +2,7 @@ package com.example.application.views;
 
 import com.example.application.security.SecurityService;
 import com.example.application.views.dziedziny.DziedzinaView;
+import com.example.application.views.kary.KaryView;
 import com.example.application.views.ksiazki.KsiazkiView;
 import com.example.application.views.mojekonto.MojeKontoView;
 import com.example.application.views.pracownicy.PracownicyView;
@@ -86,6 +87,7 @@ public class MainLayout extends AppLayout {
             menu.add(new RouterLink("Moje Konto", MojeKontoView.class));
             menu.add(new RouterLink("Moje wypożyczenia", MojeWypozyczeniaView.class));
             menu.add(new RouterLink("Moje Rezerwacje", MojeRezerwacjeView.class));
+            menu.add(new RouterLink("Kary i opłaty", KaryView.class));
         }
 
         if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK")) {

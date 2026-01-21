@@ -21,7 +21,7 @@ public class Wypozyczenie {
     private LocalDate terminZwrotu;
     private LocalDate dataOddania;
 
-    private BigDecimal kara;
+    private Double kara = 0.0;
 
     private boolean przedluzone = false;
 
@@ -49,12 +49,17 @@ public class Wypozyczenie {
     public void setTerminZwrotu(LocalDate terminZwrotu) { this.terminZwrotu = terminZwrotu; }
     public LocalDate getDataOddania() { return dataOddania; }
     public void setDataOddania(LocalDate dataOddania) { this.dataOddania = dataOddania; }
-    public BigDecimal getKara() { return kara; }
-    public void setKara(BigDecimal kara) { this.kara = kara; }
     public List<WypozyczonaKsiazka> getWypozyczoneKsiazki() { return wypozyczoneKsiazki; }
     public void setWypozyczoneKsiazki(List<WypozyczonaKsiazka> wypozyczoneKsiazki) { this.wypozyczoneKsiazki = wypozyczoneKsiazki; }
     public boolean isZwrotZgloszony() { return zwrotZgloszony; }
     public void setZwrotZgloszony(boolean zwrotZgloszony) { this.zwrotZgloszony = zwrotZgloszony; }
     public boolean isPrzedluzone() { return przedluzone; }
     public void setPrzedluzone(boolean przedluzone) { this.przedluzone = przedluzone; }
+    public Double getKara() {
+        return kara != null ? kara : 0.0;
+    }
+
+    public void setKara(Double kara) {
+        this.kara = kara;
+    }
 }
