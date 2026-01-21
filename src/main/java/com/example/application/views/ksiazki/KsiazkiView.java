@@ -3,11 +3,19 @@ package com.example.application.views.ksiazki;
 import com.example.application.data.entity.DaneKsiazki;
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.StatusKsiazki;
+import com.example.application.data.entity.WypozyczonaKsiazka;
 import com.example.application.data.service.LibraryService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -16,6 +24,8 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @PermitAll
@@ -57,32 +67,172 @@ public class KsiazkiView extends VerticalLayout {
     }
 
     private void configureGrid() {
-        grid.addClassNames("ksiazka-grid");
+        grid.addClassNames("contact-grid");
         grid.setSizeFull();
-        grid.setColumns();
-        grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getTytul()).setHeader("Tytuł").setSortable(true);
+        grid.removeAllColumns();
+
+        // 1. Tytuł - Ograniczona szerokość, żeby nie rozpychał tabeli
+        grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getTytul())
+                .setHeader("Tytuł")
+                .setSortable(true)
+                .setWidth("300px")
+                .setResizable(true)
+                .setFlexGrow(0); // Nie rozciągaj się na siłę
+
+        // 2. Autorzy - Więcej miejsca dla czytelności
         grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getAutorzy().stream()
-                        .map(autor -> autor.getImie() + " " + autor.getNazwisko())
+                        .map(a -> a.getImie() + " " + a.getNazwisko())
                         .collect(Collectors.joining(", ")))
-                .setHeader("Autorzy");
+                .setHeader("Autor")
+                .setSortable(true)
+                .setWidth("250px")
+                .setResizable(true)
+                .setFlexGrow(1); // Zajmij wolne miejsce
 
-        grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getIsbn()).setHeader("ISBN");
+        // 3. ISBN
+        grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getIsbn())
+                .setHeader("ISBN")
+                .setSortable(true)
+                .setAutoWidth(true);
 
+        // 4. Status
+        grid.addColumn(ksiazka -> ksiazka.getStatus().getName())
+                .setHeader("Status")
+                .setSortable(true)
+                .setAutoWidth(true);
 
-        grid.addColumn(ksiazka -> ksiazka.getPoddziedzina() != null ?
-                        ksiazka.getPoddziedzina().getDziedzina().getNazwa() : "-")
-                .setHeader("Dziedzina");
+        // 5. Stan fizyczny
+        grid.addColumn(ksiazka -> ksiazka.getStanFizyczny().getNazwa())
+                .setHeader("Stan fizyczny")
+                .setSortable(true)
+                .setAutoWidth(true);
 
-        grid.addColumn(ksiazka -> ksiazka.getStatus().getName()).setHeader("Status").setSortable(true);
-        grid.addColumn(Ksiazka::getStanFizyczny).setHeader("Stan fizyczny");
+        // 6. Akcje
+        grid.addComponentColumn(ksiazka -> {
+            // Przycisk Statystyk
+            Button statsBtn = new Button(VaadinIcon.CHART.create());
+            statsBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+            statsBtn.setTooltipText("Pokaż historię i statystyki");
+            statsBtn.addClickListener(e -> openStatsDialog(ksiazka));
 
-        grid.getColumns().forEach(col -> col.setAutoWidth(true));
+            // Przycisk Edycji - Ujednolicony wygląd
+            Button editBtn = new Button(VaadinIcon.EDIT.create());
+            editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+            editBtn.setTooltipText("Edytuj książkę"); // Dodany tooltip
+            editBtn.addClickListener(e -> editKsiazka(ksiazka));
 
-        grid.asSingleSelect().addValueChangeListener(event -> editKsiazka(event.getValue()));
+            return new HorizontalLayout(statsBtn, editBtn);
+        }).setHeader("Akcje").setAutoWidth(true);
+
+        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+    }
+
+    private void openStatsDialog(Ksiazka ksiazka) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Statystyki egzemplarza");
+        dialog.setWidth("800px");
+
+        VerticalLayout dialogLayout = new VerticalLayout();
+        dialogLayout.setSpacing(true);
+        dialogLayout.setPadding(false);
+
+        // --- Nagłówek Książki ---
+        H3 title = new H3(ksiazka.getDaneKsiazki().getTytul());
+        title.getStyle().set("margin-top", "0");
+
+        Span isbnLabel = new Span("ISBN: " + ksiazka.getDaneKsiazki().getIsbn());
+        isbnLabel.getStyle().set("color", "gray").set("font-size", "0.9em");
+
+        dialogLayout.add(title, isbnLabel);
+
+        // --- Karty KPI (Statystyki) ---
+        HorizontalLayout cards = new HorizontalLayout();
+        cards.setWidthFull();
+        cards.setSpacing(true);
+
+        // 1. Licznik
+        VerticalLayout card1 = createStatCard("Liczba wypożyczeń", String.valueOf(ksiazka.getLicznikWypozyczen()), VaadinIcon.BOOK);
+
+        // 2. Data kontroli - ZMIANA IKONY NA LUPĘ (SEARCH)
+        String kontrolaText = ksiazka.getDataOstatniejKontroli() != null
+                ? ksiazka.getDataOstatniejKontroli().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                : "Brak danych";
+        VerticalLayout card2 = createStatCard("Ostatnia kontrola", kontrolaText, VaadinIcon.SEARCH);
+
+        // 3. Stan fizyczny
+        VerticalLayout card3 = createStatCard("Stan fizyczny", ksiazka.getStanFizyczny().getNazwa(), VaadinIcon.CLIPBOARD_CHECK);
+
+        cards.add(card1, card2, card3);
+        dialogLayout.add(cards);
+
+        // --- Tabela Historii ---
+        dialogLayout.add(new H4("Historia wypożyczeń tego egzemplarza"));
+
+        Grid<WypozyczonaKsiazka> historyGrid = new Grid<>();
+        historyGrid.addColumn(wk -> wk.getWypozyczenie().getUzytkownik().getEmail())
+                .setHeader("Użytkownik").setAutoWidth(true);
+
+        historyGrid.addColumn(wk -> wk.getWypozyczenie().getDataWypozyczenia())
+                .setHeader("Wypożyczono").setSortable(true);
+
+        historyGrid.addColumn(wk -> wk.getWypozyczenie().getDataOddania() != null
+                        ? wk.getWypozyczenie().getDataOddania()
+                        : "W trakcie")
+                .setHeader("Oddano").setSortable(true);
+
+        List<WypozyczonaKsiazka> history = service.findHistoriaKsiazki(ksiazka);
+        historyGrid.setItems(history);
+        historyGrid.setHeight("250px");
+        historyGrid.addThemeVariants(GridVariant.LUMO_COMPACT, GridVariant.LUMO_ROW_STRIPES);
+
+        if(history.isEmpty()) {
+            dialogLayout.add(new Span("Brak historii wypożyczeń."));
+        } else {
+            dialogLayout.add(historyGrid);
+        }
+
+        // --- Stopka ---
+        Button closeButton = new Button("Zamknij", e -> dialog.close());
+        dialog.getFooter().add(closeButton);
+
+        dialog.add(dialogLayout);
+        dialog.open();
+    }
+
+    private VerticalLayout createStatCard(String title, String value, VaadinIcon icon) {
+        VerticalLayout card = new VerticalLayout();
+        card.setSpacing(false);
+        card.setPadding(true);
+        card.setWidth("33%");
+        card.setAlignItems(Alignment.CENTER);
+
+        card.getStyle().set("background-color", "#ffffff");
+        card.getStyle().set("border", "1px solid #e0e0e0");
+        card.getStyle().set("border-radius", "8px");
+        card.getStyle().set("box-shadow", "0 2px 4px rgba(0,0,0,0.05)");
+
+        Span iconSpan = new Span(icon.create());
+        iconSpan.getStyle().set("color", "var(--lumo-primary-color)");
+        iconSpan.getStyle().set("font-size", "1.5em");
+        iconSpan.getStyle().set("margin-bottom", "5px");
+
+        Span titleSpan = new Span(title);
+        titleSpan.getStyle().set("color", "gray");
+        titleSpan.getStyle().set("font-size", "0.85em");
+        titleSpan.getStyle().set("text-transform", "uppercase");
+        titleSpan.getStyle().set("letter-spacing", "0.05em");
+
+        Span valueSpan = new Span(value);
+        valueSpan.getStyle().set("font-size", "1.2em");
+        valueSpan.getStyle().set("font-weight", "600");
+        valueSpan.getStyle().set("color", "var(--lumo-body-text-color)");
+
+        card.add(iconSpan, titleSpan, valueSpan);
+        return card;
     }
 
     private Component getToolbar() {
-        filterText.setPlaceholder("Wyszukaj po tytule...");
+        filterText.setPlaceholder("Wyszukaj...");
         filterText.setClearButtonVisible(true);
         filterText.setValueChangeMode(ValueChangeMode.LAZY);
         filterText.addValueChangeListener(e -> updateList());

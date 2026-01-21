@@ -38,7 +38,7 @@ public class KaryView extends VerticalLayout {
         setSpacing(true);
         setAlignItems(Alignment.CENTER);
 
-        add(new H4("Twoje saldo należności wobec biblioteki"));
+        add(new H4("Twoje należności wobec wypożyczalni"));
 
         // Stylowanie licznika długu
         totalDebtLabel.getStyle().set("color", "red");
@@ -94,7 +94,7 @@ public class KaryView extends VerticalLayout {
 
                 if (suma == 0) {
                     totalDebtLabel.getStyle().set("color", "green");
-                    totalDebtLabel.setText("0.00 zł (Brak zaległości)");
+                    totalDebtLabel.setText("0.00 zł");
                 } else {
                     totalDebtLabel.getStyle().set("color", "red");
                 }

@@ -26,6 +26,7 @@ public class Ksiazka {
 
     private int licznikWypozyczen = 0;
     private boolean wymagaKontroli = false;
+    private java.time.LocalDate dataOstatniejKontroli;
 
     public Ksiazka() {}
 
@@ -54,4 +55,12 @@ public class Ksiazka {
 
     public boolean isWymagaKontroli() { return wymagaKontroli; }
     public void setWymagaKontroli(boolean wymagaKontroli) { this.wymagaKontroli = wymagaKontroli; }
+
+    public java.time.LocalDate getDataOstatniejKontroli() {
+        return dataOstatniejKontroli;
+    }
+
+    public void setDataOstatniejKontroli(java.time.LocalDate dataOstatniejKontroli) {
+        this.dataOstatniejKontroli = dataOstatniejKontroli;
+    }
 }

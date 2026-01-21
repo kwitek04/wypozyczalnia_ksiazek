@@ -331,6 +331,7 @@ public class LibraryService {
 
         ksiazka.setStanFizyczny(nowyStan);
         ksiazka.setWymagaKontroli(false);
+        ksiazka.setDataOstatniejKontroli(java.time.LocalDate.now());
 
         if (nowyStan == StanFizyczny.DO_RENOWACJI) {
             ksiazka.setStatus(StatusKsiazki.W_RENOWACJI);
@@ -546,5 +547,9 @@ public class LibraryService {
         return zadluzone.stream()
                 .mapToDouble(Wypozyczenie::getKara)
                 .sum();
+    }
+
+    public List<WypozyczonaKsiazka> findHistoriaKsiazki(Ksiazka ksiazka) {
+        return wypozyczonaKsiazkaRepository.findAllByKsiazkaOrderByWypozyczenieDataWypozyczeniaDesc(ksiazka);
     }
 }
