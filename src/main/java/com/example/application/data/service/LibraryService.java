@@ -231,6 +231,11 @@ public class LibraryService {
             throw new IllegalArgumentException("Nieprawidłowe dane wypożyczenia.");
         }
 
+        przeliczKaryUzytkownika(uzytkownik);
+        if (obliczSumeKar(uzytkownik) > 0) {
+            throw new IllegalStateException("Nie możesz wypożyczyć książki, ponieważ masz nieopłacone należności wobec biblioteki.");
+        }
+
         boolean czyMoznaWypozyczyc = false;
         Rezerwacja rezerwacjaDoRealizacji = null;
 
@@ -382,6 +387,11 @@ public class LibraryService {
     @Transactional
     public void zarezerwujKsiazke(Ksiazka ksiazka, Uzytkownicy uzytkownik) {
         if (ksiazka == null || uzytkownik == null) return;
+
+        przeliczKaryUzytkownika(uzytkownik);
+        if (obliczSumeKar(uzytkownik) > 0) {
+            throw new IllegalStateException("Nie możesz zarezerwować książki, ponieważ masz nieopłacone należności wobec wypożyczalni.");
+        }
 
         if (!StatusKsiazki.DOSTEPNA.equals(ksiazka.getStatus())) {
             throw new IllegalStateException("Tej książki nie można zarezerwować (jest niedostępna).");
@@ -537,9 +547,9 @@ public class LibraryService {
                         if (!StatusKsiazki.WYCOFANA.equals(k.getStatus())) {
                             k.setStatus(StatusKsiazki.WYCOFANA);
 
-                            // Pobieramy cenę
+                            // Pobieramy cenę (zabezpieczenie na null i 0)
                             double cenaKsiazki = k.getDaneKsiazki().getCena() != null ? k.getDaneKsiazki().getCena() : 0.0;
-                            if (cenaKsiazki == 0) cenaKsiazki = 40.0; // Zabezpieczenie jakby nie było ceny
+                            if (cenaKsiazki == 0) cenaKsiazki = 40.0;
 
                             dodatkowaKara += (cenaKsiazki * 5); // 5-krotność ceny
 
@@ -552,7 +562,6 @@ public class LibraryService {
                     w.setNaliczonoKareZaZaginiecie(true);
                 }
             }
-
             wypozyczenieRepository.save(w);
         }
     }

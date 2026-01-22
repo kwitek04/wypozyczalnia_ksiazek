@@ -74,7 +74,6 @@ public class MojeWypozyczeniaView extends VerticalLayout {
             if (oddano == null) {
                 long daysOverdue = ChronoUnit.DAYS.between(termin, LocalDate.now());
                 if (daysOverdue > 0) {
-                    badge.setText(termin + " (Opóźnienie: " + daysOverdue + " dni)");
                     badge.getElement().getThemeList().add("badge error");
                 } else {
                     badge.getElement().getThemeList().add("badge contrast");

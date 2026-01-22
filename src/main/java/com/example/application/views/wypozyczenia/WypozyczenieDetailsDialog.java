@@ -18,6 +18,7 @@ import com.vaadin.flow.server.StreamResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.format.DateTimeFormatter;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -95,7 +96,34 @@ public class WypozyczenieDetailsDialog extends Dialog {
                 terminLabel.setText(terminLabel.getText() + " (Spóźnienie: " + dniSpoznienia + " dni!)");
                 terminLabel.getStyle().set("color", "red");
             }
-        } else {
+            if (!wypozyczenie.isNaliczonoKareZaZaginiecie()) {
+                LocalDate deadLine = wypozyczenie.getTerminZwrotu().plusDays(7);
+                String formattedDeadline = deadLine.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+
+                double cena = ksiazka.getDaneKsiazki().getCena() != null ? ksiazka.getDaneKsiazki().getCena() : 40.0;
+                double potencjalnaKara = cena * 5;
+
+                Div warningBox = new Div();
+                warningBox.getStyle()
+                        .set("background-color", "#ffebee") // Jasny czerwony
+                        .set("color", "#c62828") // Ciemny czerwony tekst
+                        .set("border", "1px solid #ef9a9a")
+                        .set("padding", "10px")
+                        .set("border-radius", "5px")
+                        .set("margin-top", "10px")
+                        .set("font-size", "0.9em");
+
+                Span warningIcon = new Span(VaadinIcon.WARNING.create());
+                warningIcon.getStyle().set("margin-right", "5px");
+
+                Span warningText = new Span("Jeśli nie zwrócisz książki do " + formattedDeadline +
+                        ", zostanie nałożona na ciebie kara w wysokości " + String.format("%.2f zł", potencjalnaKara) + "!");
+
+                warningBox.add(warningIcon, warningText);
+                datesInfo.add(warningBox);
+            }
+        }
+        else {
             datesInfo.add(new Span("Data oddania: " + wypozyczenie.getDataOddania()));
             Span zwroconoLabel = new Span("Zwrócono");
             zwroconoLabel.getElement().getThemeList().add("badge success");
