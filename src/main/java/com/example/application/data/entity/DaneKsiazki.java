@@ -32,6 +32,8 @@ public class DaneKsiazki {
     @Column(length = 10000000)
     private byte[] okladka;
 
+    private Double cena = 0.0;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "autor_ksiazka",
@@ -81,4 +83,12 @@ public class DaneKsiazki {
 
     public Set<Autor> getAutorzy() { return autorzy; }
     public void setAutorzy(Set<Autor> autorzy) { this.autorzy = autorzy; }
+
+    public Double getCena() {
+        return cena;
+    }
+
+    public void setCena(Double cena) {
+        this.cena = cena;
+    }
 }

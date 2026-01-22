@@ -38,6 +38,8 @@ public class Wypozyczenie {
 
     private boolean zwrotZgloszony = false;
 
+    private boolean naliczonoKareZaZaginiecie = false;
+
     // Gettery i Settery
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -61,5 +63,13 @@ public class Wypozyczenie {
 
     public void setKara(Double kara) {
         this.kara = kara;
+    }
+
+    public boolean isNaliczonoKareZaZaginiecie() {
+        return naliczonoKareZaZaginiecie;
+    }
+
+    public void setNaliczonoKareZaZaginiecie(boolean naliczonoKareZaZaginiecie) {
+        this.naliczonoKareZaZaginiecie = naliczonoKareZaZaginiecie;
     }
 }

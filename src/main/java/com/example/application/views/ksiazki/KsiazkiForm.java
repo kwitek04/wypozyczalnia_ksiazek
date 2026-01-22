@@ -20,6 +20,7 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -52,6 +53,7 @@ public class KsiazkiForm extends FormLayout {
 
     ComboBox<Dziedzina> dziedzina = new ComboBox<>("Dziedzina");
     ComboBox<Poddziedzina> poddziedzina = new ComboBox<>("Poddziedzina");
+    NumberField cena = new NumberField("Cena (PLN)");
 
     Button save = new Button("Zapisz");
     Button delete = new Button("Usuń");
@@ -97,6 +99,13 @@ public class KsiazkiForm extends FormLayout {
         opis.setClearButtonVisible(true);
         opis.setHeight("150px");
         setColspan(opis, 2);
+
+        cena.setRequiredIndicatorVisible(true);
+        cena.setMin(0);
+        cena.setValue(40.0); // Domyślna wartość
+        Div zlSuffix = new Div();
+        zlSuffix.setText("zł");
+        cena.setSuffixComponent(zlSuffix);
 
         upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/gif");
         upload.setMaxFileSize(5 * 1024 * 1024);
@@ -181,6 +190,10 @@ public class KsiazkiForm extends FormLayout {
                 .asRequired("Pole jest wymagane")
                 .bind(Ksiazka::getStanFizyczny, Ksiazka::setStanFizyczny);
 
+        daneBinder.forField(cena)
+                .asRequired("Cena jest wymagana do obliczania kar")
+                .bind(DaneKsiazki::getCena, DaneKsiazki::setCena);
+
         daneBinder.forField(isbn)
                 .asRequired("ISBN jest wymagany")
                 .withValidator(s -> {
@@ -230,7 +243,7 @@ public class KsiazkiForm extends FormLayout {
         binder.bindInstanceFields(this);
         daneBinder.bindInstanceFields(this);
 
-        add(wycofanieInfo, uploadLayout, isbn, tytul, autorzy, tlumacze, wydawnictwo, rokWydania, opis,
+        add(wycofanieInfo, uploadLayout, isbn, tytul, autorzy, tlumacze, wydawnictwo, rokWydania, cena, opis,
                 dziedzina, poddziedzina, stanFizyczny, statusField,
                 createButtonsLayout());
     }

@@ -1,12 +1,18 @@
 package com.example.application.views.uzytkownicy;
 
 import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Wypozyczenie;
 import com.example.application.data.service.LibraryService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -16,6 +22,9 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RolesAllowed({"KIEROWNIK", "BIBLIOTEKARZ"})
 @Route(value = "uzytkownicy", layout = MainLayout.class)
@@ -53,15 +62,141 @@ public class UzytkownicyView extends VerticalLayout {
         }).setHeader("Status konta").setSortable(true);;
 
         grid.addComponentColumn(uzytkownik -> {
-            Button editBtn = new Button(new Icon(VaadinIcon.EDIT));
-            editBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+            Button statsBtn = new Button(VaadinIcon.CHART.create());
+            statsBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+            statsBtn.setTooltipText("Statystyki użytkownika");
+            statsBtn.addClickListener(e -> openStatsDialog(uzytkownik));
+
+            Button editBtn = new Button(VaadinIcon.EDIT.create());
+            editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+            editBtn.setTooltipText("Edytuj dane użytkownika");
             editBtn.addClickListener(e -> editUzytkownik(uzytkownik));
-            return editBtn;
-        }).setWidth("70px").setFlexGrow(0);
+
+            return new HorizontalLayout(statsBtn, editBtn);
+        }).setHeader("Akcje").setAutoWidth(true).setFlexGrow(0);
 
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
 
+        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
         grid.asSingleSelect().addValueChangeListener(event -> editUzytkownik(event.getValue()));
+    }
+
+    private void openStatsDialog(Uzytkownicy uzytkownik) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Statystyki użytkownika");
+        dialog.setWidth("800px");
+
+        VerticalLayout dialogLayout = new VerticalLayout();
+        dialogLayout.setSpacing(true);
+        dialogLayout.setPadding(false);
+
+        // --- Nagłówek ---
+        H3 title = new H3(uzytkownik.getImie() + " " + uzytkownik.getNazwisko());
+        title.getStyle().set("margin-top", "0");
+
+        Span emailLabel = new Span(uzytkownik.getEmail());
+        emailLabel.getStyle().set("color", "gray").set("font-size", "0.9em");
+
+        dialogLayout.add(title, emailLabel);
+
+        // --- Pobieranie danych ---
+        List<Wypozyczenie> historia = service.findWypozyczeniaByUser(uzytkownik);
+
+        // Liczymy sumę książek (bo jedno wypożyczenie może mieć kilka książek)
+        int liczbaKsiazek = historia.stream()
+                .mapToInt(w -> w.getWypozyczoneKsiazki().size())
+                .sum();
+
+        Double dlug = service.obliczSumeKar(uzytkownik);
+        String statusKonta = uzytkownik.isLocked() ? "Zablokowane" : (uzytkownik.isEnabled() ? "Aktywne" : "Oczekujące");
+
+        // --- Karty KPI ---
+        HorizontalLayout cards = new HorizontalLayout();
+        cards.setWidthFull();
+        cards.setSpacing(true);
+
+        VerticalLayout card1 = createStatCard("Wypożyczone książki (łącznie)", String.valueOf(liczbaKsiazek), VaadinIcon.BOOK);
+        VerticalLayout card2 = createStatCard("Należności (Kary)", String.format("%.2f zł", dlug), VaadinIcon.MONEY);
+        VerticalLayout card3 = createStatCard("Status konta", statusKonta, VaadinIcon.USER_CARD);
+
+        // Kolorowanie kary na czerwono jeśli > 0
+        if (dlug > 0) {
+            card2.getChildren().reduce((first, second) -> second).ifPresent(comp ->
+                    comp.getStyle().set("color", "var(--lumo-error-text-color)"));
+        }
+
+        cards.add(card1, card2, card3);
+        dialogLayout.add(cards);
+
+        // --- Tabela Historii ---
+        dialogLayout.add(new H4("Historia operacji"));
+
+        Grid<Wypozyczenie> historyGrid = new Grid<>();
+        historyGrid.addColumn(Wypozyczenie::getDataWypozyczenia)
+                .setHeader("Data wypożyczenia").setAutoWidth(true);
+
+        historyGrid.addColumn(w -> w.getWypozyczoneKsiazki().stream()
+                        .map(wk -> wk.getKsiazka().getDaneKsiazki().getTytul())
+                        .collect(Collectors.joining(", ")))
+                .setHeader("Tytuły").setAutoWidth(true);
+
+        historyGrid.addColumn(w -> w.getDataOddania() != null ? w.getDataOddania().toString() : "W trakcie")
+                .setHeader("Data zwrotu").setAutoWidth(true);
+
+        historyGrid.addColumn(w -> String.format("%.2f zł", w.getKara()))
+                .setHeader("Kara");
+
+        historyGrid.setItems(historia);
+        historyGrid.setHeight("250px");
+        historyGrid.addThemeVariants(GridVariant.LUMO_COMPACT, GridVariant.LUMO_ROW_STRIPES);
+
+        if(historia.isEmpty()) {
+            dialogLayout.add(new Span("Brak historii wypożyczeń."));
+        } else {
+            dialogLayout.add(historyGrid);
+        }
+
+        // --- Stopka ---
+        Button closeButton = new Button("Zamknij", e -> dialog.close());
+        dialog.getFooter().add(closeButton);
+
+        dialog.add(dialogLayout);
+        dialog.open();
+    }
+
+    // Metoda pomocnicza do tworzenia kart (identyczna jak w KsiazkiView)
+    private VerticalLayout createStatCard(String title, String value, VaadinIcon icon) {
+        VerticalLayout card = new VerticalLayout();
+        card.setSpacing(false);
+        card.setPadding(true);
+        card.setWidth("33%");
+        card.setAlignItems(Alignment.CENTER);
+
+        card.getStyle().set("background-color", "#ffffff");
+        card.getStyle().set("border", "1px solid #e0e0e0");
+        card.getStyle().set("border-radius", "8px");
+        card.getStyle().set("box-shadow", "0 2px 4px rgba(0,0,0,0.05)");
+
+        Span iconSpan = new Span(icon.create());
+        iconSpan.getStyle().set("color", "var(--lumo-primary-color)");
+        iconSpan.getStyle().set("font-size", "1.5em");
+        iconSpan.getStyle().set("margin-bottom", "5px");
+
+        Span titleSpan = new Span(title);
+        titleSpan.getStyle().set("color", "gray");
+        titleSpan.getStyle().set("font-size", "0.85em");
+        titleSpan.getStyle().set("text-transform", "uppercase");
+        titleSpan.getStyle().set("letter-spacing", "0.05em");
+        titleSpan.getStyle().set("text-align", "center");
+
+        Span valueSpan = new Span(value);
+        valueSpan.getStyle().set("font-size", "1.2em");
+        valueSpan.getStyle().set("font-weight", "600");
+        valueSpan.getStyle().set("color", "var(--lumo-body-text-color)");
+
+        card.add(iconSpan, titleSpan, valueSpan);
+        return card;
     }
 
     private void configureForm() {

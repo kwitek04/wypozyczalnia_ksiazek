@@ -499,36 +499,61 @@ public class LibraryService {
     public void przeliczKaryUzytkownika(Uzytkownicy uzytkownik) {
         if (uzytkownik == null) return;
 
-        List<Wypozyczenie> wypozyczenia = wypozyczenieRepository.findAllByUzytkownik(uzytkownik); // Używamy istniejącej metody repozytorium (Spring Data sam ją wygeneruje po nazwie jeśli jej nie ma, a w poprzednich krokach z niej korzystaliśmy)
-        // Jeśli findAllByUzytkownik nie jest widoczne, użyj: findWypozyczeniaByUser(uzytkownik) i pracuj na tej liście
+        List<Wypozyczenie> wypozyczenia = wypozyczenieRepository.findAllByUzytkownik(uzytkownik);
 
         for (Wypozyczenie w : wypozyczenia) {
-            // Jeśli kara została już opłacona (np. wprowadzimy status opłacenia w przyszłości), pomijamy.
-            // Na razie po prostu sprawdzamy terminy.
-
-            boolean czyNalezySieKara = false;
             java.time.LocalDate termin = w.getTerminZwrotu();
             java.time.LocalDate oddanie = w.getDataOddania();
             java.time.LocalDate dzis = java.time.LocalDate.now();
 
+            // 1. Podstawowa kara za opóźnienie (10 zł)
+            boolean czyNalezySiePodstawa = false;
             if (oddanie != null) {
-                // Książka oddana, sprawdzamy czy po terminie
-                if (oddanie.isAfter(termin)) {
-                    czyNalezySieKara = true;
-                }
+                if (oddanie.isAfter(termin)) czyNalezySiePodstawa = true;
             } else {
-                // Książka nadal u czytelnika, sprawdzamy czy dzisiaj jest po terminie
-                if (dzis.isAfter(termin)) {
-                    czyNalezySieKara = true;
+                if (dzis.isAfter(termin)) czyNalezySiePodstawa = true;
+            }
+
+            if (czyNalezySiePodstawa && w.getKara() == 0.0) {
+                w.setKara(10.0);
+            }
+
+            // 2. Kara za "zagubienie" (powyżej 7 dni spóźnienia)
+            // Działa tylko dla książek nieoddanych
+            if (oddanie == null) {
+                long dniSpoznienia = java.time.temporal.ChronoUnit.DAYS.between(termin, dzis);
+
+                // Jeśli minęło 7 dni "grace period" (czyli spóźnienie > 7 dni)
+                // I jeszcze nie naliczyliśmy tej dużej kary
+                if (dniSpoznienia > 7 && !w.isNaliczonoKareZaZaginiecie()) {
+
+                    double dodatkowaKara = 0.0;
+
+                    for (WypozyczonaKsiazka wk : w.getWypozyczoneKsiazki()) {
+                        Ksiazka k = wk.getKsiazka();
+
+                        // Zmieniamy status na WYCOFANA (uznajemy za zagubioną)
+                        // Ale tylko jeśli nie jest już wycofana (żeby nie psuć statystyk innych procesów)
+                        if (!StatusKsiazki.WYCOFANA.equals(k.getStatus())) {
+                            k.setStatus(StatusKsiazki.WYCOFANA);
+
+                            // Pobieramy cenę
+                            double cenaKsiazki = k.getDaneKsiazki().getCena() != null ? k.getDaneKsiazki().getCena() : 0.0;
+                            if (cenaKsiazki == 0) cenaKsiazki = 40.0; // Zabezpieczenie jakby nie było ceny
+
+                            dodatkowaKara += (cenaKsiazki * 5); // 5-krotność ceny
+
+                            ksiazkaRepository.save(k); // Zapisujemy zmianę statusu książki
+                        }
+                    }
+
+                    // Aktualizujemy wypożyczenie
+                    w.setKara(w.getKara() + dodatkowaKara);
+                    w.setNaliczonoKareZaZaginiecie(true);
                 }
             }
 
-            if (czyNalezySieKara) {
-                if (w.getKara() == 0.0) { // Jeśli jeszcze nie ma kary, wpisz 10
-                    w.setKara(10.0);
-                    wypozyczenieRepository.save(w);
-                }
-            }
+            wypozyczenieRepository.save(w);
         }
     }
 
