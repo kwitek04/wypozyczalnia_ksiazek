@@ -30,7 +30,7 @@ public class KsiazkiDoOdlozeniaView extends VerticalLayout {
         setPadding(true);
 
         add(new H2("Książki do odłożenia na półkę"));
-        add(new Span("Lista książek, które wróciły z wypożyczenia (lub kontroli) i oczekują na fizyczne odłożenie na regał."));
+        add(new Span("Lista książek, które zostały zwrócone i oczekują na odłożenie na półkę."));
 
         configureGrid();
         add(grid);

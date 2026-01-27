@@ -18,6 +18,8 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -79,35 +81,43 @@ public class MainLayout extends AppLayout {
     private void createDrawer() {
         VerticalLayout menu = new VerticalLayout();
 
-        RouterLink homeLink = new RouterLink("Strona główna", HomeView.class);
-        homeLink.setHighlightCondition(HighlightConditions.sameLocation());
-        menu.add(homeLink);
+        // Gość i wszyscy inni użytkownicy
+        menu.add(new RouterLink("Strona główna", com.example.application.views.HomeView.class));
+        menu.add(new RouterLink("Katalog", com.example.application.views.katalog.KatalogView.class));
 
+        // Uzytkownicy zalogowani i pracownicy
         if (authContext.isAuthenticated()) {
-            menu.add(new RouterLink("Moje Konto", MojeKontoView.class));
+            menu.add(new RouterLink("Moje konto", MojeKontoView.class));
+        }
+
+        // Użytkownicy zalogowani
+        if (authContext.isAuthenticated() && authContext.hasRole("USER")) {
             menu.add(new RouterLink("Moje wypożyczenia", MojeWypozyczeniaView.class));
-            menu.add(new RouterLink("Moje Rezerwacje", MojeRezerwacjeView.class));
+            menu.add(new RouterLink("Moje rezerwacje", MojeRezerwacjeView.class));
             menu.add(new RouterLink("Kary i opłaty", KaryView.class));
         }
 
-        if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK")) {
-            menu.add(new RouterLink("Lista pracowników", PracownicyView.class));
-            menu.add(new RouterLink("Dziedziny i poddziedziny", DziedzinaView.class));
-            menu.add(new RouterLink("Książki do wycofania", KsiazkiDoWycofaniaView.class));
-            menu.add(new RouterLink("Statystyki", StatystykiView.class));
-        }
-        if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK") || authContext.hasRole("BIBLIOTEKARZ")) {
-            menu.add(new RouterLink("Lista użytkowników", UzytkownicyView.class));
-            menu.add(new RouterLink("Konta do aktywacji", OczekujaceKontaView.class));
-            menu.add(new RouterLink("Lista książek", KsiazkiView.class));
+        // Bibliotekarz i kierownik (kierownik ma wsyztski funkcje bibliotekarza)
+        if (authContext.isAuthenticated() && (authContext.hasRole("BIBLIOTEKARZ") || authContext.hasRole("KIEROWNIK"))) {
+            menu.add(new RouterLink("Zarządzanie Książkami", KsiazkiView.class));
+            menu.add(new RouterLink("Zarządzanie Użytkownikami", UzytkownicyView.class));
             menu.add(new RouterLink("Zarządzanie wypożyczeniami", ZarzadzanieWypozyczeniamiView.class));
+            menu.add(new RouterLink("Konta do aktywacji", OczekujaceKontaView.class));
         }
-        if (authContext.isAuthenticated() && authContext.hasRole("MAGAZYNIER")) {
-            menu.add(new RouterLink("Kontrola stanu", KontrolaStanuView.class));
+
+        // Magazynier i kierownik (kierownik ma wszystkie funkcje magazyniera)
+        if (authContext.isAuthenticated() && (authContext.hasRole("MAGAZYNIER") || authContext.hasRole("KIEROWNIK"))) {
+            menu.add(new RouterLink("Kontrola stanu książek", KontrolaStanuView.class));
             menu.add(new RouterLink("Książki do odłożenia", KsiazkiDoOdlozeniaView.class));
         }
 
-        menu.add(new RouterLink("Katalog", com.example.application.views.katalog.KatalogView.class));
+        // Kierownik
+        if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK")) {
+            menu.add(new RouterLink("Zarządzanie pracownikami", PracownicyView.class));
+            menu.add(new RouterLink("Książki do wycofania", KsiazkiDoWycofaniaView.class));
+            menu.add(new RouterLink("Statystyki globalne wypożyczalni", StatystykiView.class));
+            menu.add(new RouterLink("Dziedziny i poddziedziny", DziedzinaView.class));
+        }
 
         addToDrawer(menu);
     }

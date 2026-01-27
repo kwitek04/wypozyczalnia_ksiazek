@@ -19,7 +19,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
-@RolesAllowed({"MAGAZYNIER", "KIEROWNIK", "BIBLIOTEKARZ"}) // Dostęp dla obsługi
+@RolesAllowed({"MAGAZYNIER", "KIEROWNIK"})
 @Route(value = "kontrola-stanu", layout = MainLayout.class)
 @PageTitle("Kontrola Stanu | Magazyn")
 public class KontrolaStanuView extends VerticalLayout {
@@ -32,8 +32,8 @@ public class KontrolaStanuView extends VerticalLayout {
         setSizeFull();
         setPadding(true);
 
-        add(new H2("Kontrola stanu fizycznego (co 5 wypożyczeń)"));
-        add(new Span("Poniższe książki przekroczyły cykl wypożyczeń i wymagają weryfikacji przez magazyniera."));
+        add(new H2("Kontrola stanu fizycznego książek"));
+        add(new Span("Poniższe książki przekroczyły cykl 5 wypożyczeń i wymagają weryfikacji przez magazyniera."));
 
         configureGrid();
         add(grid);

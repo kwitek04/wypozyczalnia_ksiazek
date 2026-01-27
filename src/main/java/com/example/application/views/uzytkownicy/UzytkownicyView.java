@@ -208,7 +208,7 @@ public class UzytkownicyView extends VerticalLayout {
     }
 
     private HorizontalLayout getToolbar() {
-        filterText.setPlaceholder("Filtruj po nazwisku...");
+        filterText.setPlaceholder("Wyszukaj...");
         filterText.setClearButtonVisible(true);
         filterText.setValueChangeMode(ValueChangeMode.LAZY);
         filterText.addValueChangeListener(e -> updateList());

@@ -34,8 +34,6 @@ public class ZarzadzanieWypozyczeniamiView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        add(new H2("Panel zwrotów i wypożyczeń"));
-
         configureSearchField();
         add(searchField);
 
@@ -46,7 +44,7 @@ public class ZarzadzanieWypozyczeniamiView extends VerticalLayout {
     }
 
     private void configureSearchField() {
-        searchField.setPlaceholder("Szukaj po użytkowniku, tytule lub ISBN...");
+        searchField.setPlaceholder("Wyszukaj...");
         searchField.setClearButtonVisible(true);
         searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
