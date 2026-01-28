@@ -105,8 +105,8 @@ public class WypozyczenieDetailsDialog extends Dialog {
 
                 Div warningBox = new Div();
                 warningBox.getStyle()
-                        .set("background-color", "#ffebee") // Jasny czerwony
-                        .set("color", "#c62828") // Ciemny czerwony tekst
+                        .set("background-color", "#ffebee")
+                        .set("color", "#c62828")
                         .set("border", "1px solid #ef9a9a")
                         .set("padding", "10px")
                         .set("border-radius", "5px")

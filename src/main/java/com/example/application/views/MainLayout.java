@@ -97,18 +97,12 @@ public class MainLayout extends AppLayout {
             menu.add(new RouterLink("Kary i opłaty", KaryView.class));
         }
 
-        // Bibliotekarz i kierownik (kierownik ma wsyztski funkcje bibliotekarza)
-        if (authContext.isAuthenticated() && (authContext.hasRole("BIBLIOTEKARZ") || authContext.hasRole("KIEROWNIK"))) {
+        // Bibliotekarz
+        if (authContext.isAuthenticated() && (authContext.hasRole("BIBLIOTEKARZ"))) {
             menu.add(new RouterLink("Zarządzanie Książkami", KsiazkiView.class));
             menu.add(new RouterLink("Zarządzanie Użytkownikami", UzytkownicyView.class));
             menu.add(new RouterLink("Zarządzanie wypożyczeniami", ZarzadzanieWypozyczeniamiView.class));
             menu.add(new RouterLink("Konta do aktywacji", OczekujaceKontaView.class));
-        }
-
-        // Magazynier i kierownik (kierownik ma wszystkie funkcje magazyniera)
-        if (authContext.isAuthenticated() && (authContext.hasRole("MAGAZYNIER") || authContext.hasRole("KIEROWNIK"))) {
-            menu.add(new RouterLink("Kontrola stanu książek", KontrolaStanuView.class));
-            menu.add(new RouterLink("Książki do odłożenia", KsiazkiDoOdlozeniaView.class));
         }
 
         // Kierownik
@@ -117,6 +111,12 @@ public class MainLayout extends AppLayout {
             menu.add(new RouterLink("Książki do wycofania", KsiazkiDoWycofaniaView.class));
             menu.add(new RouterLink("Statystyki globalne wypożyczalni", StatystykiView.class));
             menu.add(new RouterLink("Dziedziny i poddziedziny", DziedzinaView.class));
+        }
+
+        // Magazynier
+        if (authContext.isAuthenticated() && (authContext.hasRole("MAGAZYNIER"))) {
+            menu.add(new RouterLink("Kontrola stanu książek", KontrolaStanuView.class));
+            menu.add(new RouterLink("Książki do odłożenia", KsiazkiDoOdlozeniaView.class));
         }
 
         addToDrawer(menu);
