@@ -4,7 +4,8 @@ import com.example.application.data.entity.DaneKsiazki;
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.StatusKsiazki;
 import com.example.application.data.entity.WypozyczonaKsiazka;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.BookService;
+import com.example.application.data.service.RentalService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -22,23 +23,34 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@PermitAll
+/**
+ * Widok zarządzania książkami dostępny dla pracownika z rolą BIBLIOTEKARZ.
+ * Umożliwia przeglądanie książęk, dodawanie nowych pozycji, edycję istniejących
+ * oraz podgląd szczegółowych statystyk egzemplarza.
+ */
+
+@RolesAllowed("BIBLIOTEKARZ")
 @Route(value = "ksiazki", layout = MainLayout.class)
 @PageTitle("Książki | Biblioteka")
 public class KsiazkiView extends VerticalLayout {
-    private final LibraryService service;
-    Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
-    TextField filterText = new TextField();
-    KsiazkiForm form;
 
-    public KsiazkiView(LibraryService service) {
-        this.service = service;
+    private final BookService bookService;
+    private final RentalService rentalService;
+
+    private final Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
+    private final TextField filterText = new TextField();
+    private KsiazkiForm form;
+
+    public KsiazkiView(BookService bookService, RentalService rentalService) {
+        this.bookService = bookService;
+        this.rentalService = rentalService;
+
         addClassName("ksiazka-view");
         setSizeFull();
         configureGrid();
@@ -58,28 +70,32 @@ public class KsiazkiView extends VerticalLayout {
         return content;
     }
 
+    /**
+     * Inicjalizuje formularz edycji książki i ustawia listenery zdarzeń.
+     */
     private void configureForm() {
-        form = new KsiazkiForm(service);
+        form = new KsiazkiForm(bookService, rentalService);
         form.setWidth("25em");
         form.addListener(KsiazkiForm.SaveEvent.class, this::saveKsiazka);
         form.addListener(KsiazkiForm.DeleteEvent.class, this::deleteKsiazka);
         form.addListener(KsiazkiForm.CloseEvent.class, e -> closeEditor());
     }
 
+    /**
+     * Konfiguruje kolumny tabeli, ich nagłówki oraz sposób wyświetlania danych.
+     */
     private void configureGrid() {
         grid.addClassNames("contact-grid");
         grid.setSizeFull();
         grid.removeAllColumns();
 
-        // 1. Tytuł - Ograniczona szerokość, żeby nie rozpychał tabeli
         grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getTytul())
                 .setHeader("Tytuł")
                 .setSortable(true)
                 .setWidth("300px")
                 .setResizable(true)
-                .setFlexGrow(0); // Nie rozciągaj się na siłę
+                .setFlexGrow(0);
 
-        // 2. Autorzy - Więcej miejsca dla czytelności
         grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getAutorzy().stream()
                         .map(a -> a.getImie() + " " + a.getNazwisko())
                         .collect(Collectors.joining(", ")))
@@ -87,35 +103,30 @@ public class KsiazkiView extends VerticalLayout {
                 .setSortable(true)
                 .setWidth("250px")
                 .setResizable(true)
-                .setFlexGrow(1); // Zajmij wolne miejsce
+                .setFlexGrow(1);
 
-        // 3. ISBN
         grid.addColumn(ksiazka -> ksiazka.getDaneKsiazki().getIsbn())
                 .setHeader("ISBN")
                 .setSortable(true)
                 .setAutoWidth(true);
 
-        // 4. Status
         grid.addColumn(ksiazka -> ksiazka.getStatus().getName())
                 .setHeader("Status")
                 .setSortable(true)
                 .setAutoWidth(true);
 
-        // 5. Stan fizyczny
         grid.addColumn(ksiazka -> ksiazka.getStanFizyczny().getNazwa())
                 .setHeader("Stan fizyczny")
                 .setSortable(true)
                 .setAutoWidth(true);
 
-        // 6. Akcje
+        // Kolumna akcji (Statystyki i edytowanie)
         grid.addComponentColumn(ksiazka -> {
-            // Przycisk Statystyk
             Button statsBtn = new Button(VaadinIcon.CHART.create());
             statsBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
             statsBtn.setTooltipText("Pokaż historię i statystyki");
             statsBtn.addClickListener(e -> openStatsDialog(ksiazka));
 
-            // Przycisk Edycji - Ujednolicony wygląd
             Button editBtn = new Button(VaadinIcon.EDIT.create());
             editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
             editBtn.setTooltipText("Edytuj książkę"); // Dodany tooltip
@@ -136,7 +147,6 @@ public class KsiazkiView extends VerticalLayout {
         dialogLayout.setSpacing(true);
         dialogLayout.setPadding(false);
 
-        // --- Nagłówek Książki ---
         H3 title = new H3(ksiazka.getDaneKsiazki().getTytul());
         title.getStyle().set("margin-top", "0");
 
@@ -145,27 +155,22 @@ public class KsiazkiView extends VerticalLayout {
 
         dialogLayout.add(title, isbnLabel);
 
-        // --- Karty KPI (Statystyki) ---
         HorizontalLayout cards = new HorizontalLayout();
         cards.setWidthFull();
         cards.setSpacing(true);
 
-        // 1. Licznik
         VerticalLayout card1 = createStatCard("Liczba wypożyczeń", String.valueOf(ksiazka.getLicznikWypozyczen()), VaadinIcon.BOOK);
 
-        // 2. Data kontroli - ZMIANA IKONY NA LUPĘ (SEARCH)
         String kontrolaText = ksiazka.getDataOstatniejKontroli() != null
                 ? ksiazka.getDataOstatniejKontroli().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
                 : "Brak danych";
         VerticalLayout card2 = createStatCard("Ostatnia kontrola", kontrolaText, VaadinIcon.SEARCH);
 
-        // 3. Stan fizyczny
         VerticalLayout card3 = createStatCard("Stan fizyczny", ksiazka.getStanFizyczny().getNazwa(), VaadinIcon.CLIPBOARD_CHECK);
 
         cards.add(card1, card2, card3);
         dialogLayout.add(cards);
 
-        // --- Tabela Historii ---
         dialogLayout.add(new H4("Historia wypożyczeń tego egzemplarza"));
 
         Grid<WypozyczonaKsiazka> historyGrid = new Grid<>();
@@ -180,7 +185,7 @@ public class KsiazkiView extends VerticalLayout {
                         : "W trakcie")
                 .setHeader("Oddano").setSortable(true);
 
-        List<WypozyczonaKsiazka> history = service.findHistoriaKsiazki(ksiazka);
+        List<WypozyczonaKsiazka> history = rentalService.findHistoriaKsiazki(ksiazka);
         historyGrid.setItems(history);
         historyGrid.setHeight("250px");
         historyGrid.addThemeVariants(GridVariant.LUMO_COMPACT, GridVariant.LUMO_ROW_STRIPES);
@@ -191,7 +196,6 @@ public class KsiazkiView extends VerticalLayout {
             dialogLayout.add(historyGrid);
         }
 
-        // --- Stopka ---
         Button closeButton = new Button("Zamknij", e -> dialog.close());
         dialog.getFooter().add(closeButton);
 
@@ -246,13 +250,13 @@ public class KsiazkiView extends VerticalLayout {
     }
 
     private void saveKsiazka(KsiazkiForm.SaveEvent event) {
-        service.saveKsiazka(event.getKsiazka());
+        bookService.saveKsiazka(event.getKsiazka());
         updateList();
         closeEditor();
     }
 
     private void deleteKsiazka(KsiazkiForm.DeleteEvent event) {
-        service.deleteKsiazka(event.getKsiazka());
+        bookService.deleteKsiazka(event.getKsiazka());
         updateList();
         closeEditor();
     }
@@ -282,6 +286,6 @@ public class KsiazkiView extends VerticalLayout {
     }
 
     private void updateList() {
-        grid.setItems(service.findAllKsiazki(filterText.getValue()));
+        grid.setItems(bookService.findAllKsiazki(filterText.getValue()));
     }
 }

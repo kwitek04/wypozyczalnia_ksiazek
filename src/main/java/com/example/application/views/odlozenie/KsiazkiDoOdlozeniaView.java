@@ -16,7 +16,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
-@RolesAllowed({"MAGAZYNIER", "KIEROWNIK"})
+@RolesAllowed({"MAGAZYNIER"})
 @Route(value = "do-odlozenia", layout = MainLayout.class)
 @PageTitle("Książki do odłożenia | Magazyn")
 public class KsiazkiDoOdlozeniaView extends VerticalLayout {

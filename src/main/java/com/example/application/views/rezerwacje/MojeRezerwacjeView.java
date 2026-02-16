@@ -20,11 +20,12 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+
 
 import java.util.stream.Collectors;
 
-@PermitAll
+@RolesAllowed({"USER"})
 @Route(value = "moje-rezerwacje", layout = MainLayout.class)
 @PageTitle("Moje Rezerwacje | Biblioteka")
 public class MojeRezerwacjeView extends VerticalLayout {

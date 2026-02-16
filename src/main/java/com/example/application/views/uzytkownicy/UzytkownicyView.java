@@ -13,7 +13,6 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -26,7 +25,7 @@ import jakarta.annotation.security.RolesAllowed;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RolesAllowed({"KIEROWNIK", "BIBLIOTEKARZ"})
+@RolesAllowed({"BIBLIOTEKARZ"})
 @Route(value = "uzytkownicy", layout = MainLayout.class)
 @PageTitle("Lista użytkowników | Biblioteka")
 public class UzytkownicyView extends VerticalLayout {

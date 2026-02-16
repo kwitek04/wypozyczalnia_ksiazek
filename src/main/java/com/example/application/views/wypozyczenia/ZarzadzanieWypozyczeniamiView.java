@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * - Obsługi zgłoszonych zwrotów.
  */
 
-@RolesAllowed({"BIBLIOTEKARZ"}) // Dostęp tylko dla bibliotekarza
+@RolesAllowed({"BIBLIOTEKARZ"})
 @Route(value = "zarzadzanie-wypozyczeniami", layout = MainLayout.class)
 @PageTitle("Zarządzanie Wypożyczeniami | Biblioteka")
 public class ZarzadzanieWypozyczeniamiView extends VerticalLayout {

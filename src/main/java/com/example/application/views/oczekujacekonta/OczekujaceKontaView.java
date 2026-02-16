@@ -12,7 +12,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
-@RolesAllowed({"KIEROWNIK", "BIBLIOTEKARZ"})
+@RolesAllowed({"BIBLIOTEKARZ"})
 @Route(value = "aktywacja", layout = MainLayout.class)
 public class OczekujaceKontaView extends VerticalLayout {
 

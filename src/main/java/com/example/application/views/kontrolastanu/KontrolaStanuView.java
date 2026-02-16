@@ -19,7 +19,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
-@RolesAllowed({"MAGAZYNIER", "KIEROWNIK"})
+@RolesAllowed({"MAGAZYNIER"})
 @Route(value = "kontrola-stanu", layout = MainLayout.class)
 @PageTitle("Kontrola Stanu | Magazyn")
 public class KontrolaStanuView extends VerticalLayout {

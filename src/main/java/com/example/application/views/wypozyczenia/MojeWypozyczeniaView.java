@@ -12,14 +12,14 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 
-@PermitAll
+@RolesAllowed({"USER"})
 @Route(value = "moje-wypozyczenia", layout = MainLayout.class)
 @PageTitle("Moje Wypożyczenia | Biblioteka")
 public class MojeWypozyczeniaView extends VerticalLayout {

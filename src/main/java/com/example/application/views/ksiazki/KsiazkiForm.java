@@ -1,7 +1,8 @@
 package com.example.application.views.ksiazki;
 
 import com.example.application.data.entity.*;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.BookService;
+import com.example.application.data.service.RentalService;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -17,57 +18,89 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
-import java.io.ByteArrayInputStream;
-import com.vaadin.flow.component.textfield.TextArea;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Komponent formularza służący do tworzenia i edycji obiektów książek.
+ * Odpowiada za wyświetlanie pól edycji, walidację danych wejściowych, obsługę przesyłania okładek
+ * oraz komunikację z warstwą serwisową w celu zapisu zmian.
+ */
 public class KsiazkiForm extends FormLayout {
-    private Div wycofanieInfo = new Div();
-    MemoryBuffer buffer = new MemoryBuffer();
-    Upload upload = new Upload(buffer);
-    Image previewImage = new Image();
-    TextField isbn = new TextField("ISBN");
-    TextField tytul = new TextField("Tytuł");
-    TextField wydawnictwo = new TextField("Wydawnictwo");
-    IntegerField rokWydania = new IntegerField("Rok wydania");
-    TextArea opis = new TextArea("Opis książki");
-    MultiSelectComboBox<Autor> autorzy = new MultiSelectComboBox<>("Autorzy");
-    MultiSelectComboBox<Tlumacz> tlumacze = new MultiSelectComboBox<>("Tłumacze");
 
-    ComboBox<StanFizyczny> stanFizyczny = new ComboBox<>("Stan fizyczny");
-    TextField statusField = new TextField("Status");
+    private final BookService bookService;
+    private final RentalService rentalService;
 
-    ComboBox<Dziedzina> dziedzina = new ComboBox<>("Dziedzina");
-    ComboBox<Poddziedzina> poddziedzina = new ComboBox<>("Poddziedzina");
-    NumberField cena = new NumberField("Cena (PLN)");
+    // Komponenty interfejsu użytkownika
+    private final Div wycofanieInfo = new Div();
+    private final MemoryBuffer buffer = new MemoryBuffer();
+    private final Upload upload = new Upload(buffer);
+    private final Image previewImage = new Image();
 
-    Button save = new Button("Zapisz");
-    Button delete = new Button("Usuń");
-    Button close = new Button("Anuluj");
+    private final TextField isbn = new TextField("ISBN");
+    private final TextField tytul = new TextField("Tytuł");
+    private final TextField wydawnictwo = new TextField("Wydawnictwo");
+    private final IntegerField rokWydania = new IntegerField("Rok wydania");
+    private final TextArea opis = new TextArea("Opis książki");
+    private final MultiSelectComboBox<Autor> autorzy = new MultiSelectComboBox<>("Autorzy");
+    private final MultiSelectComboBox<Tlumacz> tlumacze = new MultiSelectComboBox<>("Tłumacze");
 
-    private final LibraryService service;
+    private final ComboBox<StanFizyczny> stanFizyczny = new ComboBox<>("Stan fizyczny");
+    private final TextField statusField = new TextField("Status");
 
-    Binder<Ksiazka> binder = new BeanValidationBinder<>(Ksiazka.class);
-    Binder<DaneKsiazki> daneBinder = new BeanValidationBinder<>(DaneKsiazki.class);
+    private final ComboBox<Dziedzina> dziedzina = new ComboBox<>("Dziedzina");
+    private final ComboBox<Poddziedzina> poddziedzina = new ComboBox<>("Poddziedzina");
+    private final NumberField cena = new NumberField("Cena (PLN)");
 
-    public KsiazkiForm(LibraryService service) {
-        this.service = service;
+    private final Button save = new Button("Zapisz");
+    private final Button delete = new Button("Usuń");
+    private final Button close = new Button("Anuluj");
+
+    // Mechanizm łączący pola formularza z danymi książki
+    private final Binder<Ksiazka> binder = new BeanValidationBinder<>(Ksiazka.class);
+    private final Binder<DaneKsiazki> daneBinder = new BeanValidationBinder<>(DaneKsiazki.class);
+
+    /**
+     * Konstruktor formularza inicjalizujący komponenty i wiązania danych.
+     *
+     * @param bookService serwis do zarządzania danymi książek i danymi słownikowymi
+     * @param rentalService serwis do sprawdzania statusu wypożyczeń i wycofań
+     */
+    public KsiazkiForm(BookService bookService, RentalService rentalService) {
+        this.bookService = bookService;
+        this.rentalService = rentalService;
+
         addClassName("ksiazka-form");
 
+        configureWycofanieInfo();
+        configureUpload();
+        configureFields();
+        configureBinders();
+
+        add(wycofanieInfo, createUploadLayout(), isbn, tytul, autorzy, tlumacze, wydawnictwo, rokWydania, cena, opis,
+                dziedzina, poddziedzina, stanFizyczny, statusField,
+                createButtonsLayout());
+    }
+
+    /**
+     * Konfiguruje panel informacyjny wyświetlany dla wycofanych książek.
+     */
+    private void configureWycofanieInfo(){
         wycofanieInfo.setVisible(false);
         wycofanieInfo.getStyle().set("background-color", "#ffe0e0")
                 .set("color", "#d32f2f")
@@ -76,38 +109,14 @@ public class KsiazkiForm extends FormLayout {
                 .set("margin-bottom", "20px")
                 .set("border", "1px solid #ffcdd2");
         setColspan(wycofanieInfo, 2);
+    }
 
-        List<Dziedzina> dziedziny = service.findAllDziedziny();
-        List<Autor> dostepniAutorzy = service.findAllAutorzy();
-        List<Tlumacz> dostepniTlumacze = service.findAllTlumacze();
-
-        isbn.setRequired(true);
-        tytul.setRequired(true);
-        wydawnictwo.setRequired(true);
-        rokWydania.setRequiredIndicatorVisible(true);
-        stanFizyczny.setRequired(true);
-        stanFizyczny.setItems(StanFizyczny.values());
-        stanFizyczny.setItemLabelGenerator(StanFizyczny::getNazwa);
-        stanFizyczny.setPlaceholder("Wybierz stan...");
-        statusField.setReadOnly(true);
-        statusField.addThemeName("align-center");
-        dziedzina.setRequired(true);
-        poddziedzina.setRequired(false);
-        autorzy.setRequired(true);
-
-        opis.setPlaceholder("Podaj opis książki...");
-        opis.setClearButtonVisible(true);
-        opis.setHeight("150px");
-        setColspan(opis, 2);
-
-        cena.setRequiredIndicatorVisible(true);
-        cena.setMin(0);
-        cena.setValue(40.0); // Domyślna wartość
-        Div zlSuffix = new Div();
-        zlSuffix.setText("zł");
-        cena.setSuffixComponent(zlSuffix);
-
-        upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/gif");
+    /**
+     * Konfiguruje komponent przesyłania plików (zdjęć okładek książek).
+     * Ustawia akceptowane typy plików oraz obsługę zdarzenia zakończenia przesyłania.
+     */
+    private void configureUpload(){
+        upload.setAcceptedFileTypes("image/jpeg", "image/png");
         upload.setMaxFileSize(5 * 1024 * 1024);
         upload.setDropLabel(new com.vaadin.flow.component.html.Span("Upuść okładkę tutaj (max 5MB)"));
 
@@ -117,7 +126,6 @@ public class KsiazkiForm extends FormLayout {
         upload.addSucceededListener(event -> {
             try {
                 byte[] imageBytes = buffer.getInputStream().readAllBytes();
-
                 DaneKsiazki currentDane = daneBinder.getBean();
                 if (currentDane != null) {
                     currentDane.setOkladka(imageBytes);
@@ -127,71 +135,141 @@ public class KsiazkiForm extends FormLayout {
                 Notification.show("Błąd podczas wczytywania obrazka");
             }
         });
+    }
 
-        VerticalLayout uploadLayout = new VerticalLayout(upload, previewImage);
-        uploadLayout.setPadding(false);
-        uploadLayout.setSpacing(true);
-        setColspan(uploadLayout, 2);
+    /**
+     * Tworzy układ dla komponentu przesyłania i podglądu okładki.
+     */
+    private VerticalLayout createUploadLayout() {
+        VerticalLayout layout = new VerticalLayout(upload, previewImage);
+        layout.setPadding(false);
+        layout.setSpacing(true);
+        setColspan(layout, 2);
+        return layout;
+    }
 
+    /**
+     * Konfiguruje pola tekstowe i listy rozwijane formularza.
+     * Ładuje dane słownikowe (autorzy, dziedziny) oraz ustawia listenery dla dynamicznego dodawania wartości.
+     */
+    private void configureFields(){
+        List<Dziedzina> dziedziny = bookService.findAllDziedziny();
+        List<Autor> dostepniAutorzy = bookService.findAllAutorzy();
+        List<Tlumacz> dostepniTlumacze = bookService.findAllTlumacze();
+
+        isbn.setRequired(true);
+        tytul.setRequired(true);
+        wydawnictwo.setRequired(true);
+        rokWydania.setRequiredIndicatorVisible(true);
+
+        stanFizyczny.setRequired(true);
+        stanFizyczny.setItems(StanFizyczny.values());
+        stanFizyczny.setItemLabelGenerator(StanFizyczny::getNazwa);
+        stanFizyczny.setPlaceholder("Wybierz stan...");
+
+        statusField.setReadOnly(true);
+        statusField.addThemeName("align-center");
+
+        dziedzina.setRequired(true);
+        dziedzina.setItems(dziedziny);
+        dziedzina.setItemLabelGenerator(Dziedzina::getNazwa);
+        dziedzina.addValueChangeListener(e -> {
+            if (e.getValue() != null) {
+                poddziedzina.setItems(e.getValue().getPoddziedziny());
+                poddziedzina.setEnabled(true);
+            } else {
+                poddziedzina.setEnabled(false);
+                poddziedzina.clear();
+            }
+        });
+
+        poddziedzina.setRequired(false);
+        poddziedzina.setItemLabelGenerator(Poddziedzina::getNazwa);
+        poddziedzina.setEnabled(false);
+
+        autorzy.setRequired(true);
         autorzy.setItems(dostepniAutorzy);
         autorzy.setItemLabelGenerator(autor -> autor.getImie() + " " + autor.getNazwisko());
         autorzy.setPlaceholder("Wpisz autora i wciśnij ENTER...");
         autorzy.setHelperText("Aby dodać nowego autora, wpisz imię i nazwisko, a następnie wciśnij Enter.");
-
         autorzy.setAllowCustomValue(true);
-
-        autorzy.addCustomValueSetListener(e -> {
-            String wpisanaWartosc = e.getDetail();
-            String[] czesci = wpisanaWartosc.trim().split(" ", 2);
-
-            String imie = czesci[0];
-            String nazwisko = czesci.length > 1 ? czesci[1] : "";
-
-            if (!imie.isEmpty()) {
-                Autor nowyAutor = new Autor(imie, nazwisko);
-                service.saveAutor(nowyAutor);
-
-                Set<Autor> aktualnieWybrani = new HashSet<>(autorzy.getValue());
-                aktualnieWybrani.add(nowyAutor);
-
-                autorzy.setItems(service.findAllAutorzy());
-                autorzy.setValue(aktualnieWybrani);
-
-                Notification.show("Dodano autora: " + imie + " " + nazwisko);
-            }
-        });
+        autorzy.addCustomValueSetListener(e -> addNewAutor(e.getDetail()));
 
         tlumacze.setItems(dostepniTlumacze);
         tlumacze.setItemLabelGenerator(t -> t.getImie() + " " + t.getNazwisko());
         tlumacze.setPlaceholder("Dodaj tłumacza (opcjonalne)...");
         tlumacze.setClearButtonVisible(true);
-        tlumacze.setAllowCustomValue(true); // Pozwalamy dodawać nowych
+        tlumacze.setAllowCustomValue(true);
+        tlumacze.addCustomValueSetListener(e -> addNewTlumacz(e.getDetail()));
 
-        tlumacze.addCustomValueSetListener(e -> {
-            String wpisanaWartosc = e.getDetail();
-            String[] czesci = wpisanaWartosc.trim().split(" ", 2);
-            String imie = czesci[0];
-            String nazwisko = czesci.length > 1 ? czesci[1] : "";
+        opis.setPlaceholder("Podaj opis książki...");
+        opis.setClearButtonVisible(true);
+        opis.setHeight("150px");
+        setColspan(opis, 2);
 
-            if (!imie.isEmpty()) {
-                Tlumacz nowy = new Tlumacz(imie, nazwisko);
-                service.saveTlumacz(nowy);
+        cena.setRequiredIndicatorVisible(true);
+        cena.setMin(0);
+        cena.setValue(40.0); // Wartość domyślna
+        Div zlSuffix = new Div();
+        zlSuffix.setText("zł");
+        cena.setSuffixComponent(zlSuffix);
+    }
 
-                Set<Tlumacz> aktualnieWybrani = new HashSet<>(tlumacze.getValue());
-                aktualnieWybrani.add(nowy);
+    /**
+     * Dodaje nowego autora do bazy danych na podstawie wpisanej wartości.
+     * Aktualizuje listę dostępnych autorów w komponencie MultiSelectComboBox.
+     */
+    private void addNewAutor(String wpisanaWartosc) {
+        String[] czesci = wpisanaWartosc.trim().split(" ", 2);
+        String imie = czesci[0];
+        String nazwisko = czesci.length > 1 ? czesci[1] : "";
 
-                tlumacze.setItems(service.findAllTlumacze());
-                tlumacze.setValue(aktualnieWybrani);
-                Notification.show("Dodano tłumacza: " + imie + " " + nazwisko);
-            }
-        });
+        if (!imie.isEmpty()) {
+            Autor nowyAutor = new Autor(imie, nazwisko);
+            bookService.saveAutor(nowyAutor);
 
+            Set<Autor> aktualnieWybrani = new HashSet<>(autorzy.getValue());
+            aktualnieWybrani.add(nowyAutor);
+
+            autorzy.setItems(bookService.findAllAutorzy());
+            autorzy.setValue(aktualnieWybrani);
+            Notification.show("Dodano autora: " + imie + " " + nazwisko);
+        }
+    }
+
+    /**
+     * Dodaje nowego tłumacza do bazy danych na podstawie wpisanej wartości.
+     * Aktualizuje listę dostępnych tłumaczów w komponencie MultiSelectComboBox.
+     */
+    private void addNewTlumacz(String wpisanaWartosc) {
+        String[] czesci = wpisanaWartosc.trim().split(" ", 2);
+        String imie = czesci[0];
+        String nazwisko = czesci.length > 1 ? czesci[1] : "";
+
+        if (!imie.isEmpty()) {
+            Tlumacz nowy = new Tlumacz(imie, nazwisko);
+            bookService.saveTlumacz(nowy);
+
+            Set<Tlumacz> aktualnieWybrani = new HashSet<>(tlumacze.getValue());
+            aktualnieWybrani.add(nowy);
+
+            tlumacze.setItems(bookService.findAllTlumacze());
+            tlumacze.setValue(aktualnieWybrani);
+            Notification.show("Dodano tłumacza: " + imie + " " + nazwisko);
+        }
+    }
+
+    /**
+     * Konfiguruje mechanizm wiązania pól formularza z polami obiektów.
+     * Definiuje reguły walidacji dla poszczególnych pól.
+     */
+    private void configureBinders(){
         binder.forField(stanFizyczny)
-                .asRequired("Pole jest wymagane")
+                .asRequired("Stan fizyczny jest wymagany")
                 .bind(Ksiazka::getStanFizyczny, Ksiazka::setStanFizyczny);
 
         daneBinder.forField(cena)
-                .asRequired("Cena jest wymagana do obliczania kar")
+                .asRequired("Cena jest wymagana")
                 .bind(DaneKsiazki::getCena, DaneKsiazki::setCena);
 
         daneBinder.forField(isbn)
@@ -203,15 +281,15 @@ public class KsiazkiForm extends FormLayout {
                 .bind(DaneKsiazki::getIsbn, DaneKsiazki::setIsbn);
 
         daneBinder.forField(tytul)
-                .asRequired("Pole jest wymagane")
+                .asRequired("Tytuł jest wymagany")
                 .bind(DaneKsiazki::getTytul, DaneKsiazki::setTytul);
 
         daneBinder.forField(wydawnictwo)
-                .asRequired("Pole jest wymagane")
+                .asRequired("Wydawnictwo jest wymagane")
                 .bind(DaneKsiazki::getWydawnictwo, DaneKsiazki::setWydawnictwo);
 
         daneBinder.forField(rokWydania)
-                .asRequired("Pole jest wymagane")
+                .asRequired("Rok wydania jest wymagany")
                 .bind(DaneKsiazki::getRokWydania, DaneKsiazki::setRokWydania);
 
         daneBinder.forField(autorzy)
@@ -220,42 +298,8 @@ public class KsiazkiForm extends FormLayout {
 
         daneBinder.forField(tlumacze).bind(DaneKsiazki::getTlumacze, DaneKsiazki::setTlumacze);
 
-        // Na końcu:
         binder.bindInstanceFields(this);
         daneBinder.bindInstanceFields(this);
-
-        dziedzina.setItems(dziedziny);
-        dziedzina.setItemLabelGenerator(Dziedzina::getNazwa);
-
-        poddziedzina.setItemLabelGenerator(Poddziedzina::getNazwa);
-        poddziedzina.setEnabled(false);
-
-        dziedzina.addValueChangeListener(e -> {
-            if (e.getValue() != null) {
-                poddziedzina.setItems(e.getValue().getPoddziedziny());
-                poddziedzina.setEnabled(true);
-            } else {
-                poddziedzina.setEnabled(false);
-                poddziedzina.clear();
-            }
-        });
-
-        binder.bindInstanceFields(this);
-        daneBinder.bindInstanceFields(this);
-
-        add(wycofanieInfo, uploadLayout, isbn, tytul, autorzy, tlumacze, wydawnictwo, rokWydania, cena, opis,
-                dziedzina, poddziedzina, stanFizyczny, statusField,
-                createButtonsLayout());
-    }
-
-    private void showImage(byte[] imageBytes) {
-        if (imageBytes != null && imageBytes.length > 0) {
-            StreamResource resource = new StreamResource("cover", () -> new ByteArrayInputStream(imageBytes));
-            previewImage.setSrc(resource);
-            previewImage.setVisible(true);
-        } else {
-            previewImage.setVisible(false);
-        }
     }
 
     private HorizontalLayout createButtonsLayout() {
@@ -273,6 +317,9 @@ public class KsiazkiForm extends FormLayout {
         return new HorizontalLayout(save, delete, close);
     }
 
+    /**
+     * Waliduje dane w formularzu i emituje zdarzenie zapisu, jeśli dane są poprawne.
+     */
     private void validateAndSave() {
         try {
             binder.writeBean(binder.getBean());
@@ -283,8 +330,13 @@ public class KsiazkiForm extends FormLayout {
         }
     }
 
+    /**
+     * Ustawia obiekt książki do edycji w formularzu.
+     * Dostosowuje widok w zależności od stanu książki.
+     *
+     * @param ksiazka obiekt książki do edycji
+     */
     public void setKsiazka(Ksiazka ksiazka) {
-
         upload.clearFileList();
         previewImage.setVisible(false);
         wycofanieInfo.setVisible(false);
@@ -300,11 +352,12 @@ public class KsiazkiForm extends FormLayout {
             statusField.setValue("");
         }
 
+        // Blokada edycji dla książek wycofanych
         if (ksiazka != null && StatusKsiazki.WYCOFANA.equals(ksiazka.getStatus())) {
             save.setEnabled(false);
             delete.setEnabled(false);
 
-            Wycofanie wycofanie = service.findWycofanieByKsiazka(ksiazka);
+            Wycofanie wycofanie = rentalService.findWycofanieByKsiazka(ksiazka);
             if (wycofanie != null) {
                 wycofanieInfo.setVisible(true);
                 wycofanieInfo.add(new Span("Książka została wycofana"));
@@ -316,10 +369,11 @@ public class KsiazkiForm extends FormLayout {
                 wycofanieInfo.add(new Div(powodSpan));
             } else {
                 wycofanieInfo.setVisible(true);
-                wycofanieInfo.add(new Span("⚠️ Książka ma status WYCOFANA (brak szczegółów w historii). Edycja zablokowana."));
+                wycofanieInfo.add(new Span("Książka ma status WYCOFANA (brak szczegółów w historii). Edycja zablokowana."));
             }
         }
 
+        // Logika ustawiania dziedziny i poddziedziny
         if (ksiazka != null && ksiazka.getPoddziedzina() != null) {
             Dziedzina parentDziedzina = ksiazka.getPoddziedzina().getDziedzina();
 
@@ -345,6 +399,16 @@ public class KsiazkiForm extends FormLayout {
             showImage(ksiazka.getDaneKsiazki().getOkladka());
         } else {
             daneBinder.setBean(null);
+        }
+    }
+
+    private void showImage(byte[] imageBytes) {
+        if (imageBytes != null && imageBytes.length > 0) {
+            StreamResource resource = new StreamResource("cover", () -> new ByteArrayInputStream(imageBytes));
+            previewImage.setSrc(resource);
+            previewImage.setVisible(true);
+        } else {
+            previewImage.setVisible(false);
         }
     }
 

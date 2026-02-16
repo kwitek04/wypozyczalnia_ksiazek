@@ -21,7 +21,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.time.LocalDate;
 
-@RolesAllowed("ROLE_KIEROWNIK")
+@RolesAllowed("KIEROWNIK")
 @Route(value = "statystyki", layout = MainLayout.class)
 @PageTitle("Statystyki | Biblioteka")
 public class StatystykiView extends VerticalLayout {
