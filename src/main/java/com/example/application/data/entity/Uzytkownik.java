@@ -1,12 +1,13 @@
 package com.example.application.data.entity;
 
 import com.example.application.data.repository.AbstractEntity;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "uzytkownicy")
 public class Uzytkownik extends AbstractEntity {
 
     @NotEmpty
