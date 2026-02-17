@@ -70,7 +70,7 @@ public class RejestracjaView extends VerticalLayout {
     private void zarejestruj() {
         if (binder.isValid()) {
             userService.saveUzytkownik(binder.getBean());
-            Notification.show("Konto utworzone!", 5000, Notification.Position.MIDDLE)
+            Notification.show("Konto utworzone! Logowanie będzie możliwe po aktywacji konta przez pracownika.", 5000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             getUI().ifPresent(ui -> ui.navigate("login"));
         }
