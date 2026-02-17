@@ -3,7 +3,7 @@ package com.example.application.views.katalog;
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.StatusKsiazki;
 import com.example.application.data.entity.Uzytkownicy;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.RentalService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -24,15 +24,19 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import java.io.ByteArrayInputStream;
 import java.util.stream.Collectors;
 
+/**
+ * Komponent okna dialogowego prezentujący szczegółowe informacje o wybranej książce.
+ * Umożliwia zalogowanym użytkownikom wypożyczenie lub zarezerwowanie książki.
+ */
 public class KsiazkaDetailsDialog extends Dialog {
 
-    private final LibraryService service;
+    private final RentalService rentalService;
     private final Uzytkownicy currentUser;
     private final Ksiazka ksiazka;
 
-    public KsiazkaDetailsDialog(Ksiazka ksiazka, LibraryService service, Uzytkownicy currentUser) {
+    public KsiazkaDetailsDialog(Ksiazka ksiazka, RentalService rentalService, Uzytkownicy currentUser) {
         this.ksiazka = ksiazka;
-        this.service = service;
+        this.rentalService = rentalService;
         this.currentUser = currentUser;
 
         setHeaderTitle("Szczegóły książki");
@@ -115,13 +119,12 @@ public class KsiazkaDetailsDialog extends Dialog {
 
             dialog.setConfirmText("Wypożycz");
             dialog.setConfirmButtonTheme("primary");
-
             dialog.setCancelable(true);
             dialog.setCancelText("Anuluj");
 
             dialog.addConfirmListener(event -> {
                 try {
-                    service.wypozyczKsiazke(ksiazka, currentUser);
+                    rentalService.wypozyczKsiazke(ksiazka, currentUser);
 
                     Notification.show("Pomyślnie wypożyczono książkę!", 3000, Notification.Position.MIDDLE)
                             .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
@@ -132,7 +135,6 @@ public class KsiazkaDetailsDialog extends Dialog {
                             .addThemeVariants(NotificationVariant.LUMO_ERROR);
 
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                     Notification.show("Wystąpił nieoczekiwany błąd serwera.", 3000, Notification.Position.MIDDLE)
                             .addThemeVariants(NotificationVariant.LUMO_ERROR);
                 }
@@ -144,9 +146,7 @@ public class KsiazkaDetailsDialog extends Dialog {
         Button btnRezerwuj = new Button("Zarezerwuj", VaadinIcon.CALENDAR_CLOCK.create());
         btnRezerwuj.addThemeVariants(ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_LARGE);
 
-        if (!isLoggedIn) {
-            btnRezerwuj.setEnabled(false);
-        } else if (!isAvailable) {
+        if (!isLoggedIn || !isAvailable) {
             btnRezerwuj.setEnabled(false);
         }
 
@@ -162,7 +162,7 @@ public class KsiazkaDetailsDialog extends Dialog {
 
             dialog.addConfirmListener(ev -> {
                 try {
-                    service.zarezerwujKsiazke(ksiazka, currentUser);
+                    rentalService.zarezerwujKsiazke(ksiazka, currentUser);
                     Notification.show("Rezerwacja pomyślna! Masz 3 dni na odbiór.", 5000, Notification.Position.MIDDLE)
                             .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                     this.close();

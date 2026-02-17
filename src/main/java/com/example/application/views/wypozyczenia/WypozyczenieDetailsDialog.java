@@ -2,7 +2,7 @@ package com.example.application.views.wypozyczenia;
 
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Wypozyczenie;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.RentalService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -23,14 +23,18 @@ import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * Okno dialogowe wyświetlające szczegóły wypożyczenia.
+ * Pozwala na zatwierdzenie zwrotu (Bibliotekarz) lub zgłoszenie zwrotu/przedłużenie (Użytkownik).
+ */
 public class WypozyczenieDetailsDialog extends Dialog {
 
     private final Wypozyczenie wypozyczenie;
-    private final LibraryService service;
+    private final RentalService rentalService;
 
-    public WypozyczenieDetailsDialog(Wypozyczenie wypozyczenie, LibraryService service) {
+    public WypozyczenieDetailsDialog(Wypozyczenie wypozyczenie, RentalService rentalService) {
         this.wypozyczenie = wypozyczenie;
-        this.service = service;
+        this.rentalService = rentalService;
 
         Ksiazka ksiazka = wypozyczenie.getWypozyczoneKsiazki().isEmpty() ? null :
                 wypozyczenie.getWypozyczoneKsiazki().get(0).getKsiazka();
@@ -160,7 +164,7 @@ public class WypozyczenieDetailsDialog extends Dialog {
             confirm.setCancelText("Anuluj");
 
             confirm.addConfirmListener(ev -> {
-                service.zwrocKsiazke(wypozyczenie);
+                rentalService.zwrocKsiazke(wypozyczenie);
                 Notification.show("Zwrot zatwierdzony!", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 close();
@@ -186,7 +190,7 @@ public class WypozyczenieDetailsDialog extends Dialog {
             confirm.setCancelText("Anuluj");
 
             confirm.addConfirmListener(ev -> {
-                service.zglosZwrot(wypozyczenie);
+                rentalService.zglosZwrot(wypozyczenie);
                 Notification.show("Zwrot zgłoszony.", 5000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 close();
@@ -202,7 +206,6 @@ public class WypozyczenieDetailsDialog extends Dialog {
             Button btnPrzedluz = new Button("Przedłuż o tydzień", VaadinIcon.TIMER.create());
             btnPrzedluz.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
 
-            // Sprawdzanie warunków dostępności
             if (wypozyczenie.isPrzedluzone()) {
                 btnPrzedluz.setEnabled(false);
                 btnPrzedluz.setText("Już przedłużono");
@@ -213,7 +216,6 @@ public class WypozyczenieDetailsDialog extends Dialog {
                 btnPrzedluz.setEnabled(false);
                 btnPrzedluz.setTooltipText("Nie można przedłużyć po terminie");
             } else {
-                // Jest OK (<= 3 dni i >= 0 dni)
                 btnPrzedluz.setEnabled(true);
                 btnPrzedluz.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
             }
@@ -228,7 +230,7 @@ public class WypozyczenieDetailsDialog extends Dialog {
 
                 dialog.addConfirmListener(ev -> {
                     try {
-                        service.przedluzWypozyczenie(wypozyczenie);
+                        rentalService.przedluzWypozyczenie(wypozyczenie);
                         Notification.show("Termin wydłużony pomyślnie!", 3000, Notification.Position.MIDDLE)
                                 .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                         close();

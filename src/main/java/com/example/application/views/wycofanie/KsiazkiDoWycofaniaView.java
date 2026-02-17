@@ -2,7 +2,9 @@ package com.example.application.views.wycofanie;
 
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Pracownicy;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.BookService;
+import com.example.application.data.service.RentalService;
+import com.example.application.data.service.UserService;
 import com.example.application.security.SecurityService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
@@ -21,23 +23,37 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.security.core.userdetails.UserDetails;
 
+/**
+ * Widok dla Kierownika, służący do ostatecznego wycofywania książek z obiegu
+ * (np. z powodu zniszczenia lub zagubienia).
+ * Prezentuje listę książek, które zostały oznaczone przez Magazyniera statusem "DO_WYCOFANIA".
+ */
 @RolesAllowed("KIEROWNIK")
 @Route(value = "wycofanie", layout = MainLayout.class)
 @PageTitle("Książki do wycofania | Zarządzanie")
 public class KsiazkiDoWycofaniaView extends VerticalLayout {
 
-    private final LibraryService service;
+    private final BookService bookService;
+    private final RentalService rentalService;
+    private final UserService userService;
     private final SecurityService securityService;
+
     private final Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
 
-    public KsiazkiDoWycofaniaView(LibraryService service, SecurityService securityService) {
-        this.service = service;
+    public KsiazkiDoWycofaniaView(BookService bookService,
+                                  RentalService rentalService,
+                                  UserService userService,
+                                  SecurityService securityService) {
+        this.bookService = bookService;
+        this.rentalService = rentalService;
+        this.userService = userService;
         this.securityService = securityService;
+
         setSizeFull();
         setPadding(true);
 
         add(new H2("Książki zgłoszone do wycofania"));
-        add(new Span("Poniższe pozycje zostały oznaczone przez magazyniera jako 'Do wycofania'. Wymagana decyzja kierownika."));
+        add(new Span("Poniższe książki zostały oznaczone do wycofania przez magazyniera. Wymagana decyzja kierownika."));
 
         configureGrid();
         add(grid);
@@ -81,9 +97,9 @@ public class KsiazkiDoWycofaniaView extends VerticalLayout {
                     }
 
                     UserDetails userDetails = securityService.getAuthenticatedUser();
-                    Pracownicy kierownik = service.findPracownikByEmail(userDetails.getUsername());
+                    Pracownicy kierownik = userService.findPracownikByEmail(userDetails.getUsername());
 
-                    service.wycofajKsiazke(ksiazka, kierownik, powodField.getValue());
+                    rentalService.wycofajKsiazke(ksiazka, kierownik, powodField.getValue());
 
                     Notification.show("Książka została wycofana.", 3000, Notification.Position.MIDDLE).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                     updateList();
@@ -99,6 +115,6 @@ public class KsiazkiDoWycofaniaView extends VerticalLayout {
     }
 
     private void updateList() {
-        grid.setItems(service.findKsiazkiDoDecyzjiWycofania());
+        grid.setItems(bookService.findKsiazkiDoDecyzjiWycofania());
     }
 }

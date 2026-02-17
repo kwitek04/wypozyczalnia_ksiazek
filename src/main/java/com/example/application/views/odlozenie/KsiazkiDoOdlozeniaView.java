@@ -1,7 +1,8 @@
 package com.example.application.views.odlozenie;
 
 import com.example.application.data.entity.Ksiazka;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.BookService;
+import com.example.application.data.service.RentalService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -16,16 +17,24 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
+/**
+ * Widok operacyjny dla Magazyniera.
+ * Wyświetla listę książek, które zostały zwrócone przez czytelników i oczekują na odłożenie na półkę.
+ * Magazynier potwierdza tutaj, że odniósł książkę na właściwą półkę, co zmienia jej status na "DOSTEPNA".
+ */
 @RolesAllowed({"MAGAZYNIER"})
 @Route(value = "do-odlozenia", layout = MainLayout.class)
 @PageTitle("Książki do odłożenia | Magazyn")
 public class KsiazkiDoOdlozeniaView extends VerticalLayout {
 
-    private final LibraryService service;
+    private final BookService bookService;
+    private final RentalService rentalService;
     private final Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
 
-    public KsiazkiDoOdlozeniaView(LibraryService service) {
-        this.service = service;
+    public KsiazkiDoOdlozeniaView(BookService bookService, RentalService rentalService) {
+        this.bookService = bookService;
+        this.rentalService = rentalService;
+
         setSizeFull();
         setPadding(true);
 
@@ -44,6 +53,7 @@ public class KsiazkiDoOdlozeniaView extends VerticalLayout {
         grid.removeAllColumns();
 
         grid.addColumn(k -> k.getDaneKsiazki().getTytul()).setHeader("Tytuł").setAutoWidth(true);
+
         grid.addColumn(k -> k.getDaneKsiazki().getIsbn()).setHeader("ISBN");
 
         grid.addColumn(k -> {
@@ -58,7 +68,8 @@ public class KsiazkiDoOdlozeniaView extends VerticalLayout {
             confirmBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
 
             confirmBtn.addClickListener(e -> {
-                service.potwierdzOdlozenie(ksiazka);
+                rentalService.potwierdzOdlozenie(ksiazka);
+
                 Notification.show("Książka dostępna w systemie.", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 updateList();
@@ -71,6 +82,6 @@ public class KsiazkiDoOdlozeniaView extends VerticalLayout {
     }
 
     private void updateList() {
-        grid.setItems(service.findKsiazkiDoOdlozenia());
+        grid.setItems(bookService.findKsiazkiDoOdlozenia());
     }
 }

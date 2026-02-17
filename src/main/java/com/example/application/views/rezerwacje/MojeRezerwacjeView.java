@@ -1,11 +1,12 @@
-package com.example.application.views.mojekonto;
+package com.example.application.views.rezerwacje;
 
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Rezerwacja;
 import com.example.application.data.entity.StatusRezerwacji;
 import com.example.application.data.entity.Uzytkownicy;
 import com.example.application.data.entity.ZarezerwowanaKsiazka;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.RentalService;
+import com.example.application.data.service.UserService;
 import com.example.application.security.SecurityService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
@@ -22,20 +23,26 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
-
 import java.util.stream.Collectors;
 
+/**
+ * Widok panelu czytelnika prezentujący jego aktywne rezerwacje.
+ * Z tego poziomu użytkownik może anulować rezerwację lub potwierdzić odbiór zarezerwowanej książki.
+ */
 @RolesAllowed({"USER"})
 @Route(value = "moje-rezerwacje", layout = MainLayout.class)
 @PageTitle("Moje Rezerwacje | Biblioteka")
 public class MojeRezerwacjeView extends VerticalLayout {
 
-    private final LibraryService service;
+    private final RentalService rentalService;
+    private final UserService userService;
     private final SecurityService securityService;
+
     private final Grid<Rezerwacja> grid = new Grid<>(Rezerwacja.class);
 
-    public MojeRezerwacjeView(LibraryService service, SecurityService securityService) {
-        this.service = service;
+    public MojeRezerwacjeView(RentalService rentalService, UserService userService, SecurityService securityService) {
+        this.rentalService = rentalService;
+        this.userService = userService;
         this.securityService = securityService;
 
         setSizeFull();
@@ -51,6 +58,9 @@ public class MojeRezerwacjeView extends VerticalLayout {
         updateList();
     }
 
+    /**
+     * Konfiguruje tabelę wyświetlającą przypisane do konta rezerwacje i ich statusy.
+     */
     private void configureGrid() {
         grid.addClassName("rezerwacje-grid");
         grid.setSizeFull();
@@ -89,17 +99,12 @@ public class MojeRezerwacjeView extends VerticalLayout {
                 ConfirmDialog dialog = new ConfirmDialog();
                 dialog.setHeader("Potwierdzenie odbioru");
                 dialog.setText("Czy potwierdzasz odbiór książki?");
-
                 dialog.setCancelable(true);
                 dialog.setCancelText("Anuluj");
-
                 dialog.setConfirmText("Tak, odbieram");
                 dialog.setConfirmButtonTheme("success primary");
 
-                dialog.addConfirmListener(event -> {
-                    odbierzRezerwacje(rezerwacja);
-                });
-
+                dialog.addConfirmListener(event -> odbierzRezerwacje(rezerwacja));
                 dialog.open();
             });
 
@@ -116,19 +121,16 @@ public class MojeRezerwacjeView extends VerticalLayout {
                 ConfirmDialog dialog = new ConfirmDialog();
                 dialog.setHeader("Anulowanie rezerwacji");
                 dialog.setText("Czy na pewno chcesz anulować rezerwację?");
-
                 dialog.setCancelable(true);
                 dialog.setCancelText("Nie");
-
                 dialog.setConfirmText("Tak, anuluj");
                 dialog.setConfirmButtonTheme("error primary");
 
                 dialog.addConfirmListener(event -> {
-                    service.anulujRezerwacje(rezerwacja);
+                    rentalService.anulujRezerwacje(rezerwacja);
                     Notification.show("Rezerwacja anulowana", 3000, Notification.Position.MIDDLE);
                     updateList();
                 });
-
                 dialog.open();
             });
 
@@ -138,14 +140,17 @@ public class MojeRezerwacjeView extends VerticalLayout {
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
     }
 
+    /**
+     * Realizuje proces odbioru zarezerwowanej książki przez czytelnika – zamienia rezerwację na aktywne wypożyczenie.
+     */
     private void odbierzRezerwacje(Rezerwacja rezerwacja) {
         try {
             String username = securityService.getAuthenticatedUser().getUsername();
-            Uzytkownicy currentUser = service.findUzytkownikByEmail(username);
+            Uzytkownicy currentUser = userService.findUzytkownikByEmail(username);
 
             for (ZarezerwowanaKsiazka zk : rezerwacja.getZarezerwowaneKsiazki()) {
                 Ksiazka ksiazka = zk.getKsiazka();
-                service.wypozyczKsiazke(ksiazka, currentUser);
+                rentalService.wypozyczKsiazke(ksiazka, currentUser);
             }
 
             Notification.show("Pomyślnie wypożyczono książki!", 3000, Notification.Position.MIDDLE)
@@ -161,10 +166,10 @@ public class MojeRezerwacjeView extends VerticalLayout {
 
     private void updateList() {
         String username = securityService.getAuthenticatedUser().getUsername();
-        Uzytkownicy uzytkownik = service.findUzytkownikByEmail(username);
+        Uzytkownicy uzytkownik = userService.findUzytkownikByEmail(username);
 
         if (uzytkownik != null) {
-            grid.setItems(service.findRezerwacjeByUser(uzytkownik));
+            grid.setItems(rentalService.findRezerwacjeByUser(uzytkownik));
         }
     }
 }

@@ -4,7 +4,7 @@ import com.example.application.data.entity.Pracownicy;
 import com.example.application.data.entity.Uzytkownicy;
 import com.example.application.data.repository.PracownicyRepository;
 import com.example.application.data.repository.UzytkownicyRepository;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.UserService;
 import com.example.application.security.SecurityService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -31,15 +31,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 @PageTitle("Moje Konto | Biblioteka")
 public class MojeKontoView extends VerticalLayout {
 
-    private final LibraryService libraryService;
+    private final UserService userService;
     private Uzytkownicy currentUser;
     private Pracownicy currentWorker;
 
     public MojeKontoView(SecurityService securityService,
                          PracownicyRepository pracownicyRepository,
                          UzytkownicyRepository uzytkownicyRepository,
-                         LibraryService libraryService) {
-        this.libraryService = libraryService;
+                         UserService userService) {
+        this.userService = userService;
 
         setSpacing(true);
         setAlignItems(Alignment.CENTER);
@@ -69,8 +69,6 @@ public class MojeKontoView extends VerticalLayout {
         Avatar avatar = new Avatar(fullName);
         avatar.setWidth("100px");
         avatar.setHeight("100px");
-
-
         avatar.getStyle().set("font-weight", "bold");
         avatar.getStyle().set("font-size", "1.2rem");
 
@@ -148,9 +146,9 @@ public class MojeKontoView extends VerticalLayout {
                     String newPass = newPassword.getValue();
 
                     if (currentUser != null) {
-                        libraryService.updatePassword(currentUser, newPass);
+                        userService.updatePassword(currentUser, newPass);
                     } else if (currentWorker != null) {
-                        libraryService.updatePassword(currentWorker, newPass);
+                        userService.updatePassword(currentWorker, newPass);
                     } else {
                         throw new IllegalStateException("Nie znaleziono użytkownika do zmiany hasła");
                     }

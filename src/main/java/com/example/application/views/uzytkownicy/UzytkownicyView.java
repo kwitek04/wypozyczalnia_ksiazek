@@ -2,7 +2,8 @@ package com.example.application.views.uzytkownicy;
 
 import com.example.application.data.entity.Uzytkownicy;
 import com.example.application.data.entity.Wypozyczenie;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.RentalService;
+import com.example.application.data.service.UserService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -25,17 +26,26 @@ import jakarta.annotation.security.RolesAllowed;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Widok zarządzania użytkownikami.
+ * Pozwala na edycję danych, blokowanie kont oraz podgląd historii wypożyczeń i naliczonych kar.
+ */
 @RolesAllowed({"BIBLIOTEKARZ"})
 @Route(value = "uzytkownicy", layout = MainLayout.class)
 @PageTitle("Lista użytkowników | Biblioteka")
 public class UzytkownicyView extends VerticalLayout {
-    Grid<Uzytkownicy> grid = new Grid<>(Uzytkownicy.class);
-    TextField filterText = new TextField();
-    UzytkownicyForm form;
-    LibraryService service;
 
-    public UzytkownicyView(LibraryService service) {
-        this.service = service;
+    private final UserService userService;
+    private final RentalService rentalService;
+
+    private final Grid<Uzytkownicy> grid = new Grid<>(Uzytkownicy.class);
+    private final TextField filterText = new TextField();
+    private UzytkownicyForm form;
+
+    public UzytkownicyView(UserService userService, RentalService rentalService) {
+        this.userService = userService;
+        this.rentalService = rentalService;
+
         addClassName("uzytkownicy-view");
         setSizeFull();
         configureGrid();
@@ -77,7 +87,6 @@ public class UzytkownicyView extends VerticalLayout {
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
 
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
-
         grid.asSingleSelect().addValueChangeListener(event -> editUzytkownik(event.getValue()));
     }
 
@@ -90,7 +99,6 @@ public class UzytkownicyView extends VerticalLayout {
         dialogLayout.setSpacing(true);
         dialogLayout.setPadding(false);
 
-        // --- Nagłówek ---
         H3 title = new H3(uzytkownik.getImie() + " " + uzytkownik.getNazwisko());
         title.getStyle().set("margin-top", "0");
 
@@ -99,18 +107,15 @@ public class UzytkownicyView extends VerticalLayout {
 
         dialogLayout.add(title, emailLabel);
 
-        // --- Pobieranie danych ---
-        List<Wypozyczenie> historia = service.findWypozyczeniaByUser(uzytkownik);
+        List<Wypozyczenie> historia = rentalService.findWypozyczeniaByUser(uzytkownik);
 
-        // Liczymy sumę książek (bo jedno wypożyczenie może mieć kilka książek)
         int liczbaKsiazek = historia.stream()
                 .mapToInt(w -> w.getWypozyczoneKsiazki().size())
                 .sum();
 
-        Double dlug = service.obliczSumeKar(uzytkownik);
+        Double dlug = rentalService.obliczSumeKar(uzytkownik);
         String statusKonta = uzytkownik.isLocked() ? "Zablokowane" : (uzytkownik.isEnabled() ? "Aktywne" : "Oczekujące");
 
-        // --- Karty KPI ---
         HorizontalLayout cards = new HorizontalLayout();
         cards.setWidthFull();
         cards.setSpacing(true);
@@ -119,7 +124,6 @@ public class UzytkownicyView extends VerticalLayout {
         VerticalLayout card2 = createStatCard("Należności (Kary)", String.format("%.2f zł", dlug), VaadinIcon.MONEY);
         VerticalLayout card3 = createStatCard("Status konta", statusKonta, VaadinIcon.USER_CARD);
 
-        // Kolorowanie kary na czerwono jeśli > 0
         if (dlug > 0) {
             card2.getChildren().reduce((first, second) -> second).ifPresent(comp ->
                     comp.getStyle().set("color", "var(--lumo-error-text-color)"));
@@ -128,7 +132,6 @@ public class UzytkownicyView extends VerticalLayout {
         cards.add(card1, card2, card3);
         dialogLayout.add(cards);
 
-        // --- Tabela Historii ---
         dialogLayout.add(new H4("Historia operacji"));
 
         Grid<Wypozyczenie> historyGrid = new Grid<>();
@@ -156,7 +159,6 @@ public class UzytkownicyView extends VerticalLayout {
             dialogLayout.add(historyGrid);
         }
 
-        // --- Stopka ---
         Button closeButton = new Button("Zamknij", e -> dialog.close());
         dialog.getFooter().add(closeButton);
 
@@ -164,7 +166,6 @@ public class UzytkownicyView extends VerticalLayout {
         dialog.open();
     }
 
-    // Metoda pomocnicza do tworzenia kart (identyczna jak w KsiazkiView)
     private VerticalLayout createStatCard(String title, String value, VaadinIcon icon) {
         VerticalLayout card = new VerticalLayout();
         card.setSpacing(false);
@@ -230,13 +231,13 @@ public class UzytkownicyView extends VerticalLayout {
     }
 
     private void saveUzytkownik(UzytkownicyForm.SaveEvent event) {
-        service.saveUzytkownik(event.getUzytkownik());
+        userService.saveUzytkownik(event.getUzytkownik());
         updateList();
         closeEditor();
     }
 
     private void deleteUzytkownik(UzytkownicyForm.DeleteEvent event) {
-        service.deleteUzytkownik(event.getUzytkownik());
+        userService.deleteUzytkownik(event.getUzytkownik());
         updateList();
         closeEditor();
     }
@@ -263,6 +264,6 @@ public class UzytkownicyView extends VerticalLayout {
     }
 
     private void updateList() {
-        grid.setItems(service.findAllUzytkownicy(filterText.getValue()));
+        grid.setItems(userService.findAllUzytkownicy(filterText.getValue()));
     }
 }

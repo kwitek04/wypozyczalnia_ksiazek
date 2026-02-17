@@ -1,10 +1,14 @@
 package com.example.application.views.dziedziny;
 
 import com.example.application.data.entity.Dziedzina;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.BookService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -16,13 +20,15 @@ import jakarta.annotation.security.RolesAllowed;
 @Route(value = "dziedziny", layout = MainLayout.class)
 @PageTitle("Dziedziny | Biblioteka")
 public class DziedzinaView extends VerticalLayout {
-    private final LibraryService service;
-    Grid<Dziedzina> grid = new Grid<>(Dziedzina.class);
-    TextField nazwaField = new TextField("Nowa dziedzina");
-    Button addBtn = new Button("Dodaj");
 
-    public DziedzinaView(LibraryService service) {
-        this.service = service;
+    private final BookService bookService;
+
+    private final Grid<Dziedzina> grid = new Grid<>(Dziedzina.class);
+    private final TextField nazwaField = new TextField("Nowa dziedzina");
+    private final Button addBtn = new Button("Dodaj");
+
+    public DziedzinaView(BookService bookService) {
+        this.bookService = bookService;
         setSizeFull();
 
         configureGrid();
@@ -35,15 +41,15 @@ public class DziedzinaView extends VerticalLayout {
                 String nazwa = nazwaField.getValue();
                 if (nazwa != null && !nazwa.isEmpty()) {
                     Dziedzina nowa = new Dziedzina(nazwa);
-                    service.saveDziedzina(nowa);
+                    bookService.saveDziedzina(nowa);
                     nazwaField.clear();
                     updateList();
                     com.vaadin.flow.component.notification.Notification.show("Dodano dziedzinę!");
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-                com.vaadin.flow.component.notification.Notification.show("Błąd: " + ex.getMessage(),
-                        5000, com.vaadin.flow.component.notification.Notification.Position.MIDDLE);
+                Notification.show("Błąd: " + ex.getMessage(),
+                        5000, Notification.Position.MIDDLE);
             }
         });
 
@@ -64,24 +70,22 @@ public class DziedzinaView extends VerticalLayout {
         });
 
         grid.addComponentColumn(dziedzina -> {
-            Button deleteBtn = new Button(com.vaadin.flow.component.icon.VaadinIcon.TRASH.create());
-            deleteBtn.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR,
-                    com.vaadin.flow.component.button.ButtonVariant.LUMO_TERTIARY);
+            Button deleteBtn = new Button(VaadinIcon.TRASH.create());
+            deleteBtn.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
 
             deleteBtn.addClickListener(e -> {
-                com.vaadin.flow.component.confirmdialog.ConfirmDialog dialog = new com.vaadin.flow.component.confirmdialog.ConfirmDialog();
+                ConfirmDialog dialog = new ConfirmDialog();
                 dialog.setHeader("Usunąć dziedzinę?");
                 dialog.setText("Czy na pewno chcesz usunąć dziedzinę '" + dziedzina.getNazwa() + "'? " +
                         "Spowoduje to również usunięcie wszystkich jej poddziedzin.");
 
                 dialog.setCancelable(true);
                 dialog.setCancelText("Anuluj");
-
                 dialog.setConfirmText("Usuń");
                 dialog.setConfirmButtonTheme("error primary");
 
                 dialog.addConfirmListener(event -> {
-                    service.deleteDziedzina(dziedzina);
+                    bookService.deleteDziedzina(dziedzina);
                     updateList();
                 });
 
@@ -92,10 +96,10 @@ public class DziedzinaView extends VerticalLayout {
     }
 
     private void openPoddziedzinaDialog(Dziedzina dziedzina) {
-        new PoddziedzinaDialog(service, dziedzina, this::updateList).open();
+        new PoddziedzinaDialog(bookService, dziedzina, this::updateList).open();
     }
 
     private void updateList() {
-        grid.setItems(service.findAllDziedziny());
+        grid.setItems(bookService.findAllDziedziny());
     }
 }

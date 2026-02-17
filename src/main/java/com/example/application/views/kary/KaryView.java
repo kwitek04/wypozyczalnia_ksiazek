@@ -1,9 +1,9 @@
 package com.example.application.views.kary;
 
-import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Uzytkownicy;
 import com.example.application.data.entity.Wypozyczenie;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.RentalService;
+import com.example.application.data.service.UserService;
 import com.example.application.security.SecurityService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -19,18 +19,25 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.stream.Collectors;
 
+/**
+ * Widok panelu czytelnika przedstawiający naliczone kary finansowe.
+ * Wyświetla historię przetrzymanych książek oraz sumaryczne zadłużenie wobec biblioteki.
+ */
 @RolesAllowed({"USER"})
 @Route(value = "kary", layout = MainLayout.class)
 @PageTitle("Kary i Płatności | Biblioteka")
 public class KaryView extends VerticalLayout {
 
-    private final LibraryService service;
+    private final RentalService rentalService;
+    private final UserService userService;
     private final SecurityService securityService;
+
     private final Grid<Wypozyczenie> grid = new Grid<>(Wypozyczenie.class);
     private final H2 totalDebtLabel = new H2();
 
-    public KaryView(LibraryService service, SecurityService securityService) {
-        this.service = service;
+    public KaryView(RentalService rentalService, UserService userService, SecurityService securityService) {
+        this.rentalService = rentalService;
+        this.userService = userService;
         this.securityService = securityService;
 
         setSizeFull();
@@ -40,7 +47,6 @@ public class KaryView extends VerticalLayout {
 
         add(new H4("Twoje należności wobec wypożyczalni"));
 
-        // Stylowanie licznika długu
         totalDebtLabel.getStyle().set("color", "red");
         totalDebtLabel.getStyle().set("font-size", "3em");
         totalDebtLabel.getStyle().set("margin", "0");
@@ -79,17 +85,18 @@ public class KaryView extends VerticalLayout {
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
     }
 
+    /**
+     * Odświeża dane na ekranie.
+     */
     private void updateView() {
         UserDetails userDetails = securityService.getAuthenticatedUser();
         if (userDetails != null) {
-            Uzytkownicy u = service.findUzytkownikByEmail(userDetails.getUsername());
+            Uzytkownicy u = userService.findUzytkownikByEmail(userDetails.getUsername());
             if (u != null) {
-                // 1. Pobierz listę kar
-                var listaKar = service.findWypozyczeniaZKarami(u);
+                var listaKar = rentalService.findWypozyczeniaZKarami(u);
                 grid.setItems(listaKar);
 
-                // 2. Oblicz sumę
-                Double suma = service.obliczSumeKar(u);
+                Double suma = rentalService.obliczSumeKar(u);
                 totalDebtLabel.setText(String.format("%.2f zł", suma));
 
                 if (suma == 0) {

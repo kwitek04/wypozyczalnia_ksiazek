@@ -4,7 +4,11 @@ import com.example.application.data.entity.Autor;
 import com.example.application.data.entity.Dziedzina;
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Poddziedzina;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.service.BookService;
+import com.example.application.data.service.RentalService;
+import com.example.application.data.service.UserService;
+import com.example.application.security.SecurityService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -25,23 +29,28 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.example.application.data.entity.Uzytkownicy;
-import com.example.application.security.SecurityService;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.ByteArrayInputStream;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Główny widok katalogu bibliotecznego dostępny dla wszystkich (również niezalogowanych).
+ * Umożliwia przeglądanie zbiorów, filtrowanie według dziedizn, poddziedizn i autora.
+ */
 @AnonymousAllowed
 @Route(value = "katalog", layout = MainLayout.class)
 @PageTitle("Katalog | Biblioteka")
 public class KatalogView extends VerticalLayout {
 
-    private final LibraryService service;
+    private final BookService bookService;
+    private final UserService userService;
+    private final RentalService rentalService;
     private final SecurityService securityService;
+
     private Uzytkownicy currentUser;
 
     private final TreeGrid<Object> categoryTree = new TreeGrid<>();
@@ -49,9 +58,12 @@ public class KatalogView extends VerticalLayout {
     private final Grid<Ksiazka> bookGrid = new Grid<>(Ksiazka.class);
     private final TextField authorFilter = new TextField();
 
-    public KatalogView(LibraryService service, SecurityService securityService) {
-        this.service = service;
+    public KatalogView(BookService bookService, UserService userService, RentalService rentalService, SecurityService securityService) {
+        this.bookService = bookService;
+        this.userService = userService;
+        this.rentalService = rentalService;
         this.securityService = securityService;
+
         loadCurrentUser();
         setSizeFull();
         setPadding(false);
@@ -113,7 +125,7 @@ public class KatalogView extends VerticalLayout {
     private void loadCurrentUser() {
         UserDetails userDetails = securityService.getAuthenticatedUser();
         if (userDetails != null) {
-            this.currentUser = service.findUzytkownikByEmail(userDetails.getUsername());
+            this.currentUser = userService.findUzytkownikByEmail(userDetails.getUsername());
         } else {
             this.currentUser = null;
         }
@@ -124,7 +136,7 @@ public class KatalogView extends VerticalLayout {
         categoryTree.setSizeFull();
 
         TreeData<Object> treeData = new TreeData<>();
-        List<Dziedzina> dziedziny = service.findAllDziedziny();
+        List<Dziedzina> dziedziny = bookService.findAllDziedziny();
         dziedziny.sort(Comparator.comparing(Dziedzina::getNazwa));
 
         for (Dziedzina d : dziedziny) {
@@ -152,7 +164,7 @@ public class KatalogView extends VerticalLayout {
         authorGrid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_ROW_STRIPES);
         authorGrid.addColumn(a -> a.getNazwisko() + " " + a.getImie()).setHeader("Nazwisko i Imię");
 
-        List<Autor> allAuthors = service.findAllAutorzy();
+        List<Autor> allAuthors = bookService.findAllAutorzy();
         allAuthors.sort(Comparator.comparing(Autor::getNazwisko)
                 .thenComparing(Autor::getImie));
 
@@ -171,7 +183,7 @@ public class KatalogView extends VerticalLayout {
 
         authorGrid.asSingleSelect().addValueChangeListener(e -> {
             if (e.getValue() != null) {
-                List<Ksiazka> books = service.findKsiazkiByAutor(e.getValue());
+                List<Ksiazka> books = bookService.findKsiazkiByAutor(e.getValue());
                 bookGrid.setItems(books);
             }
         });
@@ -186,18 +198,18 @@ public class KatalogView extends VerticalLayout {
 
         bookGrid.addItemClickListener(event -> {
             Ksiazka clickedBook = event.getItem();
-            new KsiazkaDetailsDialog(clickedBook, service, currentUser).open();
+            new KsiazkaDetailsDialog(clickedBook, rentalService, currentUser).open();
         });
     }
 
     private void updateBookList(Object selection) {
         List<Ksiazka> ksiazki;
         if (selection instanceof Dziedzina) {
-            ksiazki = service.findKsiazkiByDziedzina((Dziedzina) selection);
+            ksiazki = bookService.findKsiazkiByDziedzina((Dziedzina) selection);
         } else if (selection instanceof Poddziedzina) {
-            ksiazki = service.findKsiazkiByPoddziedzina((Poddziedzina) selection);
+            ksiazki = bookService.findKsiazkiByPoddziedzina((Poddziedzina) selection);
         } else {
-            ksiazki = service.findAllActiveKsiazki();
+            ksiazki = bookService.findAllActiveKsiazki();
         }
         bookGrid.setItems(ksiazki);
     }

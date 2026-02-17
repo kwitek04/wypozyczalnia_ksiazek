@@ -2,7 +2,8 @@ package com.example.application.views.kontrolastanu;
 
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.StanFizyczny;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.BookService;
+import com.example.application.data.service.RentalService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -24,11 +25,14 @@ import jakarta.annotation.security.RolesAllowed;
 @PageTitle("Kontrola Stanu | Magazyn")
 public class KontrolaStanuView extends VerticalLayout {
 
-    private final LibraryService service;
+    private final BookService bookService;
+    private final RentalService rentalService;
     private final Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
 
-    public KontrolaStanuView(LibraryService service) {
-        this.service = service;
+    public KontrolaStanuView(BookService bookService, RentalService rentalService) {
+        this.bookService = bookService;
+        this.rentalService = rentalService;
+
         setSizeFull();
         setPadding(true);
 
@@ -49,6 +53,7 @@ public class KontrolaStanuView extends VerticalLayout {
         grid.addColumn(k -> k.getDaneKsiazki().getTytul()).setHeader("Tytuł").setAutoWidth(true);
         grid.addColumn(k -> k.getDaneKsiazki().getIsbn()).setHeader("ISBN");
         grid.addColumn(Ksiazka::getLicznikWypozyczen).setHeader("Licznik wypożyczeń").setSortable(true);
+
         grid.addComponentColumn(ksiazka -> {
             HorizontalLayout actions = new HorizontalLayout();
             actions.setAlignItems(Alignment.BASELINE);
@@ -63,7 +68,7 @@ public class KontrolaStanuView extends VerticalLayout {
             confirmBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
             confirmBtn.addClickListener(e -> {
-                service.zaktualizujStanPoKontroli(ksiazka, statusSelect.getValue());
+                rentalService.zaktualizujStanPoKontroli(ksiazka, statusSelect.getValue());
                 Notification.show("Stan zaktualizowany. Książka wraca do obiegu.", 3000, Notification.Position.MIDDLE)
                         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 updateList();
@@ -77,6 +82,6 @@ public class KontrolaStanuView extends VerticalLayout {
     }
 
     private void updateList() {
-        grid.setItems(service.findKsiazkiDoKontroli());
+        grid.setItems(bookService.findKsiazkiDoKontroli());
     }
 }

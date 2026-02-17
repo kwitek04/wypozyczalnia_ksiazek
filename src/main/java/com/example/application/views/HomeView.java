@@ -3,7 +3,9 @@ package com.example.application.views;
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Tlumacz;
 import com.example.application.data.entity.Uzytkownicy;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.BookService;
+import com.example.application.data.service.RentalService;
+import com.example.application.data.service.UserService;
 import com.example.application.security.SecurityService;
 import com.example.application.views.katalog.KsiazkaDetailsDialog;
 import com.vaadin.flow.component.Key;
@@ -14,38 +16,47 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.server.StreamResource;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Strona główna aplikacji.
+ * Udostępnia wyszukiwarkę książek (po tytule, autorze lub ISBN)
+ * oraz wyświetla listę dopasowanych pozycji w formie kart.
+ */
 @AnonymousAllowed
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("Strona Główna | Biblioteka")
 public class HomeView extends VerticalLayout {
 
-    private final LibraryService service;
+    private final BookService bookService;
+    private final UserService userService;
+    private final RentalService rentalService;
     private final SecurityService securityService;
+
     private final Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
     private final TextField searchField = new TextField();
     private Uzytkownicy currentUser;
 
-    public HomeView(LibraryService service, SecurityService securityService) {
-        this.service = service;
+    public HomeView(BookService bookService, UserService userService, RentalService rentalService, SecurityService securityService) {
+        this.bookService = bookService;
+        this.userService = userService;
+        this.rentalService = rentalService;
         this.securityService = securityService;
 
         UserDetails userDetails = securityService.getAuthenticatedUser();
         if (userDetails != null) {
-            this.currentUser = service.findUzytkownikByEmail(userDetails.getUsername());
+            this.currentUser = userService.findUzytkownikByEmail(userDetails.getUsername());
         }
 
         setSizeFull();
@@ -88,7 +99,7 @@ public class HomeView extends VerticalLayout {
         grid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS, GridVariant.LUMO_NO_BORDER);
         grid.addItemClickListener(event -> {
             Ksiazka clickedBook = event.getItem();
-            new KsiazkaDetailsDialog(clickedBook, service, currentUser).open();
+            new KsiazkaDetailsDialog(clickedBook, rentalService, currentUser).open();
         });
     }
 
@@ -208,6 +219,6 @@ public class HomeView extends VerticalLayout {
     }
 
     private void updateList() {
-        grid.setItems(service.findKsiazkiBySearch(searchField.getValue()));
+        grid.setItems(bookService.findKsiazkiBySearch(searchField.getValue()));
     }
 }

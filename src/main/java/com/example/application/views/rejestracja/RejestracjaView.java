@@ -1,7 +1,7 @@
 package com.example.application.views.rejestracja;
 
 import com.example.application.data.entity.Uzytkownicy;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.UserService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -26,7 +26,7 @@ import java.util.Locale;
 @PageTitle("Załóż konto | Biblioteka")
 public class RejestracjaView extends VerticalLayout {
 
-    private final LibraryService libraryService;
+    private final UserService userService;
     private final Binder<Uzytkownicy> binder = new BeanValidationBinder<>(Uzytkownicy.class);
 
     TextField imie = new TextField("Imię");
@@ -36,8 +36,8 @@ public class RejestracjaView extends VerticalLayout {
     TextField nrTelefonu = new TextField("Numer telefonu");
     DatePicker dataUrodzenia = new DatePicker("Data urodzenia");
 
-    public RejestracjaView(LibraryService libraryService) {
-        this.libraryService = libraryService;
+    public RejestracjaView(UserService userService) {
+        this.userService = userService;
 
         addClassName("rejestracja-view");
         setSizeFull();
@@ -69,7 +69,7 @@ public class RejestracjaView extends VerticalLayout {
 
     private void zarejestruj() {
         if (binder.isValid()) {
-            libraryService.saveUzytkownik(binder.getBean());
+            userService.saveUzytkownik(binder.getBean());
             Notification.show("Konto utworzone!", 5000, Notification.Position.MIDDLE)
                     .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             getUI().ifPresent(ui -> ui.navigate("login"));

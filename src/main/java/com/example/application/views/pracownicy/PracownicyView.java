@@ -1,34 +1,38 @@
 package com.example.application.views.pracownicy;
 import com.example.application.data.entity.Pracownicy;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.UserService;
 import com.example.application.views.MainLayout;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
-
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.button.ButtonVariant;
-
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 
+/**
+ * Widok zarządzania pracownikami. Dostępny tylko dla Kierownika.
+ */
 @RolesAllowed("KIEROWNIK")
 @Route(value = "pracownicy", layout = MainLayout.class)
 @PageTitle("Lista pracowników")
 public class PracownicyView extends VerticalLayout {
-    Grid<Pracownicy> grid = new Grid<>(Pracownicy.class);
-    TextField filterText = new TextField();
-    PracownicyForm form;
-    LibraryService service;
 
-    public PracownicyView(LibraryService service) {
-        this.service = service;
+    private final UserService userService;
+
+    private final Grid<Pracownicy> grid = new Grid<>(Pracownicy.class);
+    private final TextField filterText = new TextField();
+    private PracownicyForm form;
+
+    public PracownicyView(UserService userService) {
+        this.userService = userService;
+
         addClassName("pracownicy-view");
         setSizeFull();
         configureGrid();
@@ -43,18 +47,22 @@ public class PracownicyView extends VerticalLayout {
         grid.addClassNames("pracownicy-grid");
         grid.setSizeFull();
         grid.setColumns("imie", "nazwisko", "email", "nrTelefonu");
+
         grid.addColumn(Pracownicy::getRoleAsString)
                 .setHeader("Role")
                 .setSortable(false);
+
         grid.addColumn(p -> p.isEnabled() ? "Aktywne" : "Zablokowane")
                 .setHeader("Status konta")
                 .setSortable(true);
+
         grid.addComponentColumn(pracownik -> {
             Button editBtn = new Button(new Icon(VaadinIcon.EDIT));
-            editBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY); // Wygląd "czystej" ikonki bez ramki
-            editBtn.addClickListener(e -> editPracownicy(pracownik)); // Wywołuje Twoją metodę edycji
+            editBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+            editBtn.addClickListener(e -> editPracownicy(pracownik));
             return editBtn;
         }).setWidth("70px").setFlexGrow(0);
+
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
 
         grid.asSingleSelect().addValueChangeListener(event ->
@@ -76,7 +84,7 @@ public class PracownicyView extends VerticalLayout {
     }
 
     private void configureForm() {
-        form = new PracownicyForm(service.findAllRoles());
+        form = new PracownicyForm(userService.findAllRoles());
         form.setWidth("25em");
         form.addListener(PracownicyForm.SaveEvent.class, this::savePracownicy);
         form.addListener(PracownicyForm.DeleteEvent.class, this::deletePracownicy);
@@ -84,13 +92,13 @@ public class PracownicyView extends VerticalLayout {
     }
 
     private void savePracownicy(PracownicyForm.SaveEvent event) {
-        service.savePracownicy(event.getPracownicy());
+        userService.savePracownicy(event.getPracownicy());
         updateList();
         closeEditor();
     }
 
     private void deletePracownicy(PracownicyForm.DeleteEvent event) {
-        service.deletePracownicy(event.getPracownicy());
+        userService.deletePracownicy(event.getPracownicy());
         updateList();
         closeEditor();
     }
@@ -126,6 +134,6 @@ public class PracownicyView extends VerticalLayout {
     }
 
     private void updateList() {
-        grid.setItems(service.findAllPracownicy(filterText.getValue()));
+        grid.setItems(userService.findAllPracownicy(filterText.getValue()));
     }
 }

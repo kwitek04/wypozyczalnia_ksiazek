@@ -31,7 +31,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.example.application.views.mojekonto.MojeRezerwacjeView;
+import com.example.application.views.rezerwacje.MojeRezerwacjeView;
 
 public class MainLayout extends AppLayout {
 

@@ -2,7 +2,8 @@ package com.example.application.views.wypozyczenia;
 
 import com.example.application.data.entity.Uzytkownicy;
 import com.example.application.data.entity.Wypozyczenie;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.RentalService;
+import com.example.application.data.service.UserService;
 import com.example.application.security.SecurityService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -24,12 +25,14 @@ import java.util.stream.Collectors;
 @PageTitle("Moje Wypożyczenia | Biblioteka")
 public class MojeWypozyczeniaView extends VerticalLayout {
 
-    private final LibraryService service;
+    private final RentalService rentalService;
+    private final UserService userService;
     private final SecurityService securityService;
     private final Grid<Wypozyczenie> grid = new Grid<>(Wypozyczenie.class);
 
-    public MojeWypozyczeniaView(LibraryService service, SecurityService securityService) {
-        this.service = service;
+    public MojeWypozyczeniaView(RentalService rentalService, UserService userService, SecurityService securityService) {
+        this.rentalService = rentalService;
+        this.userService = userService;
         this.securityService = securityService;
 
         setSizeFull();
@@ -46,7 +49,7 @@ public class MojeWypozyczeniaView extends VerticalLayout {
     private void configureGrid() {
         grid.addClassName("wypozyczenia-grid");
         grid.setSizeFull();
-        grid.removeAllColumns(); // Usuwamy domyślne kolumny
+        grid.removeAllColumns();
 
         grid.addColumn(wypozyczenie -> {
             return wypozyczenie.getWypozyczoneKsiazki().stream()
@@ -59,7 +62,6 @@ public class MojeWypozyczeniaView extends VerticalLayout {
                     .map(wk -> wk.getKsiazka().getDaneKsiazki().getIsbn())
                     .collect(Collectors.joining(", "));
         }).setHeader("ISBN").setSortable(true).setAutoWidth(true);
-
 
         grid.addColumn(Wypozyczenie::getDataWypozyczenia)
                 .setHeader("Data wypożyczenia")
@@ -126,7 +128,7 @@ public class MojeWypozyczeniaView extends VerticalLayout {
 
         grid.addItemClickListener(event -> {
             Wypozyczenie wyp = event.getItem();
-            WypozyczenieDetailsDialog dialog = new WypozyczenieDetailsDialog(wyp, service);
+            WypozyczenieDetailsDialog dialog = new WypozyczenieDetailsDialog(wyp, rentalService);
 
             dialog.addOpenedChangeListener(e -> {
                 if (!e.isOpened()) {
@@ -141,20 +143,20 @@ public class MojeWypozyczeniaView extends VerticalLayout {
     private void updateList() {
         UserDetails userDetails = securityService.getAuthenticatedUser();
         if (userDetails != null) {
-            Uzytkownicy u = service.findUzytkownikByEmail(userDetails.getUsername());
+            Uzytkownicy u = userService.findUzytkownikByEmail(userDetails.getUsername());
             if (u != null) {
-                grid.setItems(service.findWypozyczeniaByUser(u));
+                grid.setItems(rentalService.findWypozyczeniaByUser(u));
             }
         }
     }
 
     private int getStatusWeight(Wypozyczenie w) {
         if (w.getDataOddania() != null) {
-            return 3; // Zwrócono
+            return 3;
         } else if (w.isZwrotZgloszony()) {
-            return 2; // Zgłoszono zwrot
+            return 2;
         } else {
-            return 1; // Wypożyczona
+            return 1;
         }
     }
 }

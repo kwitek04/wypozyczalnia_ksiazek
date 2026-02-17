@@ -1,7 +1,9 @@
 package com.example.application.views.statystyki;
 
 import com.example.application.data.entity.StatusKsiazki;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.BookService;
+import com.example.application.data.service.RentalService;
+import com.example.application.data.service.UserService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -21,12 +23,18 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.time.LocalDate;
 
+/**
+ * Widok ze statystykami wypożyczalni dostępny dla Kierownika.
+ * Agreguje dane z różnych serwisów (książki, użytkownicy, wypożyczenia) w jednym miejscu.
+ */
 @RolesAllowed("KIEROWNIK")
 @Route(value = "statystyki", layout = MainLayout.class)
 @PageTitle("Statystyki | Biblioteka")
 public class StatystykiView extends VerticalLayout {
 
-    private final LibraryService service;
+    private final BookService bookService;
+    private final UserService userService;
+    private final RentalService rentalService;
 
     private final DatePicker startDate = new DatePicker("Data od");
     private final DatePicker endDate = new DatePicker("Data do");
@@ -42,8 +50,10 @@ public class StatystykiView extends VerticalLayout {
     private final VerticalLayout statusChartContainer = new VerticalLayout();
     private final VerticalLayout activityChartContainer = new VerticalLayout();
 
-    public StatystykiView(LibraryService service) {
-        this.service = service;
+    public StatystykiView(BookService bookService, UserService userService, RentalService rentalService) {
+        this.bookService = bookService;
+        this.userService = userService;
+        this.rentalService = rentalService;
 
         setSizeFull();
         setPadding(true);
@@ -112,13 +122,13 @@ public class StatystykiView extends VerticalLayout {
             return;
         }
 
-        long usersTotal = service.countAllUsers();
-        long employeesTotal = service.countAllEmployees();
-        long booksTotal = service.countAllBooks();
+        long usersTotal = userService.countAllUsers();
+        long employeesTotal = userService.countAllEmployees();
+        long booksTotal = bookService.countAllBooks();
 
-        long wypozyczenia = service.countWypozyczeniaWOkresie(start, end);
-        long zwroty = service.countZwrotyWOkresie(start, end);
-        long activeUsers = service.countActiveUsersInPeriod(start, end);
+        long wypozyczenia = rentalService.countWypozyczeniaWOkresie(start, end);
+        long zwroty = rentalService.countZwrotyWOkresie(start, end);
+        long activeUsers = rentalService.countActiveUsersInPeriod(start, end);
 
         totalUsersCount.setText(String.valueOf(usersTotal));
         totalEmployeesCount.setText(String.valueOf(employeesTotal));
@@ -131,13 +141,13 @@ public class StatystykiView extends VerticalLayout {
         statusChartContainer.removeAll();
         statusChartContainer.add(new H4("Struktura zbioru książek"));
 
-        long sDostepna = service.countKsiazkiByStatus(StatusKsiazki.DOSTEPNA);
-        long sWypozyczona = service.countKsiazkiByStatus(StatusKsiazki.WYPOZYCZONA);
-        long sZarezerwowana = service.countKsiazkiByStatus(StatusKsiazki.ZAREZERWOWANA);
-        long sDoOdlozenia = service.countKsiazkiByStatus(StatusKsiazki.DO_ODLOZENIA);
-        long sWKontroli = service.countKsiazkiByStatus(StatusKsiazki.W_KONTROLI);
-        long sWRenowacji = service.countKsiazkiByStatus(StatusKsiazki.W_RENOWACJI);
-        long sWycofana = service.countKsiazkiByStatus(StatusKsiazki.WYCOFANA);
+        long sDostepna = bookService.countKsiazkiByStatus(StatusKsiazki.DOSTEPNA);
+        long sWypozyczona = bookService.countKsiazkiByStatus(StatusKsiazki.WYPOZYCZONA);
+        long sZarezerwowana = bookService.countKsiazkiByStatus(StatusKsiazki.ZAREZERWOWANA);
+        long sDoOdlozenia = bookService.countKsiazkiByStatus(StatusKsiazki.DO_ODLOZENIA);
+        long sWKontroli = bookService.countKsiazkiByStatus(StatusKsiazki.W_KONTROLI);
+        long sWRenowacji = bookService.countKsiazkiByStatus(StatusKsiazki.W_RENOWACJI);
+        long sWycofana = bookService.countKsiazkiByStatus(StatusKsiazki.WYCOFANA);
 
         long total = booksTotal;
 

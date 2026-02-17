@@ -1,4 +1,4 @@
-package com.example.application.views;
+package com.example.application.views.logowanie;
 
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.login.LoginForm;
@@ -30,7 +30,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         i18nForm.setUsername("Email");
         i18nForm.setPassword("Hasło");
         i18nForm.setSubmit("Zaloguj się");
-        i18nForm.setForgotPassword("Nie pamiętasz hasła?");
 
         i18n.setForm(i18nForm);
 

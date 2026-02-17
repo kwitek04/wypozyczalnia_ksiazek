@@ -2,7 +2,7 @@ package com.example.application.views.dziedziny;
 
 import com.example.application.data.entity.Dziedzina;
 import com.example.application.data.entity.Poddziedzina;
-import com.example.application.data.service.LibraryService;
+import com.example.application.data.service.BookService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -13,14 +13,17 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
+/**
+ * Okno dialogowe do zarządzania poddziedzinami w ramach wybranej dziedziny.
+ */
 public class PoddziedzinaDialog extends Dialog {
-    private final LibraryService service;
+    private final BookService bookService;
     private final Dziedzina dziedzina;
-    private Grid<Poddziedzina> grid = new Grid<>(Poddziedzina.class);
-    private Runnable onUpdate;
+    private final Grid<Poddziedzina> grid = new Grid<>(Poddziedzina.class);
+    private final Runnable onUpdate;
 
-    public PoddziedzinaDialog(LibraryService service, Dziedzina dziedzina, Runnable onUpdate) {
-        this.service = service;
+    public PoddziedzinaDialog(BookService bookService, Dziedzina dziedzina, Runnable onUpdate) {
+        this.bookService = bookService;
         this.dziedzina = dziedzina;
         this.onUpdate = onUpdate;
 
@@ -44,8 +47,7 @@ public class PoddziedzinaDialog extends Dialog {
                 confirm.setConfirmButtonTheme("error primary");
 
                 confirm.addConfirmListener(event -> {
-                    service.deletePoddziedzina(poddziedzina);
-
+                    bookService.deletePoddziedzina(poddziedzina);
                     updateGrid();
                     onUpdate.run();
                 });
@@ -58,7 +60,7 @@ public class PoddziedzinaDialog extends Dialog {
         TextField nowaPoddziedzina = new TextField("Nazwa poddziedziny");
         Button addBtn = new Button("Dodaj", e -> {
             if (!nowaPoddziedzina.isEmpty()) {
-                service.savePoddziedzina(new Poddziedzina(nowaPoddziedzina.getValue(), dziedzina));
+                bookService.savePoddziedzina(new Poddziedzina(nowaPoddziedzina.getValue(), dziedzina));
                 nowaPoddziedzina.clear();
                 updateGrid();
                 onUpdate.run();
@@ -77,6 +79,6 @@ public class PoddziedzinaDialog extends Dialog {
     }
 
     private void updateGrid() {
-        grid.setItems(service.findPoddziedzinyByDziedzina(dziedzina));
+        grid.setItems(bookService.findPoddziedzinyByDziedzina(dziedzina));
     }
 }
