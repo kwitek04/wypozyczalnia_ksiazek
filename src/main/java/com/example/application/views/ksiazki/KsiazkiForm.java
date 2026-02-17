@@ -19,8 +19,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
@@ -327,6 +327,8 @@ public class KsiazkiForm extends FormLayout {
 
             fireEvent(new SaveEvent(this, binder.getBean()));
         } catch (ValidationException e) {
+            Notification.show("Sprawdź poprawność danych w formularzu")
+                    .addThemeVariants(com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR);
         }
     }
 

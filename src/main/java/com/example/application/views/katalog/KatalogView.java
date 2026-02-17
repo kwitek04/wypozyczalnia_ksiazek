@@ -1,10 +1,6 @@
 package com.example.application.views.katalog;
 
-import com.example.application.data.entity.Autor;
-import com.example.application.data.entity.Dziedzina;
-import com.example.application.data.entity.Ksiazka;
-import com.example.application.data.entity.Poddziedzina;
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.*;
 import com.example.application.data.service.BookService;
 import com.example.application.data.service.RentalService;
 import com.example.application.data.service.UserService;
@@ -26,7 +22,8 @@ import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,7 +31,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.ByteArrayInputStream;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -51,7 +47,7 @@ public class KatalogView extends VerticalLayout {
     private final RentalService rentalService;
     private final SecurityService securityService;
 
-    private Uzytkownicy currentUser;
+    private Uzytkownik currentUser;
 
     private final TreeGrid<Object> categoryTree = new TreeGrid<>();
     private final Grid<Autor> authorGrid = new Grid<>(Autor.class);

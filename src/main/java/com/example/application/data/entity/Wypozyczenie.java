@@ -1,7 +1,7 @@
 package com.example.application.data.entity;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class Wypozyczenie {
 
     @ManyToOne
     @JoinColumn(name = "uzytkownik_id")
-    private Uzytkownicy uzytkownik;
+    private Uzytkownik uzytkownik;
 
     private LocalDate dataWypozyczenia;
     private LocalDate terminZwrotu;
@@ -30,7 +30,7 @@ public class Wypozyczenie {
 
     public Wypozyczenie() {}
 
-    public Wypozyczenie(Uzytkownicy uzytkownik, LocalDate dataWypozyczenia, LocalDate terminZwrotu) {
+    public Wypozyczenie(Uzytkownik uzytkownik, LocalDate dataWypozyczenia, LocalDate terminZwrotu) {
         this.uzytkownik = uzytkownik;
         this.dataWypozyczenia = dataWypozyczenia;
         this.terminZwrotu = terminZwrotu;
@@ -43,8 +43,8 @@ public class Wypozyczenie {
     // Gettery i Settery
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public Uzytkownicy getUzytkownik() { return uzytkownik; }
-    public void setUzytkownik(Uzytkownicy uzytkownik) { this.uzytkownik = uzytkownik; }
+    public Uzytkownik getUzytkownik() { return uzytkownik; }
+    public void setUzytkownik(Uzytkownik uzytkownik) { this.uzytkownik = uzytkownik; }
     public LocalDate getDataWypozyczenia() { return dataWypozyczenia; }
     public void setDataWypozyczenia(LocalDate dataWypozyczenia) { this.dataWypozyczenia = dataWypozyczenia; }
     public LocalDate getTerminZwrotu() { return terminZwrotu; }

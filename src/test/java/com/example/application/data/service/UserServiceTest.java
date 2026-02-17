@@ -1,7 +1,7 @@
 package com.example.application.data.service;
 
-import com.example.application.data.entity.Pracownicy;
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Pracownik;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.repository.PracownicyRepository;
 import com.example.application.data.repository.RolaRepository;
 import com.example.application.data.repository.UzytkownicyRepository;
@@ -35,7 +35,7 @@ class UserServiceTest {
     @DisplayName("Nowy użytkownik powinien być domyślnie nieaktywny (enabled=false) i mieć zakodowane hasło")
     void saveUzytkownik_Nowy_UstawiaDomyslneWartosci() {
         // Given
-        Uzytkownicy u = new Uzytkownicy();
+        Uzytkownik u = new Uzytkownik();
         u.setPassword("tajneHaslo123");
 
         when(passwordEncoder.encode("tajneHaslo123")).thenReturn("encoded_tajneHaslo123");
@@ -53,7 +53,7 @@ class UserServiceTest {
     @DisplayName("Nowy pracownik powinien być domyślnie aktywny (enabled=true)")
     void savePracownicy_Nowy_UstawiaAktywny() {
         // Given
-        Pracownicy p = new Pracownicy();
+        Pracownik p = new Pracownik();
         p.setPassword("admin123");
 
         when(passwordEncoder.encode("admin123")).thenReturn("encoded_admin");
@@ -70,7 +70,7 @@ class UserServiceTest {
     @DisplayName("Zmiana hasła użytkownika powinna je zakodować przed zapisem")
     void updatePassword_KodujeHaslo() {
         // Given
-        Uzytkownicy u = new Uzytkownicy();
+        Uzytkownik u = new Uzytkownik();
         u.setPassword("stareHaslo");
 
         when(passwordEncoder.encode("noweHaslo")).thenReturn("encoded_noweHaslo");

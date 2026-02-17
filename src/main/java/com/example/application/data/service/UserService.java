@@ -1,8 +1,8 @@
 package com.example.application.data.service;
 
-import com.example.application.data.entity.Pracownicy;
+import com.example.application.data.entity.Pracownik;
 import com.example.application.data.entity.Rola;
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.repository.PracownicyRepository;
 import com.example.application.data.repository.RolaRepository;
 import com.example.application.data.repository.UzytkownicyRepository;
@@ -40,7 +40,7 @@ public class UserService {
     /**
      * Wyszukuje czytelników na podstawie fragmentu imienia lub nazwiska.
      */
-    public List<Uzytkownicy> findAllUzytkownicy(String filterText) {
+    public List<Uzytkownik> findAllUzytkownicy(String filterText) {
         if (filterText == null || filterText.isEmpty()) {
             return uzytkownicyRepository.findAll();
         } else {
@@ -51,11 +51,11 @@ public class UserService {
     /**
      * Zwraca listę kont czytelników, które oczekują na aktywację.
      */
-    public List<Uzytkownicy> findAllPendingUzytkownicy() {
+    public List<Uzytkownik> findAllPendingUzytkownicy() {
         return uzytkownicyRepository.findByEnabled(false);
     }
 
-    public Uzytkownicy findUzytkownikByEmail(String email) {
+    public Uzytkownik findUzytkownikByEmail(String email) {
         return uzytkownicyRepository.findByEmail(email);
     }
 
@@ -67,7 +67,7 @@ public class UserService {
      * Zapisuje lub aktualizuje dane czytelnika.
      * W przypadku nowego konta domyślnie ustawia je jako nieaktywne oraz szyfruje hasło przed zapisem.
      */
-    public void saveUzytkownik(Uzytkownicy uzytkownik) {
+    public void saveUzytkownik(Uzytkownik uzytkownik) {
         if (uzytkownik == null) return;
 
         if (uzytkownik.getId() == null) {
@@ -82,13 +82,13 @@ public class UserService {
         uzytkownicyRepository.save(uzytkownik);
     }
 
-    public void deleteUzytkownik(Uzytkownicy uzytkownik) {
+    public void deleteUzytkownik(Uzytkownik uzytkownik) {
         uzytkownicyRepository.delete(uzytkownik);
     }
 
     // Zarządzanie pracownikami
 
-    public List<Pracownicy> findAllPracownicy(String stringFilter) {
+    public List<Pracownik> findAllPracownicy(String stringFilter) {
         if (stringFilter == null || stringFilter.isEmpty()) {
             return pracownicyRepository.findAll();
         } else {
@@ -96,7 +96,7 @@ public class UserService {
         }
     }
 
-    public Pracownicy findPracownikByEmail(String email) {
+    public Pracownik findPracownikByEmail(String email) {
         return pracownicyRepository.findByEmail(email);
     }
 
@@ -108,7 +108,7 @@ public class UserService {
      * Zapisuje dane pracownika.
      * Nowi pracownicy są domyślnie aktywni, a hasło jest automatycznie szyfrowane.
      */
-    public void savePracownicy(Pracownicy pracownik) {
+    public void savePracownicy(Pracownik pracownik) {
         if (pracownik == null) return;
 
         if (pracownik.getId() == null) {
@@ -123,8 +123,8 @@ public class UserService {
         pracownicyRepository.save(pracownik);
     }
 
-    public void deletePracownicy(Pracownicy pracownicy) {
-        pracownicyRepository.delete(pracownicy);
+    public void deletePracownicy(Pracownik pracownik) {
+        pracownicyRepository.delete(pracownik);
     }
 
     public List<Rola> findAllRoles() {
@@ -133,13 +133,13 @@ public class UserService {
 
     // Bezpieczeństwo i hasła
 
-    public void updatePassword(Uzytkownicy uzytkownik, String newPassword) {
+    public void updatePassword(Uzytkownik uzytkownik, String newPassword) {
         if (uzytkownik == null) return;
         uzytkownik.setPassword(passwordEncoder.encode(newPassword));
         uzytkownicyRepository.save(uzytkownik);
     }
 
-    public void updatePassword(Pracownicy pracownik, String newPassword) {
+    public void updatePassword(Pracownik pracownik, String newPassword) {
         if (pracownik == null) return;
         pracownik.setPassword(passwordEncoder.encode(newPassword));
         pracownicyRepository.save(pracownik);

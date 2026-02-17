@@ -1,6 +1,6 @@
 package com.example.application.views.wypozyczenia;
 
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.entity.Wypozyczenie;
 import com.example.application.data.service.RentalService;
 import com.example.application.data.service.UserService;
@@ -143,7 +143,7 @@ public class MojeWypozyczeniaView extends VerticalLayout {
     private void updateList() {
         UserDetails userDetails = securityService.getAuthenticatedUser();
         if (userDetails != null) {
-            Uzytkownicy u = userService.findUzytkownikByEmail(userDetails.getUsername());
+            Uzytkownik u = userService.findUzytkownikByEmail(userDetails.getUsername());
             if (u != null) {
                 grid.setItems(rentalService.findWypozyczeniaByUser(u));
             }

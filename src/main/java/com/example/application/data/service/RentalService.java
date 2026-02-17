@@ -48,7 +48,7 @@ public class RentalService {
      * Weryfikuje dostępność książki, limity wypożyczeń oraz ewentualne zadłużenie użytkownika.
      * Obsługuje również realizację rezerwacji, jeśli taka istnieje.
      */
-    public void wypozyczKsiazke(Ksiazka ksiazka, Uzytkownicy uzytkownik) {
+    public void wypozyczKsiazke(Ksiazka ksiazka, Uzytkownik uzytkownik) {
         if (ksiazka == null || uzytkownik == null) {
             throw new IllegalArgumentException("Nieprawidłowe dane wypożyczenia.");
         }
@@ -180,7 +180,7 @@ public class RentalService {
     /**
      * Rezerwuje książkę dla użytkownika, jeśli nie ma on zaległości i nie przekroczył limitu rezerwacji.
      */
-    public void zarezerwujKsiazke(Ksiazka ksiazka, Uzytkownicy uzytkownik) {
+    public void zarezerwujKsiazke(Ksiazka ksiazka, Uzytkownik uzytkownik) {
         if (ksiazka == null || uzytkownik == null) return;
 
         przeliczKaryUzytkownika(uzytkownik);
@@ -231,7 +231,7 @@ public class RentalService {
      * Przelicza i aktualizuje kary dla wszystkich wypożyczeń danego użytkownika.
      * Uwzględnia kary za opóźnienie oraz kary za zagubienie (długotrwałe przetrzymanie).
      */
-    public void przeliczKaryUzytkownika(Uzytkownicy uzytkownik) {
+    public void przeliczKaryUzytkownika(Uzytkownik uzytkownik) {
         if (uzytkownik == null) return;
 
         List<Wypozyczenie> wypozyczenia = wypozyczenieRepository.findAllByUzytkownik(uzytkownik);
@@ -283,14 +283,14 @@ public class RentalService {
         }
     }
 
-    public List<Wypozyczenie> findWypozyczeniaZKarami(Uzytkownicy uzytkownik) {
+    public List<Wypozyczenie> findWypozyczeniaZKarami(Uzytkownik uzytkownik) {
         przeliczKaryUzytkownika(uzytkownik);
         return findWypozyczeniaByUser(uzytkownik).stream()
                 .filter(w -> w.getKara() > 0)
                 .collect(Collectors.toList());
     }
 
-    public Double obliczSumeKar(Uzytkownicy uzytkownik) {
+    public Double obliczSumeKar(Uzytkownik uzytkownik) {
         List<Wypozyczenie> zadluzone = findWypozyczeniaZKarami(uzytkownik);
         return zadluzone.stream()
                 .mapToDouble(Wypozyczenie::getKara)
@@ -330,7 +330,7 @@ public class RentalService {
         ksiazkaRepository.save(ksiazka);
     }
 
-    public void wycofajKsiazke(Ksiazka ksiazka, Pracownicy pracownik, String powod) {
+    public void wycofajKsiazke(Ksiazka ksiazka, Pracownik pracownik, String powod) {
         if (ksiazka == null || pracownik == null) return;
 
         Wycofanie wycofanie = new Wycofanie(ksiazka, pracownik, LocalDate.now(), powod);
@@ -346,7 +346,7 @@ public class RentalService {
 
     // Metody pomocnicze i statystyczne (odczyt)
 
-    public List<Wypozyczenie> findWypozyczeniaByUser(Uzytkownicy uzytkownik) {
+    public List<Wypozyczenie> findWypozyczeniaByUser(Uzytkownik uzytkownik) {
         if (uzytkownik == null) return Collections.emptyList();
         return wypozyczenieRepository.findAllByUzytkownikOrderByDataWypozyczeniaDesc(uzytkownik);
     }
@@ -355,7 +355,7 @@ public class RentalService {
         return wypozyczenieRepository.findAllByDataOddaniaIsNullOrderByDataWypozyczeniaDesc();
     }
 
-    public List<Rezerwacja> findRezerwacjeByUser(Uzytkownicy uzytkownik) {
+    public List<Rezerwacja> findRezerwacjeByUser(Uzytkownik uzytkownik) {
         if (uzytkownik == null) return Collections.emptyList();
         return rezerwacjaRepository.findByUzytkownikOrderByDataRezerwacjiDesc(uzytkownik);
     }

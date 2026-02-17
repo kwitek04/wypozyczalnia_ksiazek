@@ -1,37 +1,32 @@
 package com.example.application.views;
 
-import com.example.application.security.SecurityService;
 import com.example.application.views.dziedziny.DziedzinaView;
 import com.example.application.views.kary.KaryView;
+import com.example.application.views.kontrolastanu.KontrolaStanuView;
 import com.example.application.views.ksiazki.KsiazkiView;
 import com.example.application.views.mojekonto.MojeKontoView;
+import com.example.application.views.oczekujacekonta.OczekujaceKontaView;
+import com.example.application.views.odlozenie.KsiazkiDoOdlozeniaView;
 import com.example.application.views.pracownicy.PracownicyView;
+import com.example.application.views.rezerwacje.MojeRezerwacjeView;
 import com.example.application.views.statystyki.StatystykiView;
 import com.example.application.views.uzytkownicy.UzytkownicyView;
-import com.example.application.views.oczekujacekonta.OczekujaceKontaView;
 import com.example.application.views.wycofanie.KsiazkiDoWycofaniaView;
 import com.example.application.views.wypozyczenia.MojeWypozyczeniaView;
 import com.example.application.views.wypozyczenia.ZarzadzanieWypozyczeniamiView;
-import com.example.application.views.kontrolastanu.KontrolaStanuView;
-import com.example.application.views.odlozenie.KsiazkiDoOdlozeniaView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.spring.security.AuthenticationContext;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.example.application.views.rezerwacje.MojeRezerwacjeView;
 
 public class MainLayout extends AppLayout {
 
@@ -85,7 +80,7 @@ public class MainLayout extends AppLayout {
         menu.add(new RouterLink("Strona główna", com.example.application.views.HomeView.class));
         menu.add(new RouterLink("Katalog", com.example.application.views.katalog.KatalogView.class));
 
-        // Uzytkownicy zalogowani i pracownicy
+        // Uzytkownik zalogowani i pracownicy
         if (authContext.isAuthenticated()) {
             menu.add(new RouterLink("Moje konto", MojeKontoView.class));
         }

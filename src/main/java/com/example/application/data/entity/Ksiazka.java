@@ -1,7 +1,6 @@
 package com.example.application.data.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
 
 @Entity
 public class Ksiazka {

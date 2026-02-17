@@ -1,6 +1,6 @@
 package com.example.application.views.uzytkownicy;
 
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.entity.Wypozyczenie;
 import com.example.application.data.service.RentalService;
 import com.example.application.data.service.UserService;
@@ -38,7 +38,7 @@ public class UzytkownicyView extends VerticalLayout {
     private final UserService userService;
     private final RentalService rentalService;
 
-    private final Grid<Uzytkownicy> grid = new Grid<>(Uzytkownicy.class);
+    private final Grid<Uzytkownik> grid = new Grid<>(Uzytkownik.class);
     private final TextField filterText = new TextField();
     private UzytkownicyForm form;
 
@@ -90,7 +90,7 @@ public class UzytkownicyView extends VerticalLayout {
         grid.asSingleSelect().addValueChangeListener(event -> editUzytkownik(event.getValue()));
     }
 
-    private void openStatsDialog(Uzytkownicy uzytkownik) {
+    private void openStatsDialog(Uzytkownik uzytkownik) {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Statystyki użytkownika");
         dialog.setWidth("800px");
@@ -242,7 +242,7 @@ public class UzytkownicyView extends VerticalLayout {
         closeEditor();
     }
 
-    public void editUzytkownik(Uzytkownicy uzytkownik) {
+    public void editUzytkownik(Uzytkownik uzytkownik) {
         if (uzytkownik == null) {
             closeEditor();
         } else {
@@ -254,7 +254,7 @@ public class UzytkownicyView extends VerticalLayout {
 
     private void addUzytkownik() {
         grid.asSingleSelect().clear();
-        editUzytkownik(new Uzytkownicy());
+        editUzytkownik(new Uzytkownik());
     }
 
     private void closeEditor() {

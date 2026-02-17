@@ -1,5 +1,5 @@
 package com.example.application.views.pracownicy;
-import com.example.application.data.entity.Pracownicy;
+import com.example.application.data.entity.Pracownik;
 import com.example.application.data.service.UserService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Component;
@@ -26,7 +26,7 @@ public class PracownicyView extends VerticalLayout {
 
     private final UserService userService;
 
-    private final Grid<Pracownicy> grid = new Grid<>(Pracownicy.class);
+    private final Grid<Pracownik> grid = new Grid<>(Pracownik.class);
     private final TextField filterText = new TextField();
     private PracownicyForm form;
 
@@ -48,7 +48,7 @@ public class PracownicyView extends VerticalLayout {
         grid.setSizeFull();
         grid.setColumns("imie", "nazwisko", "email", "nrTelefonu");
 
-        grid.addColumn(Pracownicy::getRoleAsString)
+        grid.addColumn(Pracownik::getRoleAsString)
                 .setHeader("Role")
                 .setSortable(false);
 
@@ -112,11 +112,11 @@ public class PracownicyView extends VerticalLayout {
         return content;
     }
 
-    public void editPracownicy(Pracownicy pracownicy) {
-        if (pracownicy == null) {
+    public void editPracownicy(Pracownik pracownik) {
+        if (pracownik == null) {
             closeEditor();
         } else {
-            form.setPracownicy(pracownicy);
+            form.setPracownicy(pracownik);
             form.setVisible(true);
             addClassName("editing");
         }
@@ -130,7 +130,7 @@ public class PracownicyView extends VerticalLayout {
 
     private void addPracownicy() {
         grid.asSingleSelect().clear();
-        editPracownicy(new Pracownicy());
+        editPracownicy(new Pracownik());
     }
 
     private void updateList() {

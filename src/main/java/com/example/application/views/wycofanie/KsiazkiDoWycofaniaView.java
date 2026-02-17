@@ -1,7 +1,7 @@
 package com.example.application.views.wycofanie;
 
 import com.example.application.data.entity.Ksiazka;
-import com.example.application.data.entity.Pracownicy;
+import com.example.application.data.entity.Pracownik;
 import com.example.application.data.service.BookService;
 import com.example.application.data.service.RentalService;
 import com.example.application.data.service.UserService;
@@ -97,7 +97,7 @@ public class KsiazkiDoWycofaniaView extends VerticalLayout {
                     }
 
                     UserDetails userDetails = securityService.getAuthenticatedUser();
-                    Pracownicy kierownik = userService.findPracownikByEmail(userDetails.getUsername());
+                    Pracownik kierownik = userService.findPracownikByEmail(userDetails.getUsername());
 
                     rentalService.wycofajKsiazke(ksiazka, kierownik, powodField.getValue());
 

@@ -18,9 +18,9 @@ import com.vaadin.flow.server.StreamResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.time.format.DateTimeFormatter;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 /**

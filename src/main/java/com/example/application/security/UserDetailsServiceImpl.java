@@ -1,9 +1,10 @@
 package com.example.application.security;
 
-import com.example.application.data.entity.Pracownicy;
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Pracownik;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.repository.PracownicyRepository;
 import com.example.application.data.repository.UzytkownicyRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -11,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +32,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Pracownicy pracownik = pracownicyRepository.findByEmail(username);
+        Pracownik pracownik = pracownicyRepository.findByEmail(username);
         if (pracownik != null) {
             List<GrantedAuthority> authorities = pracownik.getRole().stream()
                     .map(rola -> new SimpleGrantedAuthority("ROLE_" + rola.getName().toUpperCase()))
@@ -49,7 +49,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             );
         }
 
-        Uzytkownicy uzytkownik = uzytkownicyRepository.findByEmail(username);
+        Uzytkownik uzytkownik = uzytkownicyRepository.findByEmail(username);
         if (uzytkownik != null) {
             return new User(
                     uzytkownik.getEmail(),

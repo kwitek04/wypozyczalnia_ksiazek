@@ -1,6 +1,6 @@
 package com.example.application.views.oczekujacekonta;
 
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.service.UserService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
@@ -19,7 +19,7 @@ import jakarta.annotation.security.RolesAllowed;
 public class OczekujaceKontaView extends VerticalLayout {
 
     private final UserService userService;
-    private final Grid<Uzytkownicy> grid = new Grid<>(Uzytkownicy.class);
+    private final Grid<Uzytkownik> grid = new Grid<>(Uzytkownik.class);
 
     public OczekujaceKontaView(UserService userService) {
         this.userService = userService;

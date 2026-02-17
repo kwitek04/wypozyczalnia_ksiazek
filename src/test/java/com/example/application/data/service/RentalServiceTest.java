@@ -41,7 +41,7 @@ class RentalServiceTest {
     @InjectMocks
     private RentalService rentalService;
 
-    private Uzytkownicy uzytkownik;
+    private Uzytkownik uzytkownik;
     private Ksiazka ksiazka;
 
     /**
@@ -49,7 +49,7 @@ class RentalServiceTest {
      */
     @BeforeEach
     void setUp() {
-        uzytkownik = new Uzytkownicy();
+        uzytkownik = new Uzytkownik();
         uzytkownik.setId(1L);
         uzytkownik.setEmail("test@test.pl");
 

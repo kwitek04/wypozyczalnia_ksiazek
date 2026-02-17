@@ -2,16 +2,13 @@ package com.example.application.views.katalog;
 
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.StatusKsiazki;
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.service.RentalService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -19,7 +16,6 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 
 import java.io.ByteArrayInputStream;
 import java.util.stream.Collectors;
@@ -31,10 +27,10 @@ import java.util.stream.Collectors;
 public class KsiazkaDetailsDialog extends Dialog {
 
     private final RentalService rentalService;
-    private final Uzytkownicy currentUser;
+    private final Uzytkownik currentUser;
     private final Ksiazka ksiazka;
 
-    public KsiazkaDetailsDialog(Ksiazka ksiazka, RentalService rentalService, Uzytkownicy currentUser) {
+    public KsiazkaDetailsDialog(Ksiazka ksiazka, RentalService rentalService, Uzytkownik currentUser) {
         this.ksiazka = ksiazka;
         this.rentalService = rentalService;
         this.currentUser = currentUser;

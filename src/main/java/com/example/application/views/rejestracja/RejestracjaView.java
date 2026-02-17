@@ -1,6 +1,6 @@
 package com.example.application.views.rejestracja;
 
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.service.UserService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -27,7 +27,7 @@ import java.util.Locale;
 public class RejestracjaView extends VerticalLayout {
 
     private final UserService userService;
-    private final Binder<Uzytkownicy> binder = new BeanValidationBinder<>(Uzytkownicy.class);
+    private final Binder<Uzytkownik> binder = new BeanValidationBinder<>(Uzytkownik.class);
 
     TextField imie = new TextField("Imię");
     TextField nazwisko = new TextField("Nazwisko");
@@ -64,7 +64,7 @@ public class RejestracjaView extends VerticalLayout {
 
         add(title, formLayout);
 
-        binder.setBean(new Uzytkownicy());
+        binder.setBean(new Uzytkownik());
     }
 
     private void zarejestruj() {

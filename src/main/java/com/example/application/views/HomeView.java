@@ -2,7 +2,7 @@ package com.example.application.views;
 
 import com.example.application.data.entity.Ksiazka;
 import com.example.application.data.entity.Tlumacz;
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.service.BookService;
 import com.example.application.data.service.RentalService;
 import com.example.application.data.service.UserService;
@@ -22,8 +22,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Set;
@@ -46,7 +46,7 @@ public class HomeView extends VerticalLayout {
 
     private final Grid<Ksiazka> grid = new Grid<>(Ksiazka.class);
     private final TextField searchField = new TextField();
-    private Uzytkownicy currentUser;
+    private Uzytkownik currentUser;
 
     public HomeView(BookService bookService, UserService userService, RentalService rentalService, SecurityService securityService) {
         this.bookService = bookService;

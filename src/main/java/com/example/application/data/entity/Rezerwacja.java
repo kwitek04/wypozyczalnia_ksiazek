@@ -1,6 +1,7 @@
 package com.example.application.data.entity;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ public class Rezerwacja {
 
     @ManyToOne
     @JoinColumn(name = "uzytkownik_id")
-    private Uzytkownicy uzytkownik;
+    private Uzytkownik uzytkownik;
 
     private LocalDate dataRezerwacji;
     private LocalDate waznaDo;
@@ -29,7 +30,7 @@ public class Rezerwacja {
 
     public Rezerwacja() {}
 
-    public Rezerwacja(Uzytkownicy uzytkownik) {
+    public Rezerwacja(Uzytkownik uzytkownik) {
         this.uzytkownik = uzytkownik;
         this.dataRezerwacji = LocalDate.now();
         this.waznaDo = LocalDate.now().plusDays(3);
@@ -39,8 +40,8 @@ public class Rezerwacja {
     // Gettery i Settery
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public Uzytkownicy getUzytkownik() { return uzytkownik; }
-    public void setUzytkownik(Uzytkownicy uzytkownik) { this.uzytkownik = uzytkownik; }
+    public Uzytkownik getUzytkownik() { return uzytkownik; }
+    public void setUzytkownik(Uzytkownik uzytkownik) { this.uzytkownik = uzytkownik; }
     public LocalDate getDataRezerwacji() { return dataRezerwacji; }
     public void setDataRezerwacji(LocalDate dataRezerwacji) { this.dataRezerwacji = dataRezerwacji; }
     public LocalDate getWaznaDo() { return waznaDo; }

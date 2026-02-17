@@ -1,6 +1,6 @@
 package com.example.application.views.kary;
 
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.entity.Wypozyczenie;
 import com.example.application.data.service.RentalService;
 import com.example.application.data.service.UserService;
@@ -91,7 +91,7 @@ public class KaryView extends VerticalLayout {
     private void updateView() {
         UserDetails userDetails = securityService.getAuthenticatedUser();
         if (userDetails != null) {
-            Uzytkownicy u = userService.findUzytkownikByEmail(userDetails.getUsername());
+            Uzytkownik u = userService.findUzytkownikByEmail(userDetails.getUsername());
             if (u != null) {
                 var listaKar = rentalService.findWypozyczeniaZKarami(u);
                 grid.setItems(listaKar);

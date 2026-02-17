@@ -1,6 +1,6 @@
 package com.example.application.data.service;
 
-import com.example.application.data.entity.Pracownicy;
+import com.example.application.data.entity.Pracownik;
 import com.example.application.data.entity.Rola;
 import com.example.application.data.repository.PracownicyRepository;
 import com.example.application.data.repository.RolaRepository;
@@ -38,7 +38,7 @@ public class DataInit implements CommandLineRunner {
 
 
         if (pracownicyRepository.count() == 0) {
-            Pracownicy admin = new Pracownicy();
+            Pracownik admin = new Pracownik();
             admin.setImie("Admin");
             admin.setNazwisko("Admin");
             admin.setEmail("admin@admin.pl");

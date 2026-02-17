@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDate;
 
 @Entity
@@ -18,7 +19,7 @@ public class Wycofanie extends AbstractEntity {
     @ManyToOne
     @JoinColumn(name = "pracownik_id")
     @NotNull
-    private Pracownicy pracownik;
+    private Pracownik pracownik;
 
     private LocalDate dataWycofania;
 
@@ -26,7 +27,7 @@ public class Wycofanie extends AbstractEntity {
 
     public Wycofanie() {}
 
-    public Wycofanie(Ksiazka ksiazka, Pracownicy pracownik, LocalDate dataWycofania, String powod) {
+    public Wycofanie(Ksiazka ksiazka, Pracownik pracownik, LocalDate dataWycofania, String powod) {
         this.ksiazka = ksiazka;
         this.pracownik = pracownik;
         this.dataWycofania = dataWycofania;
@@ -37,8 +38,8 @@ public class Wycofanie extends AbstractEntity {
     public Ksiazka getKsiazka() { return ksiazka; }
     public void setKsiazka(Ksiazka ksiazka) { this.ksiazka = ksiazka; }
 
-    public Pracownicy getPracownik() { return pracownik; }
-    public void setPracownik(Pracownicy pracownik) { this.pracownik = pracownik; }
+    public Pracownik getPracownik() { return pracownik; }
+    public void setPracownik(Pracownik pracownik) { this.pracownik = pracownik; }
 
     public LocalDate getDataWycofania() { return dataWycofania; }
     public void setDataWycofania(LocalDate dataWycofania) { this.dataWycofania = dataWycofania; }

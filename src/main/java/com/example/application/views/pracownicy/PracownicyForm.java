@@ -1,30 +1,28 @@
 package com.example.application.views.pracownicy;
 
+import com.example.application.data.entity.Pracownik;
 import com.example.application.data.entity.Rola;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.PasswordField;
-import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.example.application.data.entity.Pracownicy;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.shared.Registration;
 
 import java.util.List;
 
 public class PracownicyForm extends FormLayout {
-    private Pracownicy pracownicy;
+    private Pracownik pracownik;
     TextField imie = new TextField("Imie");
     TextField nazwisko = new TextField("Nazwisko");
     TextField nrTelefonu = new TextField("Numer telefonu");
@@ -36,23 +34,23 @@ public class PracownicyForm extends FormLayout {
     Button save = new Button("Zapisz");
     Button delete = new Button("Usuń");
     Button close = new Button("Anuluj");
-    Binder<Pracownicy> binder = new BeanValidationBinder<>(Pracownicy.class);
+    Binder<Pracownik> binder = new BeanValidationBinder<>(Pracownik.class);
 
-    public void setPracownicy(Pracownicy pracownicy) {
-        this.pracownicy = pracownicy;
-        binder.readBean(pracownicy);
+    public void setPracownicy(Pracownik pracownik) {
+        this.pracownik = pracownik;
+        binder.readBean(pracownik);
 
-        if (pracownicy != null) {
+        if (pracownik != null) {
             this.setEnabled(true);
             lockBtn.setEnabled(true);
-            lockBtn.setVisible(pracownicy.getId() != null);
+            lockBtn.setVisible(pracownik.getId() != null);
 
             updateStatusButton();
         }
     }
 
     private void updateStatusButton() {
-        if (pracownicy.isEnabled()) {
+        if (pracownik.isEnabled()) {
             lockBtn.setText("Zablokuj");
             lockBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
             lockBtn.removeThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
@@ -65,16 +63,16 @@ public class PracownicyForm extends FormLayout {
     }
 
     private void toggleStatus() {
-        if (pracownicy != null) {
-            pracownicy.setEnabled(!pracownicy.isEnabled());
+        if (pracownik != null) {
+            pracownik.setEnabled(!pracownik.isEnabled());
             updateStatusButton();
-            fireEvent(new SaveEvent(this, pracownicy));
-            Notification.show(pracownicy.isEnabled() ? "Pracownik odblokowany" : "Pracownik zablokowany");
+            fireEvent(new SaveEvent(this, pracownik));
+            Notification.show(pracownik.isEnabled() ? "Pracownik odblokowany" : "Pracownik zablokowany");
         }
     }
 
     public PracownicyForm(List<Rola> dostepneRole) {
-        addClassName("pracownicy-form");
+        addClassName("pracownik-form");
 
         role.setItems(dostepneRole);
         role.setItemLabelGenerator(Rola::getName);
@@ -95,7 +93,7 @@ public class PracownicyForm extends FormLayout {
         close.addClickShortcut(Key.ESCAPE);
 
         save.addClickListener(event -> validateAndSave());
-        delete.addClickListener(event -> fireEvent(new DeleteEvent(this, pracownicy)));
+        delete.addClickListener(event -> fireEvent(new DeleteEvent(this, pracownik)));
         close.addClickListener(event -> fireEvent(new CloseEvent(this)));
         binder.addStatusChangeListener(e -> save.setEnabled(binder.isValid()));
         return new HorizontalLayout(save, delete, close);
@@ -103,35 +101,36 @@ public class PracownicyForm extends FormLayout {
 
     private void validateAndSave() {
         try {
-            binder.writeBean(pracownicy);
-            fireEvent(new SaveEvent(this, pracownicy));
+            binder.writeBean(pracownik);
+            fireEvent(new SaveEvent(this, pracownik));
         } catch (ValidationException e) {
-            e.printStackTrace();
+            Notification.show("Sprawdź poprawność danych w formularzu")
+                    .addThemeVariants(com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR);
         }
     }
 
     public static abstract class PracownicyFormEvent extends ComponentEvent<PracownicyForm> {
-        private Pracownicy pracownicy;
+        private Pracownik pracownik;
 
-        protected PracownicyFormEvent(PracownicyForm source, Pracownicy pracownicy) {
+        protected PracownicyFormEvent(PracownicyForm source, Pracownik pracownik) {
             super(source, false);
-            this.pracownicy = pracownicy;
+            this.pracownik = pracownik;
         }
 
-        public Pracownicy getPracownicy() {
-            return pracownicy;
+        public Pracownik getPracownicy() {
+            return pracownik;
         }
     }
 
     public static class SaveEvent extends PracownicyFormEvent {
-        SaveEvent(PracownicyForm source, Pracownicy pracownicy) {
-            super(source, pracownicy);
+        SaveEvent(PracownicyForm source, Pracownik pracownik) {
+            super(source, pracownik);
         }
     }
 
     public static class DeleteEvent extends PracownicyFormEvent {
-        DeleteEvent(PracownicyForm source, Pracownicy pracownicy) {
-            super(source, pracownicy);
+        DeleteEvent(PracownicyForm source, Pracownik pracownik) {
+            super(source, pracownik);
         }
 
     }

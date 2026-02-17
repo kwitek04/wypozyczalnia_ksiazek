@@ -1,10 +1,6 @@
 package com.example.application.views.rezerwacje;
 
-import com.example.application.data.entity.Ksiazka;
-import com.example.application.data.entity.Rezerwacja;
-import com.example.application.data.entity.StatusRezerwacji;
-import com.example.application.data.entity.Uzytkownicy;
-import com.example.application.data.entity.ZarezerwowanaKsiazka;
+import com.example.application.data.entity.*;
 import com.example.application.data.service.RentalService;
 import com.example.application.data.service.UserService;
 import com.example.application.security.SecurityService;
@@ -146,7 +142,7 @@ public class MojeRezerwacjeView extends VerticalLayout {
     private void odbierzRezerwacje(Rezerwacja rezerwacja) {
         try {
             String username = securityService.getAuthenticatedUser().getUsername();
-            Uzytkownicy currentUser = userService.findUzytkownikByEmail(username);
+            Uzytkownik currentUser = userService.findUzytkownikByEmail(username);
 
             for (ZarezerwowanaKsiazka zk : rezerwacja.getZarezerwowaneKsiazki()) {
                 Ksiazka ksiazka = zk.getKsiazka();
@@ -166,7 +162,7 @@ public class MojeRezerwacjeView extends VerticalLayout {
 
     private void updateList() {
         String username = securityService.getAuthenticatedUser().getUsername();
-        Uzytkownicy uzytkownik = userService.findUzytkownikByEmail(username);
+        Uzytkownik uzytkownik = userService.findUzytkownikByEmail(username);
 
         if (uzytkownik != null) {
             grid.setItems(rentalService.findRezerwacjeByUser(uzytkownik));

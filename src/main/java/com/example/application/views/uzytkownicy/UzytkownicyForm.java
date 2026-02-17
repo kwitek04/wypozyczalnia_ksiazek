@@ -1,6 +1,6 @@
 package com.example.application.views.uzytkownicy;
 
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Uzytkownik;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -21,7 +21,7 @@ import com.vaadin.flow.shared.Registration;
 import java.util.Locale;
 
 public class UzytkownicyForm extends FormLayout {
-    private Uzytkownicy uzytkownik;
+    private Uzytkownik uzytkownik;
 
     TextField imie = new TextField("Imię");
     TextField nazwisko = new TextField("Nazwisko");
@@ -35,7 +35,7 @@ public class UzytkownicyForm extends FormLayout {
     Button close = new Button("Anuluj");
     Button lockBtn = new Button();
 
-    Binder<Uzytkownicy> binder = new BeanValidationBinder<>(Uzytkownicy.class);
+    Binder<Uzytkownik> binder = new BeanValidationBinder<>(Uzytkownik.class);
 
     public UzytkownicyForm() {
         addClassName("uzytkownicy-form");
@@ -48,7 +48,7 @@ public class UzytkownicyForm extends FormLayout {
         lockBtn.addClickListener(event -> toggleLock());
     }
 
-    public void setUzytkownik(Uzytkownicy uzytkownik) {
+    public void setUzytkownik(Uzytkownik uzytkownik) {
         this.uzytkownik = uzytkownik;
         binder.readBean(uzytkownik);
 
@@ -102,31 +102,35 @@ public class UzytkownicyForm extends FormLayout {
             binder.writeBean(uzytkownik);
             fireEvent(new SaveEvent(this, uzytkownik));
         } catch (ValidationException e) {
-            e.printStackTrace();
+            Notification.show("Sprawdź poprawność danych w formularzu")
+                    .addThemeVariants(com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR);
+        } catch (Exception e) {
+            Notification.show("Wystąpił nieoczekiwany błąd podczas zapisu: " + e.getMessage())
+                    .addThemeVariants(com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR);
         }
     }
 
     public static abstract class UzytkownicyFormEvent extends ComponentEvent<UzytkownicyForm> {
-        private Uzytkownicy uzytkownik;
+        private Uzytkownik uzytkownik;
 
-        protected UzytkownicyFormEvent(UzytkownicyForm source, Uzytkownicy uzytkownik) {
+        protected UzytkownicyFormEvent(UzytkownicyForm source, Uzytkownik uzytkownik) {
             super(source, false);
             this.uzytkownik = uzytkownik;
         }
 
-        public Uzytkownicy getUzytkownik() {
+        public Uzytkownik getUzytkownik() {
             return uzytkownik;
         }
     }
 
     public static class SaveEvent extends UzytkownicyFormEvent {
-        SaveEvent(UzytkownicyForm source, Uzytkownicy uzytkownik) {
+        SaveEvent(UzytkownicyForm source, Uzytkownik uzytkownik) {
             super(source, uzytkownik);
         }
     }
 
     public static class DeleteEvent extends UzytkownicyFormEvent {
-        DeleteEvent(UzytkownicyForm source, Uzytkownicy uzytkownik) {
+        DeleteEvent(UzytkownicyForm source, Uzytkownik uzytkownik) {
             super(source, uzytkownik);
         }
     }

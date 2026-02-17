@@ -4,16 +4,15 @@ import com.example.application.data.repository.AbstractEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
-public class Pracownicy extends AbstractEntity {
+public class Pracownik extends AbstractEntity {
 
     @NotEmpty
     @Size(max = 15, message = "Imię może mieć maksymalnie 15 znaków")

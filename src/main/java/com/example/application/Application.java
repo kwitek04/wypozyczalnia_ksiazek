@@ -5,12 +5,6 @@ import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.theme.Theme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import com.example.application.data.entity.Pracownicy;
-import com.example.application.data.repository.PracownicyRepository;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.password.PasswordEncoder;
 /**
  * The entry point of the Spring Boot application.
  *

@@ -1,7 +1,7 @@
 package com.example.application.views.mojekonto;
 
-import com.example.application.data.entity.Pracownicy;
-import com.example.application.data.entity.Uzytkownicy;
+import com.example.application.data.entity.Pracownik;
+import com.example.application.data.entity.Uzytkownik;
 import com.example.application.data.repository.PracownicyRepository;
 import com.example.application.data.repository.UzytkownicyRepository;
 import com.example.application.data.service.UserService;
@@ -32,8 +32,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class MojeKontoView extends VerticalLayout {
 
     private final UserService userService;
-    private Uzytkownicy currentUser;
-    private Pracownicy currentWorker;
+    private Uzytkownik currentUser;
+    private Pracownik currentWorker;
 
     public MojeKontoView(SecurityService securityService,
                          PracownicyRepository pracownicyRepository,
@@ -50,14 +50,14 @@ public class MojeKontoView extends VerticalLayout {
         String phone = "";
         String role = "";
 
-        Pracownicy p = pracownicyRepository.findByEmail(email);
+        Pracownik p = pracownicyRepository.findByEmail(email);
         if (p != null) {
             currentWorker = p;
             fullName = p.getImie() + " " + p.getNazwisko();
             phone = p.getNrTelefonu();
             role = "Pracownik (" + p.getRoleAsString() + ")";
         } else {
-            Uzytkownicy u = uzytkownicyRepository.findByEmail(email);
+            Uzytkownik u = uzytkownicyRepository.findByEmail(email);
             if (u != null) {
                 currentUser = u;
                 fullName = u.getImie() + " " + u.getNazwisko();
