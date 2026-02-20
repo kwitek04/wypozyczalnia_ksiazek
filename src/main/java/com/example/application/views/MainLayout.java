@@ -26,6 +26,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.component.sidenav.SideNav;
+import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 
 public class MainLayout extends AppLayout {
@@ -40,15 +42,70 @@ public class MainLayout extends AppLayout {
     }
 
     private void createHeader() {
-        H1 logo = new H1("Wypożyczalnia książek");
-        logo.addClassNames("text-xl", "m-m");
+        RouterLink logo = new RouterLink("Wypożyczalnia książek", com.example.application.views.HomeView.class);
 
+        logo.addClassNames("text-2xl", "m-m", "logo-link");
         logo.getStyle().set("position", "absolute");
         logo.getStyle().set("left", "50%");
         logo.getStyle().set("transform", "translateX(-50%)");
         logo.getStyle().set("margin", "0");
+        logo.getStyle().set("font-weight", "bold");
+        logo.getStyle().set("text-decoration", "none");
+        logo.getStyle().set("color", "var(--lumo-body-text-color)");
+
+        Div themeToggle = new Div();
+        themeToggle.addClassName("theme-toggle");
+        themeToggle.getElement().setAttribute("title", "Zmień motyw");
+
+        Icon sunIcon = VaadinIcon.SUN_O.create();
+        sunIcon.addClassName("toggle-icon-sun");
+
+        Icon moonIcon = VaadinIcon.MOON.create();
+        moonIcon.addClassName("toggle-icon-moon");
+
+        Div themeThumb = new Div();
+        themeThumb.addClassName("theme-toggle-thumb");
+
+        themeToggle.add(sunIcon, moonIcon, themeThumb);
+
+        themeToggle.addClickListener(e -> {
+            getUI().ifPresent(ui -> ui.getPage().executeJs(
+                    "const isDark = document.documentElement.getAttribute('theme') === 'dark';" +
+                            "if (isDark) {" +
+                            "  document.documentElement.removeAttribute('theme');" +
+                            "  localStorage.setItem('theme', 'light');" +
+                            "} else {" +
+                            "  document.documentElement.setAttribute('theme', 'dark');" +
+                            "  localStorage.setItem('theme', 'dark');" +
+                            "}" +
+                            "return !isDark;"
+            ).then(Boolean.class, isDark -> {
+                if (isDark) {
+                    themeToggle.addClassName("dark");
+                } else {
+                    themeToggle.removeClassName("dark");
+                }
+            }));
+        });
+
+        getUI().ifPresent(ui -> ui.getPage().executeJs(
+                "const theme = localStorage.getItem('theme');" +
+                        "if (theme === 'dark') {" +
+                        "  document.documentElement.setAttribute('theme', 'dark');" +
+                        "  return true;" +
+                        "} return false;"
+        ).then(Boolean.class, isDark -> {
+            if (Boolean.TRUE.equals(isDark)) {
+                themeToggle.addClassName("dark");
+            }
+        }));
 
         Div buttons = new Div();
+        buttons.getStyle().set("display", "flex");
+        buttons.getStyle().set("align-items", "center");
+
+        buttons.add(themeToggle);
+
         if (authContext.isAuthenticated()) {
             Button logout = new Button("Wyloguj się", new Icon(VaadinIcon.SIGN_OUT), e -> authContext.logout());
             logout.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
@@ -74,46 +131,42 @@ public class MainLayout extends AppLayout {
     }
 
     private void createDrawer() {
-        VerticalLayout menu = new VerticalLayout();
+        SideNav nav = new SideNav();
 
-        // Gość i wszyscy inni użytkownicy
-        menu.add(new RouterLink("Strona główna", com.example.application.views.HomeView.class));
-        menu.add(new RouterLink("Katalog", com.example.application.views.katalog.KatalogView.class));
+        nav.addItem(new SideNavItem("Strona główna", com.example.application.views.HomeView.class, VaadinIcon.HOME.create()));
+        nav.addItem(new SideNavItem("Katalog", com.example.application.views.katalog.KatalogView.class, VaadinIcon.BOOK.create()));
 
-        // Uzytkownik zalogowani i pracownicy
         if (authContext.isAuthenticated()) {
-            menu.add(new RouterLink("Moje konto", MojeKontoView.class));
+            nav.addItem(new SideNavItem("Moje konto", MojeKontoView.class, VaadinIcon.USER.create()));
         }
 
-        // Użytkownicy zalogowani
         if (authContext.isAuthenticated() && authContext.hasRole("USER")) {
-            menu.add(new RouterLink("Moje wypożyczenia", MojeWypozyczeniaView.class));
-            menu.add(new RouterLink("Moje rezerwacje", MojeRezerwacjeView.class));
-            menu.add(new RouterLink("Kary i opłaty", KaryView.class));
+            nav.addItem(new SideNavItem("Moje wypożyczenia", MojeWypozyczeniaView.class, VaadinIcon.ARCHIVE.create()));
+            nav.addItem(new SideNavItem("Moje rezerwacje", MojeRezerwacjeView.class, VaadinIcon.CLOCK.create()));
+            nav.addItem(new SideNavItem("Kary i opłaty", KaryView.class, VaadinIcon.MONEY.create()));
         }
 
-        // Bibliotekarz
         if (authContext.isAuthenticated() && (authContext.hasRole("BIBLIOTEKARZ"))) {
-            menu.add(new RouterLink("Zarządzanie Książkami", KsiazkiView.class));
-            menu.add(new RouterLink("Zarządzanie Użytkownikami", UzytkownicyView.class));
-            menu.add(new RouterLink("Zarządzanie wypożyczeniami", ZarzadzanieWypozyczeniamiView.class));
-            menu.add(new RouterLink("Konta do aktywacji", OczekujaceKontaView.class));
+            nav.addItem(new SideNavItem("Zarządzanie Książkami", KsiazkiView.class, VaadinIcon.BOOK.create()));
+            nav.addItem(new SideNavItem("Zarządzanie Użytkownikami", UzytkownicyView.class, VaadinIcon.USERS.create()));
+            nav.addItem(new SideNavItem("Zarządzanie wypożyczeniami", ZarzadzanieWypozyczeniamiView.class, VaadinIcon.EXCHANGE.create()));
+            nav.addItem(new SideNavItem("Konta do aktywacji", OczekujaceKontaView.class, VaadinIcon.CHECK_SQUARE_O.create()));
         }
 
-        // Kierownik
         if (authContext.isAuthenticated() && authContext.hasRole("KIEROWNIK")) {
-            menu.add(new RouterLink("Zarządzanie pracownikami", PracownicyView.class));
-            menu.add(new RouterLink("Książki do wycofania", KsiazkiDoWycofaniaView.class));
-            menu.add(new RouterLink("Statystyki globalne wypożyczalni", StatystykiView.class));
-            menu.add(new RouterLink("Dziedziny i poddziedziny", DziedzinaView.class));
+            nav.addItem(new SideNavItem("Zarządzanie pracownikami", PracownicyView.class, VaadinIcon.BRIEFCASE.create()));
+            nav.addItem(new SideNavItem("Książki do wycofania", KsiazkiDoWycofaniaView.class, VaadinIcon.TRASH.create()));
+            nav.addItem(new SideNavItem("Statystyki globalne", StatystykiView.class, VaadinIcon.CHART.create()));
+            nav.addItem(new SideNavItem("Dziedziny i poddziedziny", DziedzinaView.class, VaadinIcon.SITEMAP.create()));
         }
 
-        // Magazynier
         if (authContext.isAuthenticated() && (authContext.hasRole("MAGAZYNIER"))) {
-            menu.add(new RouterLink("Kontrola stanu książek", KontrolaStanuView.class));
-            menu.add(new RouterLink("Książki do odłożenia", KsiazkiDoOdlozeniaView.class));
+            nav.addItem(new SideNavItem("Kontrola stanu", KontrolaStanuView.class, VaadinIcon.CLIPBOARD_CHECK.create()));
+            nav.addItem(new SideNavItem("Książki do odłożenia", KsiazkiDoOdlozeniaView.class, VaadinIcon.INBOX.create()));
         }
 
-        addToDrawer(menu);
+        nav.getStyle().set("padding", "10px");
+
+        addToDrawer(nav);
     }
 }

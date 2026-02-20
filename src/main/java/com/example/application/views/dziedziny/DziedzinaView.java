@@ -60,7 +60,7 @@ public class DziedzinaView extends VerticalLayout {
     private void configureGrid() {
         grid.setColumns("nazwa");
         grid.addColumn(d -> d.getPoddziedziny() != null ? d.getPoddziedziny().size() : 0)
-                .setHeader("Liczba poddziedzin");
+                .setHeader("Liczba poddziedzin").setSortable(true);
 
         grid.asSingleSelect().addValueChangeListener(e -> {
             if (e.getValue() != null) {

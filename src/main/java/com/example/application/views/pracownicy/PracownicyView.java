@@ -50,7 +50,7 @@ public class PracownicyView extends VerticalLayout {
 
         grid.addColumn(Pracownik::getRoleAsString)
                 .setHeader("Role")
-                .setSortable(false);
+                .setSortable(true);
 
         grid.addColumn(p -> p.isEnabled() ? "Aktywne" : "Zablokowane")
                 .setHeader("Status konta")
@@ -58,10 +58,10 @@ public class PracownicyView extends VerticalLayout {
 
         grid.addComponentColumn(pracownik -> {
             Button editBtn = new Button(new Icon(VaadinIcon.EDIT));
-            editBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+            editBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
             editBtn.addClickListener(e -> editPracownicy(pracownik));
             return editBtn;
-        }).setWidth("70px").setFlexGrow(0);
+        }).setHeader("Akcje").setAutoWidth(true).setFlexGrow(0);
 
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
 

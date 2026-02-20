@@ -226,8 +226,8 @@ public class KatalogView extends VerticalLayout {
         } else {
             coverImage = new Image("https://placehold.co/100x150?text=Brak+okładki", "Brak okładki");
         }
-        coverImage.setWidth("100px");
-        coverImage.setHeight("150px");
+        coverImage.setWidth("120px");
+        coverImage.setHeight("180px");
         coverImage.getStyle().set("border-radius", "5px").set("object-fit", "cover");
         coverImage.getStyle().set("box-shadow", "0 4px 6px rgba(0,0,0,0.1)");
 
@@ -236,7 +236,7 @@ public class KatalogView extends VerticalLayout {
         details.setPadding(false);
 
         H3 tytul = new H3(ksiazka.getDaneKsiazki().getTytul());
-        tytul.getStyle().set("margin", "0 0 5px 0").set("color", "#2c3e50");
+        tytul.getStyle().set("margin", "0 0 5px 0");
 
         String autorzyStr = ksiazka.getDaneKsiazki().getAutorzy().stream()
                 .map(a -> a.getImie() + " " + a.getNazwisko())
@@ -267,7 +267,7 @@ public class KatalogView extends VerticalLayout {
         VerticalLayout rightSide = new VerticalLayout(spacer, statusBadge);
         rightSide.setSpacing(false);
         rightSide.setPadding(false);
-        rightSide.setHeight("150px");
+        rightSide.setHeight("180px");
         rightSide.setAlignItems(Alignment.END);
         rightSide.setJustifyContentMode(JustifyContentMode.END);
 

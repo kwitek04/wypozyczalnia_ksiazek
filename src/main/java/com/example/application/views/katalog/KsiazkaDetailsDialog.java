@@ -91,7 +91,7 @@ public class KsiazkaDetailsDialog extends Dialog {
 
         Paragraph opis = new Paragraph(ksiazka.getDaneKsiazki().getOpis() != null ?
                 ksiazka.getDaneKsiazki().getOpis() : "Brak opisu dla tej pozycji.");
-        opis.getStyle().set("text-align", "justify").set("line-height", "1.6");
+        opis.getStyle().set("text-align", "justify").set("line-height", "1.6").set("white-space", "pre-wrap");
 
         Button btnWypozycz = new Button("Wypożycz", VaadinIcon.BOOK.create());
         btnWypozycz.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_LARGE);

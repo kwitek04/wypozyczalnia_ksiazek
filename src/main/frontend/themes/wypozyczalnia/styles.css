@@ -1,26 +1,343 @@
-@media all and (max-width: 1100px) {
-  .list-view.editing .toolbar,
-  .list-view.editing .contact-grid {
-    display: none;
-  }
-  .list-view.editing .pracownicy-grid {
-      display: none;
-    }
-}
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap&subset=latin-ext');
 
+/* Base & Variables */
 :root {
     --lumo-font-family: 'Inter', sans-serif;
+    --lumo-button-border-radius: 8px;
 }
 
 html, body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--lumo-font-family);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
 }
 
 a[highlight] {
     font-weight: bold;
     text-decoration: underline;
+}
+
+/* Dark Theme Overrides */
+[theme~="dark"] {
+    --lumo-base-color: #131314;
+    --lumo-surface-color: #1e1f20;
+    --lumo-body-text-color: #e3e3e3;
+    --lumo-secondary-text-color: #c4c7c5;
+    --lumo-contrast-5pct: rgba(255, 255, 255, 0.05);
+    --lumo-contrast-10pct: rgba(255, 255, 255, 0.1);
+    --lumo-contrast-20pct: rgba(255, 255, 255, 0.2);
+}
+
+[theme~="dark"] vaadin-app-layout::part(navbar),
+[theme~="dark"] vaadin-app-layout::part(drawer),
+[theme~="dark"] .book-card,
+[theme~="dark"] .card {
+    background-color: var(--lumo-surface-color);
+}
+
+/* App Layout & Header */
+vaadin-app-layout {
+    --vaadin-app-layout-drawer-width: 310px !important;
+}
+
+vaadin-app-layout::part(navbar),
+vaadin-app-layout::part(drawer),
+.card {
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+
+.logo-link {
+    transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
+.logo-link:hover {
+    opacity: 0.75;
+    transform: translateX(-50%) scale(1.02) !important;
+}
+
+.logo-link:active {
+    transform: translateX(-50%) scale(0.97) !important;
+}
+
+/* Theme Toggle Switch */
+.theme-toggle {
+    width: 60px;
+    height: 30px;
+    background-color: #dcdcdc;
+    border-radius: 15px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.4s ease;
+    margin-right: 15px;
+}
+
+.theme-toggle.dark {
+    background-color: #4a4a4a;
+}
+
+.toggle-icon-sun {
+    position: absolute;
+    left: 6px;
+    width: 16px;
+    height: 16px;
+    color: #f39c12;
+    transition: opacity 0.3s ease;
+}
+
+.toggle-icon-moon {
+    position: absolute;
+    right: 6px;
+    width: 16px;
+    height: 16px;
+    color: #ffffff;
+    transition: opacity 0.3s ease;
+}
+
+.theme-toggle.dark .toggle-icon-sun {
+    opacity: 0.2;
+}
+
+.theme-toggle:not(.dark) .toggle-icon-moon {
+    opacity: 0.3;
+    color: #888;
+}
+
+.theme-toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.2), background-color 0.4s ease;
+    z-index: 1;
+}
+
+.theme-toggle.dark .theme-toggle-thumb {
+    transform: translateX(30px);
+    background-color: #1a1a1a;
+}
+
+/* Side Navigation */
+vaadin-side-nav-item {
+    transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.2s ease !important;
+    border-radius: 8px;
+    margin-bottom: 2px;
+    overflow: hidden;
+}
+
+vaadin-side-nav-item:hover {
+    transform: translateX(8px);
+    background-color: var(--lumo-contrast-5pct);
+}
+
+vaadin-side-nav-item[current] {
+    transform: translateX(4px);
+    background-color: var(--lumo-primary-color-10pct);
+    font-weight: 600;
+    box-shadow: inset 4px 0 0 0 var(--lumo-primary-color);
+}
+
+[theme~="dark"] vaadin-side-nav-item[current] {
+    background-color: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 4px 0 0 0 var(--lumo-body-text-color);
+}
+
+/* Buttons & Drawer Toggle */
+vaadin-button,
+vaadin-drawer-toggle {
+    cursor: pointer !important;
+}
+
+vaadin-drawer-toggle {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease, box-shadow 0.2s ease !important;
+    border-radius: 8px;
+    margin-left: -7px;
+}
+
+vaadin-button {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, filter 0.2s ease !important;
+}
+
+vaadin-button[theme~="primary"],
+vaadin-button[theme~="success"],
+vaadin-button[theme~="error"] {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+vaadin-drawer-toggle:hover {
+    transform: translateY(-2px);
+    background-color: var(--lumo-contrast-5pct);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+vaadin-button[theme~="primary"]:hover,
+vaadin-button[theme~="success"]:hover,
+vaadin-button[theme~="error"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    filter: brightness(1.1);
+}
+
+vaadin-button:not([theme~="primary"]):not([theme~="success"]):not([theme~="error"]):hover {
+    transform: translateY(-1px);
+}
+
+vaadin-drawer-toggle:active {
+    transform: scale(0.9) translateY(1px) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+    background-color: var(--lumo-contrast-10pct) !important;
+}
+
+vaadin-button:active {
+    transform: scale(0.95) translateY(1px) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+    filter: brightness(0.9) !important;
+}
+
+[theme~="dark"] vaadin-drawer-toggle,
+[theme~="dark"] vaadin-button[theme~="tertiary"] {
+    color: var(--lumo-body-text-color) !important;
+}
+
+[theme~="dark"] vaadin-drawer-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+[theme~="dark"] vaadin-drawer-toggle:hover,
+[theme~="dark"] vaadin-button[theme~="tertiary"]:hover {
+    color: #ffffff !important;
+}
+
+/* Book Cards */
+.book-card {
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.3s ease, box-shadow 0.3s ease !important;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.book-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    background-color: var(--lumo-contrast-5pct);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.book-card:active {
+    transform: translateY(0) scale(0.98) !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+    background-color: var(--lumo-contrast-10pct) !important;
+}
+
+.book-cover-image {
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease !important;
+}
+
+.book-card:hover .book-cover-image {
+    transform: scale(1.06) translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+[theme~="dark"] .book-card:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+[theme~="dark"] .book-card:hover .book-cover-image {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+}
+
+/* Data Grids */
+.katalog-grid::part(header-cell),
+.katalog-books::part(header-cell) {
+    display: none !important;
+}
+
+vaadin-grid:not(.katalog-grid):not(.katalog-books) {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid var(--lumo-contrast-10pct) !important;
+    transition: box-shadow 0.3s ease !important;
+}
+
+vaadin-grid:not(.katalog-grid):not(.katalog-books):hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+vaadin-grid:not(.katalog-grid):not(.katalog-books)::part(header-cell) {
+    background-color: var(--lumo-contrast-5pct);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: var(--lumo-secondary-text-color);
+    border-bottom: 2px solid var(--lumo-contrast-10pct);
+}
+
+vaadin-grid:not(.katalog-grid):not(.katalog-books)::part(body-cell) {
+    background-color: transparent !important;
+}
+
+vaadin-grid[theme~="row-stripes"]:not(.katalog-grid):not(.katalog-books)::part(row):nth-child(even) {
+    background-color: var(--lumo-contrast-5pct);
+}
+
+vaadin-grid:not(.katalog-grid):not(.katalog-books)::part(row) {
+    transition: background-color 0.25s ease, box-shadow 0.2s ease !important;
+    cursor: pointer;
+}
+
+vaadin-grid:not(.katalog-grid):not(.katalog-books)::part(row):hover {
+    background-color: var(--lumo-primary-color-10pct) !important;
+    box-shadow: inset 4px 0 0 0 var(--lumo-primary-color) !important;
+}
+
+vaadin-grid:not(.katalog-grid):not(.katalog-books)::part(row)[selected] {
+    background-color: var(--lumo-primary-color-20pct) !important;
+    box-shadow: inset 4px 0 0 0 var(--lumo-primary-color) !important;
+}
+
+[theme~="dark"] vaadin-grid:not(.katalog-grid):not(.katalog-books) {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[theme~="dark"] vaadin-grid:not(.katalog-grid):not(.katalog-books):hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+[theme~="dark"] vaadin-grid:not(.katalog-grid):not(.katalog-books)::part(header-cell) {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+[theme~="dark"] vaadin-grid[theme~="row-stripes"]:not(.katalog-grid):not(.katalog-books)::part(row):nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+[theme~="dark"] vaadin-grid:not(.katalog-grid):not(.katalog-books)::part(row):hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    box-shadow: inset 4px 0 0 0 var(--lumo-body-text-color) !important;
+}
+
+[theme~="dark"] vaadin-grid:not(.katalog-grid):not(.katalog-books)::part(row)[selected] {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: inset 4px 0 0 0 var(--lumo-body-text-color) !important;
+}
+
+/* Responsive Layout */
+@media all and (max-width: 1100px) {
+  .list-view.editing .toolbar,
+  .list-view.editing .contact-grid,
+  .list-view.editing .pracownicy-grid {
+    display: none;
+  }
 }

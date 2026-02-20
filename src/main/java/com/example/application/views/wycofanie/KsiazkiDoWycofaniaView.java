@@ -65,9 +65,9 @@ public class KsiazkiDoWycofaniaView extends VerticalLayout {
         grid.setSizeFull();
         grid.removeAllColumns();
 
-        grid.addColumn(k -> k.getDaneKsiazki().getTytul()).setHeader("Tytuł").setAutoWidth(true);
-        grid.addColumn(k -> k.getDaneKsiazki().getIsbn()).setHeader("ISBN");
-        grid.addColumn(Ksiazka::getLicznikWypozyczen).setHeader("Licznik wyp.");
+        grid.addColumn(k -> k.getDaneKsiazki().getTytul()).setHeader("Tytuł").setAutoWidth(true).setSortable(true);
+        grid.addColumn(k -> k.getDaneKsiazki().getIsbn()).setHeader("ISBN").setSortable(true);
+        grid.addColumn(Ksiazka::getLicznikWypozyczen).setHeader("Licznik wypożyczeń").setSortable(true);
 
         grid.addComponentColumn(ksiazka -> {
             Button wycofajBtn = new Button("Wycofaj z biblioteki");

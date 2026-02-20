@@ -121,11 +121,12 @@ public class HomeView extends VerticalLayout {
             coverImage = new Image("https://placehold.co/100x150?text=Brak+okładki", "Brak okładki");
         }
 
-        coverImage.setWidth("100px");
-        coverImage.setHeight("150px");
+        coverImage.setWidth("140px");
+        coverImage.setHeight("210px");
         coverImage.getStyle().set("border-radius", "5px");
         coverImage.getStyle().set("box-shadow", "0 4px 6px rgba(0,0,0,0.1)");
         coverImage.getStyle().set("object-fit", "cover");
+        coverImage.addClassName("book-cover-image");
 
         VerticalLayout details = new VerticalLayout();
         details.setSpacing(false);
@@ -135,7 +136,6 @@ public class HomeView extends VerticalLayout {
         H3 tytul = new H3(ksiazka.getDaneKsiazki().getTytul());
         tytul.getStyle().set("margin-top", "0");
         tytul.getStyle().set("margin-bottom", "5px");
-        tytul.getStyle().set("color", "#2c3e50");
 
         String autorzyStr = "Brak autora";
         if (ksiazka.getDaneKsiazki().getAutorzy() != null && !ksiazka.getDaneKsiazki().getAutorzy().isEmpty()) {
@@ -190,7 +190,7 @@ public class HomeView extends VerticalLayout {
         VerticalLayout rightSide = new VerticalLayout(spacer, statusBadge);
         rightSide.setSpacing(false);
         rightSide.setPadding(false);
-        rightSide.setHeight("150px");
+        rightSide.setHeight("210px");
         rightSide.setAlignItems(Alignment.END);
         rightSide.setJustifyContentMode(JustifyContentMode.END);
 

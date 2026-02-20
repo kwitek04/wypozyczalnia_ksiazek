@@ -52,16 +52,16 @@ public class KsiazkiDoOdlozeniaView extends VerticalLayout {
         grid.setSizeFull();
         grid.removeAllColumns();
 
-        grid.addColumn(k -> k.getDaneKsiazki().getTytul()).setHeader("Tytuł").setAutoWidth(true);
+        grid.addColumn(k -> k.getDaneKsiazki().getTytul()).setHeader("Tytuł").setAutoWidth(true).setSortable(true);
 
-        grid.addColumn(k -> k.getDaneKsiazki().getIsbn()).setHeader("ISBN");
+        grid.addColumn(k -> k.getDaneKsiazki().getIsbn()).setHeader("ISBN").setSortable(true);
 
         grid.addColumn(k -> {
             if (k.getPoddziedzina() != null) {
                 return k.getPoddziedzina().getDziedzina().getNazwa() + " > " + k.getPoddziedzina().getNazwa();
             }
             return "Brak lokalizacji";
-        }).setHeader("Lokalizacja na półce").setAutoWidth(true);
+        }).setHeader("Lokalizacja na półce").setAutoWidth(true).setSortable(true);
 
         grid.addComponentColumn(ksiazka -> {
             Button confirmBtn = new Button("Potwierdź odłożenie");
