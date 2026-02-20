@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface UzytkownicyRepository extends JpaRepository<Uzytkownik, Long> {
+public interface UzytkownikRepository extends JpaRepository<Uzytkownik, Long> {
 
     // Metoda do wyszukiwania użytkowników po imieniu lub nazwisku
     @Query("select u from Uzytkownik u " +

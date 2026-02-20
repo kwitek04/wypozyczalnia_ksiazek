@@ -2,7 +2,7 @@ package com.example.application.data.service;
 
 import com.example.application.data.entity.Pracownik;
 import com.example.application.data.entity.Rola;
-import com.example.application.data.repository.PracownicyRepository;
+import com.example.application.data.repository.PracownikRepository;
 import com.example.application.data.repository.RolaRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,11 +14,11 @@ import java.util.HashSet;
 @Component
 public class DataInit implements CommandLineRunner {
 
-    private final PracownicyRepository pracownicyRepository;
+    private final PracownikRepository pracownicyRepository;
     private final RolaRepository rolaRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public DataInit(PracownicyRepository pracownicyRepository,
+    public DataInit(PracownikRepository pracownicyRepository,
                     RolaRepository rolaRepository,
                     PasswordEncoder passwordEncoder) {
         this.pracownicyRepository = pracownicyRepository;

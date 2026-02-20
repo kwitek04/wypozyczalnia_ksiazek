@@ -40,8 +40,10 @@ public class Pracownik extends AbstractEntity {
             inverseJoinColumns = @JoinColumn(name = "rola_id")
     )
     private Set<Rola> role = new HashSet<>();
+
     @NotEmpty(message = "Hasło nie może być puste")
     @Size(min = 6, message = "Hasło musi mieć minimum 6 znaków")
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-zA-Z]).*$", message = "Hasło musi mieć minimum jedną literę i jedną cyfrę")
     private String password;
 
     @Override

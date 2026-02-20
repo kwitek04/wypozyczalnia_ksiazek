@@ -2,8 +2,8 @@ package com.example.application.security;
 
 import com.example.application.data.entity.Pracownik;
 import com.example.application.data.entity.Uzytkownik;
-import com.example.application.data.repository.PracownicyRepository;
-import com.example.application.data.repository.UzytkownicyRepository;
+import com.example.application.data.repository.PracownikRepository;
+import com.example.application.data.repository.UzytkownikRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final PracownicyRepository pracownicyRepository;
-    private final UzytkownicyRepository uzytkownicyRepository;
+    private final PracownikRepository pracownicyRepository;
+    private final UzytkownikRepository uzytkownicyRepository;
 
-    public UserDetailsServiceImpl(PracownicyRepository pracownicyRepository,
-                                  UzytkownicyRepository uzytkownicyRepository) {
+    public UserDetailsServiceImpl(PracownikRepository pracownicyRepository,
+                                  UzytkownikRepository uzytkownicyRepository) {
         this.pracownicyRepository = pracownicyRepository;
         this.uzytkownicyRepository = uzytkownicyRepository;
     }

@@ -2,8 +2,8 @@ package com.example.application.views.mojekonto;
 
 import com.example.application.data.entity.Pracownik;
 import com.example.application.data.entity.Uzytkownik;
-import com.example.application.data.repository.PracownicyRepository;
-import com.example.application.data.repository.UzytkownicyRepository;
+import com.example.application.data.repository.PracownikRepository;
+import com.example.application.data.repository.UzytkownikRepository;
 import com.example.application.data.service.UserService;
 import com.example.application.security.SecurityService;
 import com.example.application.views.MainLayout;
@@ -36,8 +36,8 @@ public class MojeKontoView extends VerticalLayout {
     private Pracownik currentWorker;
 
     public MojeKontoView(SecurityService securityService,
-                         PracownicyRepository pracownicyRepository,
-                         UzytkownicyRepository uzytkownicyRepository,
+                         PracownikRepository pracownicyRepository,
+                         UzytkownikRepository uzytkownicyRepository,
                          UserService userService) {
         this.userService = userService;
 

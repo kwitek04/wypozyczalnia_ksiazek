@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface PracownicyRepository extends JpaRepository<Pracownik, Long> {
+public interface PracownikRepository extends JpaRepository<Pracownik, Long> {
 
     @Query("select p from Pracownik p " +
             "where lower(p.imie) like lower(concat('%', :searchTerm, '%')) " +

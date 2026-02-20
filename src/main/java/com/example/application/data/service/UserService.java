@@ -3,9 +3,9 @@ package com.example.application.data.service;
 import com.example.application.data.entity.Pracownik;
 import com.example.application.data.entity.Rola;
 import com.example.application.data.entity.Uzytkownik;
-import com.example.application.data.repository.PracownicyRepository;
+import com.example.application.data.repository.PracownikRepository;
 import com.example.application.data.repository.RolaRepository;
-import com.example.application.data.repository.UzytkownicyRepository;
+import com.example.application.data.repository.UzytkownikRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,13 +20,13 @@ import java.util.List;
 @Transactional
 public class UserService {
 
-    private final UzytkownicyRepository uzytkownicyRepository;
-    private final PracownicyRepository pracownicyRepository;
+    private final UzytkownikRepository uzytkownicyRepository;
+    private final PracownikRepository pracownicyRepository;
     private final RolaRepository rolaRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UzytkownicyRepository uzytkownicyRepository,
-                       PracownicyRepository pracownicyRepository,
+    public UserService(UzytkownikRepository uzytkownicyRepository,
+                       PracownikRepository pracownicyRepository,
                        RolaRepository rolaRepository,
                        PasswordEncoder passwordEncoder) {
         this.uzytkownicyRepository = uzytkownicyRepository;

@@ -2,9 +2,9 @@ package com.example.application.data.service;
 
 import com.example.application.data.entity.Pracownik;
 import com.example.application.data.entity.Uzytkownik;
-import com.example.application.data.repository.PracownicyRepository;
+import com.example.application.data.repository.PracownikRepository;
 import com.example.application.data.repository.RolaRepository;
-import com.example.application.data.repository.UzytkownicyRepository;
+import com.example.application.data.repository.UzytkownikRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,9 +20,9 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
 
     @Mock
-    private UzytkownicyRepository uzytkownicyRepository;
+    private UzytkownikRepository uzytkownicyRepository;
     @Mock
-    private PracownicyRepository pracownicyRepository;
+    private PracownikRepository pracownicyRepository;
     @Mock
     private RolaRepository rolaRepository;
     @Mock
